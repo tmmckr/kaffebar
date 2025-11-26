@@ -216,43 +216,54 @@
         let currentCoffee = null;
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
-        // --- FINALER ROBUSTER STATUS CHECK ---
+        // --- FINALER STATUS CHECK (Nimmt wirklich den NEUSTEN Eintrag) ---
         function checkStatus() {
-            // 1. Die Stoppuhr: Nach 2 Sekunden brechen wir hart ab
+            // 1. Stoppuhr (Timeout 2 Sekunden)
             const timeoutPromise = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    reject(new Error('Timeout: Antwort hat zu lange gedauert'));
-                }, 2000); // Maximal 2 Sekunden warten
+                setTimeout(() => { reject(new Error('Timeout')); }, 2000); 
             });
 
-            // 2. Der Netzwerk-Abruf
-            // Wir nutzen ?poll=1 damit er nicht ewig wartet
-            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw?since=all&limit=1&poll=1`, { cache: "no-store" })
+            // 2. Abruf der Historie (JSON Format)
+            // Wir holen alle gespeicherten Nachrichten (?since=all)
+            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/json?since=all`, { cache: "no-store" })
                 .then(response => {
                     if (!response.ok) throw new Error('Netzwerk Fehler');
                     return response.text();
+                })
+                .then(text => {
+                    // ntfy sendet "JSON Lines" (Jede Zeile ist eine Nachricht)
+                    // Wir zerlegen den Text in einzelne Zeilen
+                    // und filtern leere Zeilen heraus
+                    const lines = text.trim().split('\n').filter(line => line.length > 0);
+                    
+                    if (lines.length === 0) return "an"; // Keine Nachrichten? Dann ist offen.
+
+                    // Wir nehmen die ALLERLETZTE Zeile -> Das ist die neuste Nachricht!
+                    const lastLine = lines[lines.length - 1];
+                    
+                    try {
+                        const data = JSON.parse(lastLine);
+                        return data.message; // Wir geben nur den Text der Nachricht zurück (z.B. "an")
+                    } catch (e) {
+                        return "an"; // Falls was kaputt ist, machen wir auf
+                    }
                 });
 
-            // 3. Das Rennen: Wer ist schneller? Antwort oder Stoppuhr?
+            // 3. Auswertung
             Promise.race([fetchPromise, timeoutPromise])
-                .then(text => {
-                    // Antwort war schnell genug da!
-                    console.log("Status Nachricht:", text);
-                    text = text.trim().toLowerCase();
+                .then(msgText => {
+                    console.log("Aktueller Status-Befehl:", msgText);
+                    msgText = String(msgText).trim().toLowerCase();
                     
-                    if (text.includes('aus') || text.includes('zu') || text.includes('stop') || text.includes('closed')) {
+                    if (msgText.includes('aus') || msgText.includes('zu') || msgText.includes('stop') || msgText.includes('closed')) {
                         setShopClosed();
                     } else {
                         setShopOpen();
                     }
                 })
                 .catch(err => {
-                    // Stoppuhr hat gewonnen ODER Fehler ist passiert
-                    console.log("Status-Check abgebrochen:", err);
-                    
-                    // WICHTIG: Wenn wir uns nicht sicher sind (Timeout), machen wir lieber AUF.
-                    // Falls du willst, dass er bei Fehlern ZU bleibt, ändere das hier in setShopClosed();
-                    setShopOpen(); 
+                    console.log("Fehler beim Status-Check (Wir öffnen):", err);
+                    setShopOpen(); // Im Zweifel immer GRÜN
                 });
         }
 
@@ -456,6 +467,7 @@
 </body>
 
 </html>
+
 
 
 
