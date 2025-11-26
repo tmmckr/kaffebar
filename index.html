@@ -216,54 +216,63 @@
         let currentCoffee = null;
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
-        // --- FINALER STATUS CHECK (Nimmt wirklich den NEUSTEN Eintrag) ---
+        // --- FINALER STATUS CHECK (Mit Cache-Buster & Debugger) ---
         function checkStatus() {
-            // 1. Stoppuhr (Timeout 2 Sekunden)
-            const timeoutPromise = new Promise((resolve, reject) => {
-                setTimeout(() => { reject(new Error('Timeout')); }, 2000); 
+            const statusTextElement = document.getElementById('status-text');
+            
+            // Timeout nach 3 Sekunden
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Timeout')), 3000);
             });
 
-            // 2. Abruf der Historie (JSON Format)
-            // Wir holen alle gespeicherten Nachrichten (?since=all)
-            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/json?since=all`, { cache: "no-store" })
+            // CACHE-BUSTER: Wir hängen "&t=" + Uhrzeit an.
+            // Das zwingt den Browser, wirklich neu zu laden!
+            const timestamp = new Date().getTime(); 
+            
+            // Wir holen JSON, limit=1 (nur die neuste), poll=1 (sofort)
+            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/json?poll=1&limit=1&t=${timestamp}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Netzwerk Fehler');
                     return response.text();
                 })
                 .then(text => {
-                    // ntfy sendet "JSON Lines" (Jede Zeile ist eine Nachricht)
-                    // Wir zerlegen den Text in einzelne Zeilen
-                    // und filtern leere Zeilen heraus
+                    // Wir zerlegen die Antwort in Zeilen (falls mehrere kommen)
                     const lines = text.trim().split('\n').filter(line => line.length > 0);
                     
-                    if (lines.length === 0) return "an"; // Keine Nachrichten? Dann ist offen.
+                    if (lines.length === 0) return "an"; // Nix da? Dann offen.
 
-                    // Wir nehmen die ALLERLETZTE Zeile -> Das ist die neuste Nachricht!
+                    // Wir nehmen die letzte Zeile
                     const lastLine = lines[lines.length - 1];
+                    const data = JSON.parse(lastLine);
                     
-                    try {
-                        const data = JSON.parse(lastLine);
-                        return data.message; // Wir geben nur den Text der Nachricht zurück (z.B. "an")
-                    } catch (e) {
-                        return "an"; // Falls was kaputt ist, machen wir auf
+                    // Wir prüfen nur 'message' Events (keine 'open' oder 'keepalive' Events)
+                    if (data.event === 'message') {
+                        return data.message;
+                    } else {
+                        return "an"; // War nur ein technisches Event
                     }
                 });
 
-            // 3. Auswertung
             Promise.race([fetchPromise, timeoutPromise])
                 .then(msgText => {
-                    console.log("Aktueller Status-Befehl:", msgText);
+                    // Debug-Info: Wir zeigen kurz an, was wir empfangen haben
+                    console.log("Empfangen:", msgText);
+                    
+                    // Text säubern
                     msgText = String(msgText).trim().toLowerCase();
                     
                     if (msgText.includes('aus') || msgText.includes('zu') || msgText.includes('stop') || msgText.includes('closed')) {
                         setShopClosed();
+                        // Kleines Feedback im Ampel-Text (optional)
+                        statusTextElement.innerText = "Kaffeebar geschlossen";
                     } else {
                         setShopOpen();
+                        statusTextElement.innerText = "Barista ist bereit";
                     }
                 })
                 .catch(err => {
-                    console.log("Fehler beim Status-Check (Wir öffnen):", err);
-                    setShopOpen(); // Im Zweifel immer GRÜN
+                    console.log("Fehler (Standard=Offen):", err);
+                    setShopOpen();
                 });
         }
 
@@ -467,6 +476,7 @@
 </body>
 
 </html>
+
 
 
 
