@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Timo's Barista Bar</title>
+    <style>
+        /* --- Grundlegendes Design --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at center top, #2c1e16, #0f0a06 80%);
+            color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh;
+        }
+
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
+        .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
+
+        /* --- Status Ampel --- */
+        .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; } /* Min-height verhindert Springen */
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 20px;
+            font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease;
+        }
+        .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
+        .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
+        .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-gray { background-color: #aaa; }
+        .dot-green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
+        .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
+
+        /* --- News Banner --- */
+        .news-banner {
+            background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5);
+            color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px;
+            border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px;
+            backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
+
+        /* --- Bohnen-Karte --- */
+        .bean-card {
+            background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9));
+            border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+        }
+        .bean-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%); }
+        .bean-label { color: #d4b483; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
+        .bean-name { font-family: "Times New Roman", serif; font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .bean-desc { color: #a09085; font-size: 0.9rem; margin-bottom: 15px; font-style: italic; }
+        .intensity-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 0.8rem; color: #d4b483; font-weight: bold; letter-spacing: 1px;}
+        .progress-bar-bg { width: 120px; height: 6px; background: rgba(212, 180, 131, 0.2); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #d4b483; width: 70%; box-shadow: 0 0 10px rgba(212, 180, 131, 0.5); }
+
+        /* --- Liste & Karten --- */
+        .menu-list { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        .coffee-card {
+            background: rgba(40, 30, 25, 0.7); border: 1px solid rgba(212, 180, 131, 0.2); border-radius: 12px; padding: 20px 25px; cursor: pointer; transition: all 0.2s ease; text-align: left; position: relative; backdrop-filter: blur(5px);
+        }
+        .coffee-card:active { transform: scale(0.96); background: rgba(60, 45, 35, 0.9); border-color: rgba(212, 180, 131, 0.8); }
+        .name { font-size: 1.3rem; font-weight: 500; color: #fff; margin-bottom: 12px; }
+        .desc { font-size: 0.95rem; color: #a09085; line-height: 1.5; margin-bottom: 20px; }
+        .strength-container { display: flex; align-items: center; font-size: 0.75rem; color: #d4b483; letter-spacing: 1.5px; text-transform: uppercase; }
+        .dots { margin-left: 10px; letter-spacing: 3px; font-size: 1rem; }
+        .dot-filled { color: #d4b483; } .dot-empty { color: rgba(212, 180, 131, 0.2); }
+
+        /* --- Modals --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); animation: fadeIn 0.3s;
+        }
+        .modal-box {
+            background: #2c1e16; border: 2px solid #d4b483; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(212, 180, 131, 0.2); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto;
+        }
+        .modal-title { color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 15px 0; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-label { display: block; color: #a09085; font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .modal-input, .modal-select { width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid #d4b483; border-radius: 8px; color: white; font-size: 1rem; outline: none; box-sizing: border-box; }
+        .modal-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d4b483'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 20px; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(212, 180, 131, 0.1); }
+        .checkbox-item { display: flex; align-items: center; gap: 12px; cursor: pointer; color: white; font-size: 1rem; }
+        .checkbox-item input { accent-color: #d4b483; width: 20px; height: 20px; cursor: pointer; }
+        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #d4b483; margin-top: -8px; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(212, 180, 131, 0.3); border-radius: 2px; }
+        .range-value { float: right; color: #d4b483; font-weight: bold; }
+        .radio-group { display: flex; gap: 10px; }
+        .radio-label { flex: 1; text-align: center; padding: 10px; border: 1px solid rgba(212, 180, 131, 0.5); border-radius: 8px; cursor: pointer; color: #a09085; transition: 0.2s; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .radio-label { background: #d4b483; color: #2c1e16; font-weight: bold; border-color: #d4b483; }
+        .modal-btn { background: #d4b483; color: #2c1e16; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; }
+
+        #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; text-align: center; width: 80%; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <h1>Timo's</h1>
+    <div class="subtitle">Barista Bar</div>
+
+    <div class="status-container">
+        <div id="status-badge" class="status-badge status-loading">
+            <span class="status-dot dot-gray"></span>
+            <span id="status-text">Prüfe Status...</span>
+        </div>
+    </div>
+
+    <div class="news-banner">
+        <span class="news-badge">NEU</span>
+        <span>Iced Matcha Latte – auch als Protein-Version! 🍵</span>
+    </div>
+
+    <div class="bean-card">
+        <div class="bean-label">Aktuelle Röstung</div>
+        <div class="bean-name">Lavazza Crema e Gusto</div>
+        <div class="bean-desc">Classico • Torino, Italia</div>
+        <div class="intensity-wrapper">
+            INTENSITÄT 7/10
+            <div class="progress-bar-bg"><div class="progress-fill" style="width: 70%"></div></div>
+        </div>
+    </div>
+
+    <div class="menu-list" id="menu-container"></div>
+
+    <div id="order-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="modal-title" id="modal-coffee-title">Einstellungen</h2>
+            <div class="form-group">
+                <label class="form-label">Dein Name</label>
+                <input type="text" id="user-name-input" class="modal-input" placeholder="Wer bist du?" autocomplete="off">
+            </div>
+            <div id="custom-options"></div>
+            <button class="modal-btn" onclick="sendOrder()">Bestellen</button>
+            <div style="margin-top:15px; font-size:0.8rem; color:#a09085; cursor:pointer;" onclick="closeOrderModal()">Abbrechen</div>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal-overlay">
+        <div class="modal-box">
+            <span style="font-size:3rem; display:block; margin-bottom:15px;">🛎️</span>
+            <h2 class="modal-title">Bestellung bestätigt</h2>
+            <p class="modal-text" style="color:white; line-height: 1.6;">
+                <strong id="confirm-details"></strong><br>
+                <span style="font-size:0.9rem; color:#a09085; margin-top:10px; display:block">Serviert in ca. 5 Minuten.</span>
+            </p>
+            <button class="modal-btn" onclick="closeConfirmModal()">Alles klar!</button>
+        </div>
+    </div>
+
+    <div id="status"></div>
+
+    <script>
+        // ============================================
+        //   TIMOS REMOTE CONTROL SETUP
+        // ============================================
+        
+        // Dein normaler Name für Bestellungen
+        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
+
+        // Der "geheime" Status-Kanal (Hier schreibst du 'an' oder 'aus' rein)
+        const STATUS_TOPIC = 'status-' + TOPIC_NAME;
+
+        // ============================================
+
+        const maschinenDaten = {
+            "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], ml_milch: null, ml_gesamt: null, cycles: true },
+            "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], ml_milch: null, ml_gesamt: null, cycles: true },
+            "Latte Macchiato": { stufen: true, ml_kaffee: [20, 30, 40, 60, 80], ml_milch: [80, 140, 200, 270, 340], ml_gesamt: null, cycles: false },
+            "Cappuccino": { stufen: true, ml_kaffee: [20, 30, 40, 60, 80], ml_milch: [90, 120, 150, 180, 210], ml_gesamt: null, cycles: false },
+            "Americano": { stufen: true, ml_kaffee: [80, 100, 120, 160, 200], ml_milch: null, ml_gesamt: null, cycles: true },
+            "Espresso Lungo": { stufen: true, ml_kaffee: [80, 100, 120, 160, 200], ml_milch: null, ml_gesamt: null, cycles: true },
+            "Espresso": { stufen: true, ml_kaffee: [30, 40, 50], ml_milch: null, ml_gesamt: null, cycles: true },
+            "Milchkaffee": { stufen: true, ml_kaffee: [50, 70, 90, 120, 150], ml_milch: [50, 70, 90, 120, 150], ml_gesamt: null, cycles: false },
+            "Matcha": { stufen: false, ml_kaffee: null, ml_milch: null, ml_gesamt: [200, 250, 300, 350, 400, 450, 500], cycles: false },
+            "default": { stufen: false, ml_kaffee: null, ml_milch: null, ml_gesamt: null, cycles: false }
+        };
+
+        const kaffeeSorten = [
+            { name: "Kaffee", configKey: "Kaffee", strength: 3, desc: "Der zeitlose Klassiker." },
+            { name: "Café Crema", configKey: "Café Crema", strength: 3, desc: "Langer Genuss mit Crema-Krone." },
+            { name: "Espresso Lungo", configKey: "Espresso Lungo", strength: 4, desc: "Verlängertes Aromawunder." },
+            { name: "Espresso", configKey: "Espresso", strength: 5, desc: "Der kleine Starke." },
+            { name: "Latte Macchiato", configKey: "Latte Macchiato", strength: 2, desc: "Viel heiße Milch & Espresso." },
+            { name: "Milchkaffee", configKey: "Milchkaffee", strength: 2, desc: "Halb Kaffee, halb Milch." },
+            { name: "Cappuccino", configKey: "Cappuccino", strength: 3, desc: "Klassiker mit Milchschaumhaube." },
+            { name: "Americano", configKey: "Americano", strength: 3, desc: "Espresso mit Wasser verlängert." },
+            { name: "Iced Matcha Latte", configKey: "Matcha", strength: 0, desc: "Grüner Tee auf Eis & Milch." },
+            { name: "Iced Protein Matcha", configKey: "Matcha", strength: 0, desc: "Matcha Latte mit Protein-Kick." },
+            { name: "Ristretto", configKey: "default", strength: 5, desc: "Ultrakurzer Extrakt." },
+            { name: "Flat White", configKey: "default", strength: 4, desc: "Doppelter Ristretto mit Mikroschaum." },
+            { name: "Iced Coffee", configKey: "default", strength: 3, desc: "Frisch gebrüht auf Eis." },
+            { name: "Iced Latte", configKey: "default", strength: 2, desc: "Espresso auf kalter Milch & Eis." },
+            { name: "Milchschaum", configKey: "default", strength: 0, desc: "Purer Schaum." },
+            { name: "Heißes Wasser", configKey: "default", strength: 0, desc: "Für Tee." },
+            { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
+        ];
+
+        const container = document.getElementById('menu-container');
+        const orderModal = document.getElementById('order-modal');
+        const customOptionsDiv = document.getElementById('custom-options');
+        const confirmModal = document.getElementById('confirmation-modal');
+        const nameInput = document.getElementById('user-name-input');
+        
+        // Status Elemente
+        const statusBadge = document.getElementById('status-badge');
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.querySelector('.status-dot');
+
+        let currentCoffee = null;
+        let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
+
+        // --- AUTOMATISCHER STATUS CHECK ---
+        function checkStatus() {
+            // Wir fragen ntfy: "Was war die letzte Nachricht in diesem Kanal?"
+            fetch(`https://ntfy.sh/${STATUS_TOPIC}/json?poll=1&since=all&limit=1`)
+                .then(response => response.json())
+                .then(data => {
+                    // Das Ergebnis ist ein Strom von Daten (JSON Lines)
+                    // Da wir limit=1 haben, nehmen wir einfach den Text.
+                    // Das Format ist etwas tricky, da ntfy streamt. 
+                    // Wir vereinfachen es: Wir schauen nur, ob der String 'aus' oder 'zu' enthält.
+                    
+                    // Da fetch bei ntfy streaming ist, müssen wir tricksen.
+                    // BESSERE METHODE für simple Textabfrage:
+                    return fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw`);
+                })
+                .then(response => response.text())
+                .then(text => {
+                    console.log("Status Nachricht:", text);
+                    text = text.trim().toLowerCase();
+                    
+                    if (text.includes('aus') || text.includes('zu') || text.includes('stop') || text.includes('closed')) {
+                        setShopClosed();
+                    } else {
+                        setShopOpen();
+                    }
+                })
+                .catch(err => {
+                    console.log("Kein Status gefunden (noch nie gesendet?), also offen lassen.");
+                    setShopOpen();
+                });
+        }
+
+        function setShopOpen() {
+            isShopOpen = true;
+            statusBadge.className = 'status-badge status-open';
+            statusText.innerText = 'Barista ist bereit';
+            statusDot.className = 'status-dot dot-green';
+            container.classList.remove('shop-closed-mode');
+        }
+
+        function setShopClosed() {
+            isShopOpen = false;
+            statusBadge.className = 'status-badge status-closed';
+            statusText.innerText = 'Kaffeebar geschlossen';
+            statusDot.className = 'status-dot dot-red';
+            container.classList.add('shop-closed-mode');
+        }
+
+        // Check starten!
+        checkStatus();
+
+
+        // --- UI Rendering ---
+        function createSelect(id, label, options, suffix) {
+            let html = `<div class="form-group"><label class="form-label">${label}</label>`;
+            html += `<select id="${id}" class="modal-select">`;
+            options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
+            html += `</select></div>`;
+            return html;
+        }
+
+        kaffeeSorten.forEach(sorte => {
+            const btn = document.createElement('div');
+            btn.className = 'coffee-card';
+            btn.onclick = () => {
+                if(isShopOpen) openOrderModal(sorte);
+            };
+            
+            let dots = "";
+            if(sorte.strength > 0) {
+                dots = '<span class="dots">';
+                for(let i=1; i<=5; i++) dots += i<=sorte.strength ? '<span class="dot-filled">•</span>' : '<span class="dot-empty">•</span>';
+                dots += '</span>';
+                dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
+            }
+
+            btn.innerHTML = `<div class="name">${sorte.name}</div><div class="desc">${sorte.desc}</div>${dots}`;
+            container.appendChild(btn);
+        });
+
+        function openOrderModal(sorte) {
+            currentCoffee = sorte;
+            document.getElementById('modal-coffee-title').innerText = sorte.name;
+            customOptionsDiv.innerHTML = "";
+            nameInput.value = localStorage.getItem('lastUser') || "";
+
+            const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
+
+            if (config.stufen) {
+                customOptionsDiv.innerHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Intensität: <span id="strength-val" class="range-value">3</span></label>
+                        <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
+                    </div>`;
+            }
+
+            if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
+            if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
+            if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
+
+            if (config.cycles) {
+                customOptionsDiv.innerHTML += `
+                    <div class="form-group">
+                        <label class="form-label">Mahlvorgang</label>
+                        <div class="radio-group">
+                            <input type="radio" id="cycle1" name="cycles" value="1x" checked>
+                            <label for="cycle1" class="radio-label">1x</label>
+                            <input type="radio" id="cycle2" name="cycles" value="2x">
+                            <label for="cycle2" class="radio-label">2x</label>
+                        </div>
+                    </div>`;
+            }
+
+            customOptionsDiv.innerHTML += `
+                <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 180, 131, 0.3);">
+                    <label class="form-label">Extras</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
+                        <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
+                    </div>
+                </div>
+            `;
+
+            orderModal.style.display = 'flex';
+            if(!nameInput.value) nameInput.focus();
+        }
+
+        function closeOrderModal() { orderModal.style.display = 'none'; }
+        function closeConfirmModal() { confirmModal.style.display = 'none'; }
+
+        function sendOrder() {
+            const userName = nameInput.value.trim();
+            const statusDiv = document.getElementById('status');
+            const sendBtn = document.querySelector('#order-modal .modal-btn');
+
+            if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
+            localStorage.setItem('lastUser', userName);
+
+            if (TOPIC_NAME.includes(' ') || TOPIC_NAME.match(/[äöüÄÖÜß]/)) {
+                 statusDiv.style.display = 'block';
+                 statusDiv.innerText = "❌ Fehler: Verbotene Zeichen im TOPIC_NAME!";
+                 return;
+            }
+
+            let details = [];
+            const strengthEl = document.getElementById('input-strength');
+            if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
+
+            const coffeeVolEl = document.getElementById('input-coffee-vol');
+            if(coffeeVolEl) details.push(`${coffeeVolEl.value}ml Kaffee`);
+
+            const milkVolEl = document.getElementById('input-milk-vol');
+            if(milkVolEl) details.push(`${milkVolEl.value}ml Milch`);
+
+            const totalVolEl = document.getElementById('input-total-vol');
+            if(totalVolEl) details.push(`${totalVolEl.value}ml`);
+
+            const cyclesEl = document.querySelector('input[name="cycles"]:checked');
+            if(cyclesEl) details.push(cyclesEl.value);
+
+            if(document.getElementById('extra-vanilla').checked) details.push("Vanille Sirup");
+            if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
+
+            let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
+            const messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
+
+            sendBtn.innerText = "Sende...";
+
+            // SOUND
+            const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_735c05d768.mp3?filename=service-bell-ring-14610.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log("Audio play prevented"));
+
+            fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
+                method: 'POST',
+                body: messageBody, 
+                headers: {
+                    'Title': 'Neue Bestellung',
+                    'Priority': 'high',
+                    'Tags': 'coffee'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    orderModal.style.display = 'none';
+                    document.getElementById('confirm-details').innerText = messageBody;
+                    confirmModal.style.display = 'flex';
+                    sendBtn.innerText = "Bestellen";
+                } else {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+            })
+            .catch(error => {
+                sendBtn.innerText = "Bestellen";
+                statusDiv.style.display = 'block';
+                statusDiv.innerText = `❌ Fehler: ${error.message}`;
+                setTimeout(() => statusDiv.style.display = 'none', 6000);
+            });
+        }
+    </script>
+</body>
+</html>
