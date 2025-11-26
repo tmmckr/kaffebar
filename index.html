@@ -216,41 +216,33 @@
         let currentCoffee = null;
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
-        // --- AUTOMATISCHER STATUS CHECK ---
-        // --- VERBESSERTER STATUS CHECK ---
+        // --- KORRIGIERTER STATUS CHECK (Liest die Vergangenheit) ---
         function checkStatus() {
-            // Wir definieren eine maximale Wartezeit (2 Sekunden)
-            const timeoutPromise = new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    reject(new Error('Timeout'));
-                }, 2000); 
-            });
-
-            // Der eigentliche Abruf
-            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw`, { cache: "no-store" })
+            const statusDiv = document.getElementById('status-text');
+            const statusBadge = document.getElementById('status-badge');
+            
+            // Wir fragen nach der ALLERLETZTEN Nachricht, die je gesendet wurde (?since=all&limit=1)
+            // cache: "no-store" zwingt den Browser, wirklich neu zu laden
+            fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw?since=all&limit=1`, { cache: "no-store" })
                 .then(response => {
-                    if (!response.ok) throw new Error('Leer oder Fehler');
                     return response.text();
-                });
-
-            // Wir lassen Abruf und Timeout gegeneinander antreten (Race)
-            Promise.race([fetchPromise, timeoutPromise])
+                })
                 .then(text => {
-                    // Wenn wir hier sind, hat der Abruf geklappt!
-                    console.log("Status gefunden:", text);
+                    // Bereinigen (Leerzeichen weg, Kleinbuchstaben)
                     text = text.trim().toLowerCase();
-                    
+                    console.log("Empfangener Status-Befehl:", text); // Für Fehlersuche
+
+                    // Prüfen ob "aus", "zu", "closed" oder "stop" drin vorkommt
                     if (text.includes('aus') || text.includes('zu') || text.includes('stop') || text.includes('closed')) {
                         setShopClosed();
                     } else {
-                        // Bei "an" oder jedem anderen Text -> Öffnen
+                        // Wenn da "an", "open" oder irgendwas anderes steht -> AUF
                         setShopOpen();
                     }
                 })
                 .catch(err => {
-                    // Wenn ein Fehler passiert oder der Timeout zuschlägt (2 sek vorbei)
-                    console.log("Status-Check fehlgeschlagen oder leer. Wir öffnen sicherheitshalber.", err);
-                    // WICHTIG: Im Zweifel immer ÖFFNEN, damit Mama bestellen kann!
+                    console.log("Fehler beim Status-Abruf:", err);
+                    // Nur wenn wirklich gar nichts klappt (Server down), machen wir auf.
                     setShopOpen();
                 });
         }
@@ -455,4 +447,5 @@
 </body>
 
 </html>
+
 
