@@ -367,6 +367,40 @@
                  return;
             }
 
+            // --- HIER IST DER NEUE TON (DIREKT IM CODE) ---
+            // Das ist ein kurzes, encoded "Ding" Geräusch
+            const soundData = "data:audio/mp3;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+            // Hinweis: Um den Code kurz zu halten, habe ich hier einen Platzhalter. 
+            // Browser blockieren oft Audio, wenn es nicht EXAKT im Moment des Klicks passiert.
+            // Wir probieren einen Trick:
+            
+            try {
+                // Wir nutzen einen kurzen Standard-System-Beep oder einen sehr kurzen Base64 String
+                // Da lange Base64 Strings den Code hier sprengen, nutzen wir eine sicherere Methode:
+                // Wir erzeugen den Audio-Kontext direkt beim Klick.
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                // Ein angenehmes "Pling" (Sinuswelle)
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(500, audioCtx.currentTime); // Start Tonhöhe
+                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); // Geht hoch
+                
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Lautstärke
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); // Ausblenden
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio konnte nicht abgespielt werden (Stummschaltung?)");
+            }
+            // ----------------------------------------------
+
+
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
@@ -390,11 +424,6 @@
             const messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
 
             sendBtn.innerText = "Sende...";
-
-            // SOUND
-            const audio = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_735c05d768.mp3?filename=service-bell-ring-14610.mp3');
-            audio.volume = 0.5;
-            audio.play().catch(e => console.log("Audio play prevented"));
 
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
@@ -426,3 +455,4 @@
 </body>
 
 </html>
+
