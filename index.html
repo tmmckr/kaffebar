@@ -216,19 +216,24 @@
         let currentCoffee = null;
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
-       // --- FINALER STATUS CHECK (Liest die Vergangenheit sofort) ---
+       // --- FINALER STATUS CHECK (Mit Anti-Cache Headern) ---
         function checkStatus() {
-            // Timeout nach 2 Sekunden (falls Internet weg ist)
+            // 1. Timeout nach 2 Sekunden (falls Internet weg ist)
             const timeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => reject(new Error('Timeout')), 2000);
             });
 
-            // Der Trick: Kein "poll=1"! Wir wollen die History sofort.
-            // "since=all" holt alles, was da ist.
-            // Timestamp (?t=...) verhindert Caching.
+            // 2. URL mit Zeitstempel (Cache-Buster)
             const url = `https://ntfy.sh/${STATUS_TOPIC}/json?since=all&t=${Date.now()}`;
 
-            const fetchPromise = fetch(url, { cache: "no-store" })
+            // 3. Der Abruf mit den neuen Headern
+            const fetchPromise = fetch(url, { 
+                cache: "no-store", // Browser-Cache verbieten
+                headers: {
+                    "Cache-Control": "no-cache", // Für Proxies
+                    "Pragma": "no-cache"         // Für alte Systeme
+                }
+            })
                 .then(response => {
                     if (!response.ok) throw new Error('Netzwerk Fehler');
                     return response.text();
@@ -238,7 +243,7 @@
                     const lines = text.trim().split('\n');
                     
                     // Wir suchen von HINTEN (neueste) nach VORNE nach der ersten echten Nachricht
-                    // Standard ist "an", falls wir nichts finden.
+                    // Standard ist "an", falls wir gar nichts finden.
                     let foundMessage = "an"; 
 
                     for (let i = lines.length - 1; i >= 0; i--) {
@@ -259,10 +264,10 @@
                     return foundMessage;
                 });
 
-            // Auswertung
+            // 4. Auswertung: Wer ist schneller? Antwort oder Timeout?
             Promise.race([fetchPromise, timeoutPromise])
                 .then(msgText => {
-                    console.log("Gelesener Status:", msgText); // Zur Kontrolle in der Konsole
+                    console.log("Gelesener Status:", msgText); // Zur Kontrolle
                     msgText = String(msgText).trim().toLowerCase();
                     
                     // Prüfen auf Schlüsselwörter
@@ -479,6 +484,7 @@
 </body>
 
 </html>
+
 
 
 
