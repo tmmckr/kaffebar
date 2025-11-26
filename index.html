@@ -216,34 +216,43 @@
         let currentCoffee = null;
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
-        // --- KORRIGIERTER STATUS CHECK (Liest die Vergangenheit) ---
+        // --- FINALER ROBUSTER STATUS CHECK ---
         function checkStatus() {
-            const statusDiv = document.getElementById('status-text');
-            const statusBadge = document.getElementById('status-badge');
-            
-            // Wir fragen nach der ALLERLETZTEN Nachricht, die je gesendet wurde (?since=all&limit=1)
-            // cache: "no-store" zwingt den Browser, wirklich neu zu laden
-            fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw?since=all&limit=1`, { cache: "no-store" })
-                .then(response => {
-                    return response.text();
-                })
-                .then(text => {
-                    // Bereinigen (Leerzeichen weg, Kleinbuchstaben)
-                    text = text.trim().toLowerCase();
-                    console.log("Empfangener Status-Befehl:", text); // Für Fehlersuche
+            // 1. Die Stoppuhr: Nach 2 Sekunden brechen wir hart ab
+            const timeoutPromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    reject(new Error('Timeout: Antwort hat zu lange gedauert'));
+                }, 2000); // Maximal 2 Sekunden warten
+            });
 
-                    // Prüfen ob "aus", "zu", "closed" oder "stop" drin vorkommt
+            // 2. Der Netzwerk-Abruf
+            // Wir nutzen ?poll=1 damit er nicht ewig wartet
+            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw?since=all&limit=1&poll=1`, { cache: "no-store" })
+                .then(response => {
+                    if (!response.ok) throw new Error('Netzwerk Fehler');
+                    return response.text();
+                });
+
+            // 3. Das Rennen: Wer ist schneller? Antwort oder Stoppuhr?
+            Promise.race([fetchPromise, timeoutPromise])
+                .then(text => {
+                    // Antwort war schnell genug da!
+                    console.log("Status Nachricht:", text);
+                    text = text.trim().toLowerCase();
+                    
                     if (text.includes('aus') || text.includes('zu') || text.includes('stop') || text.includes('closed')) {
                         setShopClosed();
                     } else {
-                        // Wenn da "an", "open" oder irgendwas anderes steht -> AUF
                         setShopOpen();
                     }
                 })
                 .catch(err => {
-                    console.log("Fehler beim Status-Abruf:", err);
-                    // Nur wenn wirklich gar nichts klappt (Server down), machen wir auf.
-                    setShopOpen();
+                    // Stoppuhr hat gewonnen ODER Fehler ist passiert
+                    console.log("Status-Check abgebrochen:", err);
+                    
+                    // WICHTIG: Wenn wir uns nicht sicher sind (Timeout), machen wir lieber AUF.
+                    // Falls du willst, dass er bei Fehlern ZU bleibt, ändere das hier in setShopClosed();
+                    setShopOpen(); 
                 });
         }
 
@@ -447,5 +456,6 @@
 </body>
 
 </html>
+
 
 
