@@ -217,33 +217,40 @@
         let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
 
         // --- AUTOMATISCHER STATUS CHECK ---
+        // --- VERBESSERTER STATUS CHECK ---
         function checkStatus() {
-            // Wir fragen ntfy: "Was war die letzte Nachricht in diesem Kanal?"
-            fetch(`https://ntfy.sh/${STATUS_TOPIC}/json?poll=1&since=all&limit=1`)
-                .then(response => response.json())
-                .then(data => {
-                    // Das Ergebnis ist ein Strom von Daten (JSON Lines)
-                    // Da wir limit=1 haben, nehmen wir einfach den Text.
-                    // Das Format ist etwas tricky, da ntfy streamt. 
-                    // Wir vereinfachen es: Wir schauen nur, ob der String 'aus' oder 'zu' enthält.
-                    
-                    // Da fetch bei ntfy streaming ist, müssen wir tricksen.
-                    // BESSERE METHODE für simple Textabfrage:
-                    return fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw`);
-                })
-                .then(response => response.text())
+            // Wir definieren eine maximale Wartezeit (2 Sekunden)
+            const timeoutPromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    reject(new Error('Timeout'));
+                }, 2000); 
+            });
+
+            // Der eigentliche Abruf
+            const fetchPromise = fetch(`https://ntfy.sh/${STATUS_TOPIC}/raw`, { cache: "no-store" })
+                .then(response => {
+                    if (!response.ok) throw new Error('Leer oder Fehler');
+                    return response.text();
+                });
+
+            // Wir lassen Abruf und Timeout gegeneinander antreten (Race)
+            Promise.race([fetchPromise, timeoutPromise])
                 .then(text => {
-                    console.log("Status Nachricht:", text);
+                    // Wenn wir hier sind, hat der Abruf geklappt!
+                    console.log("Status gefunden:", text);
                     text = text.trim().toLowerCase();
                     
                     if (text.includes('aus') || text.includes('zu') || text.includes('stop') || text.includes('closed')) {
                         setShopClosed();
                     } else {
+                        // Bei "an" oder jedem anderen Text -> Öffnen
                         setShopOpen();
                     }
                 })
                 .catch(err => {
-                    console.log("Kein Status gefunden (noch nie gesendet?), also offen lassen.");
+                    // Wenn ein Fehler passiert oder der Timeout zuschlägt (2 sek vorbei)
+                    console.log("Status-Check fehlgeschlagen oder leer. Wir öffnen sicherheitshalber.", err);
+                    // WICHTIG: Im Zweifel immer ÖFFNEN, damit Mama bestellen kann!
                     setShopOpen();
                 });
         }
@@ -417,4 +424,5 @@
         }
     </script>
 </body>
+
 </html>
