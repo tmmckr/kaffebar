@@ -8,17 +8,27 @@
         /* --- Grundlegendes Design der Seite */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #e0d0c0; 
+            margin: 0; 
+            padding: 25px 15px; 
+            min-height: 100vh;
+            position: relative; /* Wichtig für den Hintergrund-Trick */
+        }
+
+        /* --- Der Trick für scharfe Bilder auf dem Handy --- */
+        body::before {
+            content: "";
+            position: fixed; /* Das hält das Bild fest */
+            top: 0; 
+            left: 0;
+            width: 100%; 
+            height: 100%;
+            z-index: -1; /* Schiebt das Bild hinter den Text */
             
-            /* HIER IST DER NEUE HINTERGRUND MIT DEM BILD */
-            /* Der erste Teil (linear-gradient) ist ein dunkler Schleier, damit man den Text lesen kann */
-            /* Der zweite Teil (url) ist dein Bild */
-            background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-beans.png');
-            
-            background-size: cover;       /* Bild füllt den ganzen Screen */
-            background-position: center;  /* Bild wird zentriert */
-            background-attachment: fixed; /* Bild bleibt beim Scrollen stehen (Parallax-Effekt) */
-            
-            color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh;
+            /* Hier dein Bild & der dunkle Schleier */
+            background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg');
+            background-size: cover;
+            background-position: center;
         }
 
         h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; }
@@ -493,4 +503,5 @@
 </body>
 
 </html>
+
 
