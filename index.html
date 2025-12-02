@@ -450,31 +450,7 @@
             });
         }
 
-        // INIT
-        kaffeeSorten.forEach(sorte => {
-            const btn = document.createElement('div');
-            btn.className = 'coffee-card';
-            btn.onclick = () => window.openOrderModal(sorte.name);
-            
-            let dots = "";
-            if(sorte.strength > 0) {
-                dots = '<span class="dots">';
-                for(let i=1; i<=5; i++) dots += i<=sorte.strength ? '<span class="dot-filled">•</span>' : '<span class="dot-empty">•</span>';
-                dots += '</span>';
-                dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
-            }
-            btn.innerHTML = `<div class="name">${sorte.name}</div><div class="desc">${sorte.desc}</div>${dots}`;
-            container.appendChild(btn);
-        });
-
-        function createSelect(id, label, options, suffix) {
-            let html = `<div class="form-group"><label class="form-label">${label}</label>`;
-            html += `<select id="${id}" class="modal-select">`;
-            options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
-            html += `</select></div>`;
-            return html;
-        }
-    // ============================================
+        // ============================================
         //   GEMINI CHATBOT LOGIK
         // ============================================
         
@@ -566,9 +542,36 @@
                 return "Ich bin mir nicht sicher, frag Timo lieber direkt!";
             }
         }
+
+        // INIT
+        kaffeeSorten.forEach(sorte => {
+            const btn = document.createElement('div');
+            btn.className = 'coffee-card';
+            btn.onclick = () => window.openOrderModal(sorte.name);
+            
+            let dots = "";
+            if(sorte.strength > 0) {
+                dots = '<span class="dots">';
+                for(let i=1; i<=5; i++) dots += i<=sorte.strength ? '<span class="dot-filled">•</span>' : '<span class="dot-empty">•</span>';
+                dots += '</span>';
+                dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
+            }
+            btn.innerHTML = `<div class="name">${sorte.name}</div><div class="desc">${sorte.desc}</div>${dots}`;
+            container.appendChild(btn);
+        });
+
+        function createSelect(id, label, options, suffix) {
+            let html = `<div class="form-group"><label class="form-label">${label}</label>`;
+            html += `<select id="${id}" class="modal-select">`;
+            options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
+            html += `</select></div>`;
+            return html;
+        }
+    
         
     </script>
 </body>
 </html>
+
 
 
