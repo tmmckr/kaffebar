@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Timo's Barista Bar</title>
     <link rel="manifest" href="manifest.json">
-
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,20 +17,15 @@
             margin: 0; 
             padding: 25px 15px; 
             min-height: 100vh;
-            position: relative; /* Wichtig für den Hintergrund-Trick */
+            position: relative;
         }
 
-        /* --- Der Trick für scharfe Bilder auf dem Handy --- */
+        /* --- Hintergrund-Bild --- */
         body::before {
             content: "";
-            position: fixed; /* Das hält das Bild fest */
-            top: 0; 
-            left: 0;
-            width: 100%; 
-            height: 100%;
-            z-index: -1; /* Schiebt das Bild hinter den Text */
-
-            /* Hier dein Bild & der dunkle Schleier */
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
             background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg');
             background-size: cover;
             background-position: center;
@@ -42,7 +36,7 @@
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
 
         /* --- Status Ampel --- */
-        .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; } /* Min-height verhindert Springen */
+        .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
         .status-badge {
             display: inline-flex; align-items: center; gap: 8px;
             padding: 6px 16px; border-radius: 20px;
@@ -52,7 +46,7 @@
         .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
         .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
         .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
-
+        
         .status-dot { width: 10px; height: 10px; border-radius: 50%; }
         .dot-gray { background-color: #aaa; }
         .dot-green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
@@ -181,26 +175,15 @@
 
     <div id="status"></div>
 
-    <script>
-        // ============================================
-        //   TIMOS REMOTE CONTROL SETUP
-        // ============================================
-        
-        // Dein normaler Name für Bestellungen
-        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
-   <script type="module">
-        // 1. Importiere Firebase (Das lädt die Werkzeuge aus dem Internet)
+    <script type="module">
+        // 1. Importiere die Funktionen, die wir brauchen
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // ==================================================================
-        // 2. DEINE FIREBASE KONFIGURATION
-        // Kopiere diese Werte aus: Firebase Console -> Zahnrad -> Projekteinstellungen -> Unten bei "Meine Apps"
-        // ==================================================================
+        // 2. DEINE FIREBASE KONFIGURATION (Aus deinen Screenshots übernommen)
         const firebaseConfig = {
-            apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk", 
+            apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
-            // Den hier habe ich schon aus deinem Screenshot übernommen:
             databaseURL: "https://timos-barista-bar-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "timos-barista-bar",
             storageBucket: "timos-barista-bar.firebasestorage.app",
@@ -208,8 +191,6 @@
             appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
         };
 
-        // Der "geheime" Status-Kanal (Hier schreibst du 'an' oder 'aus' rein)
-        const STATUS_TOPIC = 'status-' + TOPIC_NAME;
         // 3. Firebase starten
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -218,40 +199,7 @@
         //   LOGIK
         // ============================================
 
-        const maschinenDaten = {
-            "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], ml_milch: null, ml_gesamt: null, cycles: true },
-            "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], ml_milch: null, ml_gesamt: null, cycles: true },
-            "Latte Macchiato": { stufen: true, ml_kaffee: [20, 30, 40, 60, 80], ml_milch: [80, 140, 200, 270, 340], ml_gesamt: null, cycles: false },
-            "Cappuccino": { stufen: true, ml_kaffee: [20, 30, 40, 60, 80], ml_milch: [90, 120, 150, 180, 210], ml_gesamt: null, cycles: false },
-            "Americano": { stufen: true, ml_kaffee: [80, 100, 120, 160, 200], ml_milch: null, ml_gesamt: null, cycles: true },
-            "Espresso Lungo": { stufen: true, ml_kaffee: [80, 100, 120, 160, 200], ml_milch: null, ml_gesamt: null, cycles: true },
-            "Espresso": { stufen: true, ml_kaffee: [30, 40, 50], ml_milch: null, ml_gesamt: null, cycles: true },
-            "Milchkaffee": { stufen: true, ml_kaffee: [50, 70, 90, 120, 150], ml_milch: [50, 70, 90, 120, 150], ml_gesamt: null, cycles: false },
-            "Matcha": { stufen: false, ml_kaffee: null, ml_milch: null, ml_gesamt: [200, 250, 300, 350, 400, 450, 500], cycles: false },
-            "default": { stufen: false, ml_kaffee: null, ml_milch: null, ml_gesamt: null, cycles: false }
-        };
-
-        const kaffeeSorten = [
-            { name: "Kaffee", configKey: "Kaffee", strength: 3, desc: "Der zeitlose Klassiker." },
-            { name: "Café Crema", configKey: "Café Crema", strength: 3, desc: "Langer Genuss mit Crema-Krone." },
-            { name: "Espresso Lungo", configKey: "Espresso Lungo", strength: 4, desc: "Verlängertes Aromawunder." },
-            { name: "Espresso", configKey: "Espresso", strength: 5, desc: "Der kleine Starke." },
-            { name: "Latte Macchiato", configKey: "Latte Macchiato", strength: 2, desc: "Viel heiße Milch & Espresso." },
-            { name: "Milchkaffee", configKey: "Milchkaffee", strength: 2, desc: "Halb Kaffee, halb Milch." },
-            { name: "Cappuccino", configKey: "Cappuccino", strength: 3, desc: "Klassiker mit Milchschaumhaube." },
-            { name: "Americano", configKey: "Americano", strength: 3, desc: "Espresso mit Wasser verlängert." },
-            { name: "Iced Matcha Latte", configKey: "Matcha", strength: 0, desc: "Grüner Tee auf Eis & Milch." },
-            { name: "Iced Protein Matcha", configKey: "Matcha", strength: 0, desc: "Matcha Latte mit Protein-Kick." },
-            { name: "Ristretto", configKey: "default", strength: 5, desc: "Ultrakurzer Extrakt." },
-            { name: "Flat White", configKey: "default", strength: 4, desc: "Doppelter Ristretto mit Mikroschaum." },
-            { name: "Iced Coffee", configKey: "default", strength: 3, desc: "Frisch gebrüht auf Eis." },
-            { name: "Iced Latte", configKey: "default", strength: 2, desc: "Espresso auf kalter Milch & Eis." },
-            { name: "Milchschaum", configKey: "default", strength: 0, desc: "Purer Schaum." },
-            { name: "Heißes Wasser", configKey: "default", strength: 0, desc: "Für Tee." },
-            { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
-        ];
-
-        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; // NTFY bleibt für die Bestellung!
+        const TOPIC_NAME = 'mamas-kaffee-123-geheim';
         
         // Elemente
         const statusBadge = document.getElementById('status-badge');
@@ -262,93 +210,19 @@
         const customOptionsDiv = document.getElementById('custom-options');
         const confirmModal = document.getElementById('confirmation-modal');
         const nameInput = document.getElementById('user-name-input');
-        
-        // Status Elemente
-        const statusBadge = document.getElementById('status-badge');
-        const statusText = document.getElementById('status-text');
-        const statusDot = document.querySelector('.status-dot');
 
         let currentCoffee = null;
-        let isShopOpen = true; // Standardmäßig offen, bis Check fertig ist
         let isShopOpen = true; 
 
-       // --- FINALER STATUS CHECK (Mit Anti-Cache Headern) ---
-        function checkStatus() {
-            // 1. Timeout nach 2 Sekunden (falls Internet weg ist)
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Timeout')), 2000);
-            });
-
-            // 2. URL mit Zeitstempel (Cache-Buster)
-            const url = `https://ntfy.sh/${STATUS_TOPIC}/json?since=all&t=${Date.now()}`;
         // --- ECHTZEIT STATUS CHECK (FIREBASE) ---
-        // Wir lauschen auf den Wert 'status' in der Datenbank.
         const statusRef = ref(db, 'status');
         
         onValue(statusRef, (snapshot) => {
-            const data = snapshot.val(); // Das ist der Wert aus der DB (z.B. "an" oder "aus")
+            const data = snapshot.val(); 
             console.log("Neuer Status von Firebase:", data);
             
-            // Wenn der Wert null ist (DB leer), gehen wir von "an" aus
             const statusStr = data ? String(data).toLowerCase() : "an";
 
-            // 3. Der Abruf mit den neuen Headern
-            const fetchPromise = fetch(url, { 
-                cache: "no-store", // Browser-Cache verbieten
-                headers: {
-                    "Cache-Control": "no-cache", // Für Proxies
-                    "Pragma": "no-cache"         // Für alte Systeme
-                }
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error('Netzwerk Fehler');
-                    return response.text();
-                })
-                .then(text => {
-                    // Wir teilen die Antwort in Zeilen auf
-                    const lines = text.trim().split('\n');
-                    
-                    // Wir suchen von HINTEN (neueste) nach VORNE nach der ersten echten Nachricht
-                    // Standard ist "an", falls wir gar nichts finden.
-                    let foundMessage = "an"; 
-
-                    for (let i = lines.length - 1; i >= 0; i--) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
-
-                        try {
-                            const data = JSON.parse(line);
-                            // Wir interessieren uns nur für echte Nachrichten (event: message)
-                            if (data.event === 'message') {
-                                foundMessage = data.message;
-                                break; // Wir haben die neuste gefunden! Abbruch.
-                            }
-                        } catch (e) {
-                            // Ignorieren, falls eine Zeile kaputt ist
-                        }
-                    }
-                    return foundMessage;
-                });
-
-            // 4. Auswertung: Wer ist schneller? Antwort oder Timeout?
-            Promise.race([fetchPromise, timeoutPromise])
-                .then(msgText => {
-                    console.log("Gelesener Status:", msgText); // Zur Kontrolle
-                    msgText = String(msgText).trim().toLowerCase();
-                    
-                    // Prüfen auf Schlüsselwörter
-                    if (msgText.includes('aus') || msgText.includes('zu') || msgText.includes('stop') || msgText.includes('closed')) {
-                        setShopClosed();
-                    } else {
-                        setShopOpen();
-                    }
-                })
-                .catch(err => {
-                    console.log("Fehler beim Check (Standard=Offen):", err);
-                    // Falls API down ist oder Timeout -> Wir machen lieber auf, damit Mama bestellen kann
-                    setShopOpen();
-                });
-        }
             if (statusStr.includes('aus') || statusStr.includes('zu') || statusStr.includes('closed')) {
                 setShopClosed();
             } else {
@@ -372,19 +246,7 @@
             container.classList.add('shop-closed-mode');
         }
 
-        // Check starten!
-        checkStatus();
-
-
-        // --- UI Rendering ---
-        function createSelect(id, label, options, suffix) {
-            let html = `<div class="form-group"><label class="form-label">${label}</label>`;
-            html += `<select id="${id}" class="modal-select">`;
-            options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
-            html += `</select></div>`;
-            return html;
-        }
-        // --- KONFIGURATION DER MASCHINE (unverändert) ---
+        // --- MASCHINEN DATEN ---
         const maschinenDaten = {
             "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
             "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -398,20 +260,6 @@
             "default": { stufen: false, cycles: false }
         };
 
-        kaffeeSorten.forEach(sorte => {
-            const btn = document.createElement('div');
-            btn.className = 'coffee-card';
-            btn.onclick = () => {
-                if(isShopOpen) openOrderModal(sorte);
-            };
-            
-            let dots = "";
-            if(sorte.strength > 0) {
-                dots = '<span class="dots">';
-                for(let i=1; i<=5; i++) dots += i<=sorte.strength ? '<span class="dot-filled">•</span>' : '<span class="dot-empty">•</span>';
-                dots += '</span>';
-                dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
-            }
         const kaffeeSorten = [
             { name: "Kaffee", configKey: "Kaffee", strength: 3, desc: "Der zeitlose Klassiker." },
             { name: "Café Crema", configKey: "Café Crema", strength: 3, desc: "Langer Genuss mit Crema-Krone." },
@@ -432,16 +280,11 @@
             { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
         ];
 
-            btn.innerHTML = `<div class="name">${sorte.name}</div><div class="desc">${sorte.desc}</div>${dots}`;
-            container.appendChild(btn);
-        });
-        // GLOBALISIERUNG DER FUNKTIONEN (Wichtig wegen module!)
-        
+        // GLOBALISIERUNG (Wichtig!)
         window.openOrderModal = function(sorteName) {
             const sorte = kaffeeSorten.find(k => k.name === sorteName);
             if(!sorte || !isShopOpen) return;
 
-        function openOrderModal(sorte) {
             currentCoffee = sorte;
             document.getElementById('modal-coffee-title').innerText = sorte.name;
             customOptionsDiv.innerHTML = "";
@@ -456,11 +299,10 @@
                         <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
                     </div>`;
             }
-
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
-
+            
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -481,20 +323,15 @@
                         <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
                         <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
                     </div>
-                </div>
-            `;
-
                 </div>`;
+            
             orderModal.style.display = 'flex';
             if(!nameInput.value) nameInput.focus();
         }
 
-        function closeOrderModal() { orderModal.style.display = 'none'; }
-        function closeConfirmModal() { confirmModal.style.display = 'none'; }
         window.closeOrderModal = function() { orderModal.style.display = 'none'; }
         window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
 
-        function sendOrder() {
         window.sendOrder = function() {
             const userName = nameInput.value.trim();
             const statusDiv = document.getElementById('status');
@@ -503,68 +340,33 @@
             if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
             localStorage.setItem('lastUser', userName);
 
-            if (TOPIC_NAME.includes(' ') || TOPIC_NAME.match(/[äöüÄÖÜß]/)) {
-                 statusDiv.style.display = 'block';
-                 statusDiv.innerText = "❌ Fehler: Verbotene Zeichen im TOPIC_NAME!";
-                 return;
-            }
-
-            // --- HIER IST DER NEUE TON (DIREKT IM CODE) ---
-            // Das ist ein kurzes, encoded "Ding" Geräusch
-            const soundData = "data:audio/mp3;base64,//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//uQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
-            // Hinweis: Um den Code kurz zu halten, habe ich hier einen Platzhalter. 
-            // Browser blockieren oft Audio, wenn es nicht EXAKT im Moment des Klicks passiert.
-            // Wir probieren einen Trick:
-            
-            // Audio
+            // AUDIO
             try {
-                // Wir nutzen einen kurzen Standard-System-Beep oder einen sehr kurzen Base64 String
-                // Da lange Base64 Strings den Code hier sprengen, nutzen wir eine sicherere Methode:
-                // Wir erzeugen den Audio-Kontext direkt beim Klick.
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
-                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                
-                // Ein angenehmes "Pling" (Sinuswelle)
                 oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(500, audioCtx.currentTime); // Start Tonhöhe
-                oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1); // Geht hoch
-                
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Lautstärke
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); // Ausblenden
-                
                 oscillator.frequency.setValueAtTime(500, audioCtx.currentTime);
                 oscillator.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
                 gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + 0.5);
-            } catch (e) {
-                console.log("Audio konnte nicht abgespielt werden (Stummschaltung?)");
-            }
-            // ----------------------------------------------
-
             } catch (e) { }
 
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
-
             const coffeeVolEl = document.getElementById('input-coffee-vol');
             if(coffeeVolEl) details.push(`${coffeeVolEl.value}ml Kaffee`);
-
             const milkVolEl = document.getElementById('input-milk-vol');
             if(milkVolEl) details.push(`${milkVolEl.value}ml Milch`);
-
             const totalVolEl = document.getElementById('input-total-vol');
             if(totalVolEl) details.push(`${totalVolEl.value}ml`);
-
             const cyclesEl = document.querySelector('input[name="cycles"]:checked');
             if(cyclesEl) details.push(cyclesEl.value);
-
             if(document.getElementById('extra-vanilla').checked) details.push("Vanille Sirup");
             if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
 
@@ -573,16 +375,10 @@
 
             sendBtn.innerText = "Sende...";
 
-            // Wir nutzen weiterhin ntfy zum SENDEN der Bestellung (Push aufs Handy)
-            // Das ist einfacher als Firebase Cloud Functions für den Anfang.
+            // NTFY SENDEN
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
-                headers: {
-                    'Title': 'Neue Bestellung',
-                    'Priority': 'high',
-                    'Tags': 'coffee'
-                }
                 headers: { 'Title': 'Neue Bestellung', 'Priority': 'high', 'Tags': 'coffee' }
             })
             .then(response => {
@@ -591,9 +387,6 @@
                     document.getElementById('confirm-details').innerText = messageBody;
                     confirmModal.style.display = 'flex';
                     sendBtn.innerText = "Bestellen";
-                } else {
-                    return response.text().then(text => { throw new Error(text) });
-                }
                 } else { throw new Error('Send Error'); }
             })
             .catch(error => {
@@ -604,7 +397,7 @@
             });
         }
 
-        // Init
+        // INIT
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
             btn.className = 'coffee-card';
@@ -630,5 +423,4 @@
         }
     </script>
 </body>
-
 </html>
