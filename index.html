@@ -507,39 +507,53 @@
             // Wir bauen das "Wissen" für die KI aus deiner Liste
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             
-            // Die Anweisung an die KI
             const prompt = `
-                Du bist Timo, ein freundlicher Barista in einer privaten Kaffeebar.
-                Du sprichst mit Timos Mutter oder Gästen. Sei kurz, charmant und hilfreich.
-                
+                Du bist Timo, ein freundlicher Barista.
                 Hier ist unsere Getränkekarte:
                 ${menuContext}
                 
                 Die Frage des Gastes ist: "${userQuestion}"
                 
-                Antworte auf Deutsch. Empfiehl etwas von der Karte, wenn es passt. Fasse dich kurz (max 2-3 Sätze).
+                Antworte auf Deutsch. Empfiehl etwas von der Karte. Fasse dich kurz.
             `;
 
-            // Anfrage an Google Gemini API
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
             
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }]
-                })
-            });
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: prompt }]
+                        }]
+                    })
+                });
 
-            const data = await response.json();
-            
-            // Die Antwort aus dem komplexen Google-JSON rausfischen
-            if (data.candidates && data.candidates[0].content) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                return "Ich bin mir nicht sicher, frag Timo lieber direkt!";
+                const data = await response.json();
+                
+                // *** FEHLERSUCHE: Zeigt das Problem in der Konsole (F12) ***
+                console.log("Antwort von Google:", data);
+
+                // 1. Hat Google einen Fehler gemeldet?
+                if (data.error) {
+                    return `Technischer Fehler: ${data.error.message}`;
+                }
+
+                // 2. Hat Google die Antwort blockiert (Sicherheitsfilter)?
+                if (data.promptFeedback && data.promptFeedback.blockReason) {
+                    return "Sorry, meine Antwort wurde vom Sicherheitsfilter blockiert.";
+                }
+
+                // 3. Alles gut? Dann Antwort ausgeben.
+                if (data.candidates && data.candidates[0].content) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    return "Komisch, Google hat eine leere Antwort geschickt.";
+                }
+
+            } catch (e) {
+                return `Verbindungsfehler: ${e.message}`;
             }
         }
 
@@ -572,6 +586,7 @@
     </script>
 </body>
 </html>
+
 
 
 
