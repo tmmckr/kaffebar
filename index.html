@@ -87,24 +87,23 @@
 
         /* --- CHATBOT DESIGN --- */
         .chat-toggle {
-            position: fixed; bottom: 80px; right: 20px; /* Über dem Status */
+            position: fixed; bottom: 80px; right: 20px;
             background: #d4b483; color: #2c1e16;
             width: 60px; height: 60px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 30px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            z-index: 2000; transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000;
+            transition: transform 0.2s;
         }
         .chat-toggle:active { transform: scale(0.9); }
 
         .chat-window {
             position: fixed; bottom: 150px; right: 20px;
-            width: 300px; height: 400px;
+            width: 300px; height: 450px;
             background: #2c1e16; border: 2px solid #d4b483;
             border-radius: 15px; display: none; flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            z-index: 2000; overflow: hidden;
-            animation: popIn 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000;
+            overflow: hidden; animation: popIn 0.3s;
         }
 
         .chat-header {
@@ -120,8 +119,7 @@
         }
 
         .message {
-            max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem;
-            line-height: 1.4;
+            max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; line-height: 1.4;
         }
         .bot-msg { background: rgba(255,255,255,0.1); color: #ddd; align-self: flex-start; border-bottom-left-radius: 0; }
         .user-msg { background: #d4b483; color: #2c1e16; align-self: flex-end; border-bottom-right-radius: 0; }
@@ -131,10 +129,10 @@
             display: flex; gap: 5px;
         }
         .chat-input {
-            flex: 1; padding: 8px; border-radius: 5px; border: none; outline: none;
+            flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none;
         }
         .chat-send {
-            background: #d4b483; border: none; padding: 0 10px; border-radius: 5px; cursor: pointer;
+            background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem;
         }
     </style>
 </head>
@@ -194,19 +192,19 @@
 
     <div id="status"></div>
 
-    <div class="chat-toggle" onclick="toggleChat()">💬</div>
+    <div class="chat-toggle" onclick="window.toggleChat()">🤖</div>
 
     <div class="chat-window" id="chat-window">
         <div class="chat-header">
-            <span>Barista Bot 🤖</span>
-            <span class="close-chat" onclick="toggleChat()">✖</span>
+            <span>Barista Bot (Gemini)</span>
+            <span class="close-chat" onclick="window.toggleChat()">✖</span>
         </div>
         <div class="chat-messages" id="chat-messages">
-            <div class="message bot-msg">Hallo! Frag mich einfach nach einem Kaffee (z.B. "Was ist Flat White?").</div>
+            <div class="message bot-msg">Hallo! Ich bin dein KI-Barista. Frag mich was zur Karte! ☕</div>
         </div>
         <div class="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Frage stellen..." onkeypress="handleEnter(event)">
-            <button class="chat-send" onclick="sendMessage()">➤</button>
+            <input type="text" id="chat-input" class="chat-input" placeholder="Frage..." onkeypress="window.handleEnter(event)">
+            <button class="chat-send" onclick="window.sendMessage()">➤</button>
         </div>
     </div>
 
@@ -476,7 +474,12 @@
             html += `</select></div>`;
             return html;
         }
-    // --- CHATBOT LOGIK ---
+    // ============================================
+        //   GEMINI CHATBOT LOGIK
+        // ============================================
+        
+        const GEMINI_API_KEY = "AIzaSyDrlZgjfP78l5Q_5rwrHF53Qk-_BKEgYvY"; 
+
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -494,7 +497,7 @@
             if (e.key === 'Enter') window.sendMessage();
         }
 
-        window.sendMessage = function() {
+        window.sendMessage = async function() {
             const text = chatInput.value.trim();
             if (!text) return;
 
@@ -502,11 +505,17 @@
             addMessage(text, 'user-msg');
             chatInput.value = "";
 
-            // 2. Bot "denkt nach" (kurze Verzögerung)
-            setTimeout(() => {
-                const answer = generateAnswer(text);
-                addMessage(answer, 'bot-msg');
-            }, 600);
+            // Lade-Animation
+            const loadingDiv = addMessage("Barista denkt nach...", 'bot-msg');
+
+            try {
+                // 2. Antwort von Gemini holen
+                const answer = await fetchGeminiResponse(text);
+                loadingDiv.innerText = answer; // Text ersetzen
+            } catch (error) {
+                loadingDiv.innerText = "Sorry, mein KI-Gehirn hat gerade Pause.";
+                console.error(error);
+            }
         }
 
         function addMessage(text, className) {
@@ -514,39 +523,52 @@
             div.className = `message ${className}`;
             div.innerText = text;
             chatMessages.appendChild(div);
-            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-Scroll nach unten
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return div;
         }
 
-        function generateAnswer(question) {
-            question = question.toLowerCase();
+        async function fetchGeminiResponse(userQuestion) {
+            // Wir bauen das "Wissen" für die KI aus deiner Liste
+            const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
+            
+            // Die Anweisung an die KI
+            const prompt = `
+                Du bist Timo, ein freundlicher Barista in einer privaten Kaffeebar.
+                Du sprichst mit Timos Mutter oder Gästen. Sei kurz, charmant und hilfreich.
+                
+                Hier ist unsere Getränkekarte:
+                ${menuContext}
+                
+                Die Frage des Gastes ist: "${userQuestion}"
+                
+                Antworte auf Deutsch. Empfiehl etwas von der Karte, wenn es passt. Fasse dich kurz (max 2-3 Sätze).
+            `;
 
-            // 1. Suche nach Kaffeesorten in der Frage
-            // Wir suchen in deiner existierenden Liste 'kaffeeSorten'
-            const foundCoffee = kaffeeSorten.find(k => question.includes(k.name.toLowerCase()));
+            // Anfrage an Google Gemini API
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }]
+                })
+            });
 
-            if (foundCoffee) {
-                return `Ah, der ${foundCoffee.name}! ☕\n\n${foundCoffee.desc}\n\nStärke: ${foundCoffee.strength}/5`;
+            const data = await response.json();
+            
+            // Die Antwort aus dem komplexen Google-JSON rausfischen
+            if (data.candidates && data.candidates[0].content) {
+                return data.candidates[0].content.parts[0].text;
+            } else {
+                return "Ich bin mir nicht sicher, frag Timo lieber direkt!";
             }
-
-            // 2. Allgemeine Antworten (Easter Eggs)
-            if (question.includes('hallo') || question.includes('hi') || question.includes('moin')) {
-                return "Moin! Lust auf Koffein?";
-            }
-            if (question.includes('danke')) {
-                return "Gerne! Lass es dir schmecken.";
-            }
-            if (question.includes('wer bist du')) {
-                return "Ich bin Timos digitaler Assistent. Ich kenne mich mit Kaffee aus!";
-            }
-            if (question.includes('offen') || question.includes('wann')) {
-                return isShopOpen ? "Wir haben gerade geöffnet! ✅" : "Aktuell ist leider geschlossen. 🔴";
-            }
-
-            // 3. Fallback (Nichts gefunden)
-            return "Das habe ich nicht verstanden. Frag mich z.B. 'Was ist ein Ristretto?'";
         }
         
     </script>
 </body>
 </html>
+
 
