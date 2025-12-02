@@ -504,7 +504,6 @@
         }
 
         async function fetchGeminiResponse(userQuestion) {
-            // Wir bauen das "Wissen" für die KI aus deiner Liste
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             
             const prompt = `
@@ -517,43 +516,65 @@
                 Antworte auf Deutsch. Empfiehl etwas von der Karte. Fasse dich kurz.
             `;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+            // Wir probieren es erstmal mit dem Standard-Modell
+            const modelName = "gemini-1.5-flash"; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
                 const response = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: prompt }]
-                        }]
+                        contents: [{ parts: [{ text: prompt }] }]
                     })
                 });
 
                 const data = await response.json();
-                
-                // *** FEHLERSUCHE: Zeigt das Problem in der Konsole (F12) ***
-                console.log("Antwort von Google:", data);
 
                 // 1. Hat Google einen Fehler gemeldet?
                 if (data.error) {
+                    console.error("Google Fehler:", data.error);
+
+                    // DIAGNOSE: Wenn das Modell nicht gefunden wurde, fragen wir nach der Liste!
+                    if (data.error.message.includes("not found") || data.error.message.includes("not supported")) {
+                        return await listAvailableModels();
+                    }
+
                     return `Technischer Fehler: ${data.error.message}`;
                 }
 
-                // 2. Hat Google die Antwort blockiert (Sicherheitsfilter)?
-                if (data.promptFeedback && data.promptFeedback.blockReason) {
-                    return "Sorry, meine Antwort wurde vom Sicherheitsfilter blockiert.";
-                }
-
-                // 3. Alles gut? Dann Antwort ausgeben.
+                // 2. Alles gut?
                 if (data.candidates && data.candidates[0].content) {
                     return data.candidates[0].content.parts[0].text;
                 } else {
-                    return "Komisch, Google hat eine leere Antwort geschickt.";
+                    return "Keine Antwort erhalten.";
                 }
 
             } catch (e) {
                 return `Verbindungsfehler: ${e.message}`;
+            }
+        }
+
+        // --- Hilfsfunktion: Liste aller verfügbaren Modelle laden ---
+        async function listAvailableModels() {
+            try {
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
+                const response = await fetch(listUrl);
+                const data = await response.json();
+                
+                if (data.models) {
+                    // Wir filtern nur die "generateContent" Modelle raus
+                    const names = data.models
+                        .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+                        .map(m => m.name.replace("models/", "")) // Das "models/" davor entfernen
+                        .join(", ");
+                    
+                    return `⚠️ Fehler: Das eingestellte Modell geht nicht.\n\n✅ Aber diese hier sind verfügbar:\n${names}\n\n(Bitte einen davon in den Code eintragen!)`;
+                } else {
+                    return "Fehler: Ich konnte keine Modell-Liste laden. Ist der API Key richtig?";
+                }
+            } catch (e) {
+                return "Diagnose fehlgeschlagen.";
             }
         }
 
@@ -586,6 +607,7 @@
     </script>
 </body>
 </html>
+
 
 
 
