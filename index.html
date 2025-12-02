@@ -20,6 +20,7 @@
         /* --- Status Ampel --- */
         .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
         .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; }
+        .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
         .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
         .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -93,8 +94,8 @@
     <div class="subtitle">Barista Bar</div>
 
     <div class="status-container">
-        <div id="status-badge" class="status-badge status-open">
-            <span class="status-dot dot-green"></span>
+        <div id="status-badge" class="status-badge status-loading">
+            <span class="status-dot dot-gray"></span>
             <span id="status-text">Prüfe Status...</span>
         </div>
     </div>
@@ -162,7 +163,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // FIREBASE CONFIG (Deine echten Keys)
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -265,7 +265,6 @@
 
             const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
-            // 1. Slider
             if (config.stufen) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -273,12 +272,10 @@
                         <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
                     </div>`;
             }
-            // 2. Selects
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
             
-            // 3. Cycles
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -292,7 +289,6 @@
                     </div>`;
             }
 
-            // 4. Sonderwunsch & Extras (IMMER dabei)
             customOptionsDiv.innerHTML += `
                 <div class="form-group">
                     <label class="form-label">Sonderwunsch / Ort</label>
@@ -340,7 +336,7 @@
                 oscillator.stop(audioCtx.currentTime + 0.5);
             } catch (e) { }
 
-            // DATEN SAMMELN (SAFE CHECKS)
+            // DATEN SAMMELN
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
