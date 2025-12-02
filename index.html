@@ -184,7 +184,8 @@
    <script type="module">
         // 1. Importiere Firebase (Das lädt die Werkzeuge aus dem Internet)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // Wir fügen 'push' zur Liste hinzu
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // ==================================================================
         // 2. DEINE FIREBASE KONFIGURATION
@@ -327,6 +328,13 @@
                         </div>
                     </div>`;
             }
+            // --- HIER NEU EINFÜGEN: ---
+        customOptionsDiv.innerHTML += `
+            <div class="form-group">
+                <label class="form-label">Sonderwunsch / Ort</label>
+                <input type="text" id="order-comment" class="modal-input" placeholder="z.B. Im Garten, ohne Keks..." autocomplete="off">
+            </div>
+        `;
             customOptionsDiv.innerHTML += `
                 <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 180, 131, 0.3);">
                     <label class="form-label">Extras</label>
@@ -344,6 +352,9 @@
 
         window.sendOrder = function() {
             const userName = nameInput.value.trim();
+            const commentInput = document.getElementById('order-comment'); // NEU
+            const comment = commentInput ? commentInput.value.trim() : ""; // NEU
+            
             const statusDiv = document.getElementById('status');
             const sendBtn = document.querySelector('#order-modal .modal-btn');
 
@@ -371,7 +382,7 @@
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + 0.5);
             } catch (e) { }
-
+// Details sammeln
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
@@ -386,21 +397,35 @@
             if(document.getElementById('extra-vanilla').checked) details.push("Vanille Sirup");
             if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
 
-            let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
-            const messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
+            // String für die Anzeige
+
+           // Nachricht für ntfy (mit Kommentar!)
+            let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
+            if(comment) messageBody += `\n💬 "${comment}"`;
 
             sendBtn.innerText = "Sende...";
 
-            // Wir nutzen weiterhin ntfy zum SENDEN der Bestellung (Push aufs Handy)
-            // Das ist einfacher als Firebase Cloud Functions für den Anfang.
+            1. AN FIREBASE SENDEN (SPEICHERN) 🔥
+            // Wir erstellen einen Eintrag unter 'orders' mit Datum
+            push(ref(db, 'orders'), {
+                user: userName,
+                coffee: currentCoffee.name,
+                details: details,
+                comment: comment,
+                timestamp: Date.now(),
+                dateString: new Date().toLocaleString()
+            });
+
+            // 2. AN NTFY SENDEN (PUSH) 🔔
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
-                headers: { 'Title': 'Neue Bestellung', 'Priority': 'high', 'Tags': 'coffee' }
+                headers: { 'Title': 'Neue Bestellung ☕', 'Priority': 'high', 'Tags': 'coffee' }
             })
             .then(response => {
                 if (response.ok) {
                     orderModal.style.display = 'none';
+                    // Im Bestätigungsfenster zeigen wir den Text auch an
                     document.getElementById('confirm-details').innerText = messageBody;
                     confirmModal.style.display = 'flex';
                     sendBtn.innerText = "Bestellen";
@@ -412,7 +437,6 @@
                 statusDiv.innerText = `❌ Fehler: ${error.message}`;
                 setTimeout(() => statusDiv.style.display = 'none', 6000);
             });
-        }
 
         // Init
         kaffeeSorten.forEach(sorte => {
@@ -442,6 +466,7 @@
 </body>
 
 </html>
+
 
 
 
