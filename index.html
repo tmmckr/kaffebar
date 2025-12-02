@@ -28,6 +28,27 @@
         .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
         .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
 
+        /* --- NEU: Geschlossen-Nachricht --- */
+        .closed-info-box {
+            display: none; /* Standardmäßig versteckt */
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 15px;
+            margin: 0 auto 30px auto;
+            max-width: 600px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s;
+        }
+        .bot-link {
+            color: #d4b483;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
         /* --- UI Elemente --- */
         .news-banner { background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5); color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
@@ -94,10 +115,16 @@
     <div class="subtitle">Barista Bar</div>
 
     <div class="status-container">
-        <div id="status-badge" class="status-badge status-loading">
-            <span class="status-dot dot-gray"></span>
+        <div id="status-badge" class="status-badge status-open">
+            <span class="status-dot dot-green"></span>
             <span id="status-text">Prüfe Status...</span>
         </div>
+    </div>
+
+    <div id="closed-message-box" class="closed-info-box">
+        🔴 Die Barista Bar ist gerade zu.<br>
+        <span style="font-size: 0.9rem; color:#fca5a5;">Du hast trotzdem eine Frage?</span><br>
+        <span onclick="window.toggleChat()" class="bot-link">Frag den Barista Bot! 🤖</span>
     </div>
 
     <div class="news-banner">
@@ -132,7 +159,7 @@
 
     <div id="confirmation-modal" class="modal-overlay">
         <div class="modal-box">
-            <span style="font-size:3rem; display:block; margin-bottom:15px;"></span>
+            <span style="font-size:3rem; display:block; margin-bottom:15px;">🛎️</span>
             <h2 class="modal-title">Bestellung bestätigt</h2>
             <p class="modal-text" style="color:white; line-height: 1.6;">
                 <strong id="confirm-details"></strong><br>
@@ -163,6 +190,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // FIREBASE CONFIG (Deine echten Keys)
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -187,6 +215,7 @@
         const customOptionsDiv = document.getElementById('custom-options');
         const confirmModal = document.getElementById('confirmation-modal');
         const nameInput = document.getElementById('user-name-input');
+        const closedMessageBox = document.getElementById('closed-message-box');
 
         let currentCoffee = null;
         let isShopOpen = true; 
@@ -209,6 +238,8 @@
             statusText.innerText = 'Barista ist bereit';
             statusDot.className = 'status-dot dot-green';
             container.classList.remove('shop-closed-mode');
+            // Nachricht ausblenden
+            closedMessageBox.style.display = 'none';
         }
 
         function setShopClosed() {
@@ -217,6 +248,8 @@
             statusText.innerText = 'Kaffeebar geschlossen';
             statusDot.className = 'status-dot dot-red';
             container.classList.add('shop-closed-mode');
+            // Nachricht einblenden
+            closedMessageBox.style.display = 'block';
         }
 
         // --- MASCHINEN DATEN ---
@@ -265,6 +298,7 @@
 
             const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
+            // 1. Slider
             if (config.stufen) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -272,10 +306,12 @@
                         <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
                     </div>`;
             }
+            // 2. Selects
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
             
+            // 3. Cycles
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -289,6 +325,7 @@
                     </div>`;
             }
 
+            // 4. Sonderwunsch & Extras (IMMER dabei)
             customOptionsDiv.innerHTML += `
                 <div class="form-group">
                     <label class="form-label">Sonderwunsch / Ort</label>
@@ -336,7 +373,7 @@
                 oscillator.stop(audioCtx.currentTime + 0.5);
             } catch (e) { }
 
-            // DATEN SAMMELN
+            // DATEN SAMMELN (SAFE CHECKS)
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
@@ -492,5 +529,3 @@
     </script>
 </body>
 </html>
-
-
