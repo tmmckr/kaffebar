@@ -84,6 +84,58 @@
         #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; text-align: center; width: 80%; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- CHATBOT DESIGN --- */
+        .chat-toggle {
+            position: fixed; bottom: 80px; right: 20px; /* Über dem Status */
+            background: #d4b483; color: #2c1e16;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 2000; transition: transform 0.2s;
+        }
+        .chat-toggle:active { transform: scale(0.9); }
+
+        .chat-window {
+            position: fixed; bottom: 150px; right: 20px;
+            width: 300px; height: 400px;
+            background: #2c1e16; border: 2px solid #d4b483;
+            border-radius: 15px; display: none; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 2000; overflow: hidden;
+            animation: popIn 0.3s;
+        }
+
+        .chat-header {
+            background: #d4b483; color: #2c1e16; padding: 10px;
+            font-weight: bold; text-align: center;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .close-chat { cursor: pointer; font-size: 1.2rem; }
+
+        .chat-messages {
+            flex: 1; padding: 10px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .message {
+            max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .bot-msg { background: rgba(255,255,255,0.1); color: #ddd; align-self: flex-start; border-bottom-left-radius: 0; }
+        .user-msg { background: #d4b483; color: #2c1e16; align-self: flex-end; border-bottom-right-radius: 0; }
+
+        .chat-input-area {
+            padding: 10px; border-top: 1px solid rgba(212, 180, 131, 0.3);
+            display: flex; gap: 5px;
+        }
+        .chat-input {
+            flex: 1; padding: 8px; border-radius: 5px; border: none; outline: none;
+        }
+        .chat-send {
+            background: #d4b483; border: none; padding: 0 10px; border-radius: 5px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -141,6 +193,22 @@
     </div>
 
     <div id="status"></div>
+
+    <div class="chat-toggle" onclick="toggleChat()">💬</div>
+
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <span>Barista Bot 🤖</span>
+            <span class="close-chat" onclick="toggleChat()">✖</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-msg">Hallo! Frag mich einfach nach einem Kaffee (z.B. "Was ist Flat White?").</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Frage stellen..." onkeypress="handleEnter(event)">
+            <button class="chat-send" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
 
     <script type="module">
         // 1. Importiere Firebase & Tools (inklusive 'push' zum Speichern!)
@@ -408,6 +476,77 @@
             html += `</select></div>`;
             return html;
         }
+    // --- CHATBOT LOGIK ---
+        const chatWindow = document.getElementById('chat-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+
+        window.toggleChat = function() {
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.style.display = 'none';
+            } else {
+                chatWindow.style.display = 'flex';
+                chatInput.focus();
+            }
+        }
+
+        window.handleEnter = function(e) {
+            if (e.key === 'Enter') window.sendMessage();
+        }
+
+        window.sendMessage = function() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            // 1. User Nachricht anzeigen
+            addMessage(text, 'user-msg');
+            chatInput.value = "";
+
+            // 2. Bot "denkt nach" (kurze Verzögerung)
+            setTimeout(() => {
+                const answer = generateAnswer(text);
+                addMessage(answer, 'bot-msg');
+            }, 600);
+        }
+
+        function addMessage(text, className) {
+            const div = document.createElement('div');
+            div.className = `message ${className}`;
+            div.innerText = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-Scroll nach unten
+        }
+
+        function generateAnswer(question) {
+            question = question.toLowerCase();
+
+            // 1. Suche nach Kaffeesorten in der Frage
+            // Wir suchen in deiner existierenden Liste 'kaffeeSorten'
+            const foundCoffee = kaffeeSorten.find(k => question.includes(k.name.toLowerCase()));
+
+            if (foundCoffee) {
+                return `Ah, der ${foundCoffee.name}! ☕\n\n${foundCoffee.desc}\n\nStärke: ${foundCoffee.strength}/5`;
+            }
+
+            // 2. Allgemeine Antworten (Easter Eggs)
+            if (question.includes('hallo') || question.includes('hi') || question.includes('moin')) {
+                return "Moin! Lust auf Koffein?";
+            }
+            if (question.includes('danke')) {
+                return "Gerne! Lass es dir schmecken.";
+            }
+            if (question.includes('wer bist du')) {
+                return "Ich bin Timos digitaler Assistent. Ich kenne mich mit Kaffee aus!";
+            }
+            if (question.includes('offen') || question.includes('wann')) {
+                return isShopOpen ? "Wir haben gerade geöffnet! ✅" : "Aktuell ist leider geschlossen. 🔴";
+            }
+
+            // 3. Fallback (Nichts gefunden)
+            return "Das habe ich nicht verstanden. Frag mich z.B. 'Was ist ein Ristretto?'";
+        }
+        
     </script>
 </body>
 </html>
+
