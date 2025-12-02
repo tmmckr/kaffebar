@@ -10,65 +10,39 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c1e16">
     <style>
-        /* --- Grundlegendes Design der Seite */
+        /* --- Grundlegendes Design --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #e0d0c0; 
-            margin: 0; 
-            padding: 25px 15px; 
-            min-height: 100vh;
-            position: relative;
+            color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative;
         }
-
-        /* --- Hintergrund-Bild --- */
+        /* --- Hintergrund --- */
         body::before {
-            content: "";
-            position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
             background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg');
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
         }
-
         h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; }
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
 
         /* --- Status Ampel --- */
         .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 6px 16px; border-radius: 20px;
-            font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease;
-        }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; }
         .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
         .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
         .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
-        
         .status-dot { width: 10px; height: 10px; border-radius: 50%; }
         .dot-gray { background-color: #aaa; }
         .dot-green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
         .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
-
         .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
 
         /* --- News Banner --- */
-        .news-banner {
-            background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5);
-            color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px;
-            border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px;
-            backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+        .news-banner { background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5); color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
 
         /* --- Bohnen-Karte --- */
-        .bean-card {
-            background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9));
-            border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden;
-        }
+        .bean-card { background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9)); border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
         .bean-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%); }
         .bean-label { color: #d4b483; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
         .bean-name { font-family: "Times New Roman", serif; font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -79,9 +53,7 @@
 
         /* --- Liste & Karten --- */
         .menu-list { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
-        .coffee-card {
-            background: rgba(40, 30, 25, 0.7); border: 1px solid rgba(212, 180, 131, 0.2); border-radius: 12px; padding: 20px 25px; cursor: pointer; transition: all 0.2s ease; text-align: left; position: relative; backdrop-filter: blur(5px);
-        }
+        .coffee-card { background: rgba(40, 30, 25, 0.7); border: 1px solid rgba(212, 180, 131, 0.2); border-radius: 12px; padding: 20px 25px; cursor: pointer; transition: all 0.2s ease; text-align: left; position: relative; backdrop-filter: blur(5px); }
         .coffee-card:active { transform: scale(0.96); background: rgba(60, 45, 35, 0.9); border-color: rgba(212, 180, 131, 0.8); }
         .name { font-size: 1.3rem; font-weight: 500; color: #fff; margin-bottom: 12px; }
         .desc { font-size: 0.95rem; color: #a09085; line-height: 1.5; margin-bottom: 20px; }
@@ -90,12 +62,8 @@
         .dot-filled { color: #d4b483; } .dot-empty { color: rgba(212, 180, 131, 0.2); }
 
         /* --- Modals --- */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); animation: fadeIn 0.3s;
-        }
-        .modal-box {
-            background: #2c1e16; border: 2px solid #d4b483; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(212, 180, 131, 0.2); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); animation: fadeIn 0.3s; }
+        .modal-box { background: #2c1e16; border: 2px solid #d4b483; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(212, 180, 131, 0.2); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto; }
         .modal-title { color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 15px 0; }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-label { display: block; color: #a09085; font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
@@ -113,7 +81,6 @@
         input[type="radio"] { display: none; }
         input[type="radio"]:checked + .radio-label { background: #d4b483; color: #2c1e16; font-weight: bold; border-color: #d4b483; }
         .modal-btn { background: #d4b483; color: #2c1e16; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; }
-
         #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; text-align: center; width: 80%; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -176,11 +143,11 @@
     <div id="status"></div>
 
     <script type="module">
-        // 1. Importiere die Funktionen, die wir brauchen
+        // 1. Importiere Firebase & Tools (inklusive 'push' zum Speichern!)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. DEINE FIREBASE KONFIGURATION (Aus deinen Screenshots übernommen)
+        // 2. Konfiguration
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -191,7 +158,7 @@
             appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
         };
 
-        // 3. Firebase starten
+        // 3. Starten
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -199,7 +166,7 @@
         //   LOGIK
         // ============================================
 
-        const TOPIC_NAME = 'mamas-kaffee-123-geheim';
+        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
         
         // Elemente
         const statusBadge = document.getElementById('status-badge');
@@ -316,7 +283,12 @@
                     </div>`;
             }
 
+            // HIER IST DEIN NEUES FELD (SONDERWUNSCH)
             customOptionsDiv.innerHTML += `
+                <div class="form-group">
+                    <label class="form-label">Sonderwunsch / Ort</label>
+                    <input type="text" id="order-comment" class="modal-input" placeholder="z.B. Im Garten, ohne Keks..." autocomplete="off">
+                </div>
                 <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 180, 131, 0.3);">
                     <label class="form-label">Extras</label>
                     <div class="checkbox-group">
@@ -334,13 +306,15 @@
 
         window.sendOrder = function() {
             const userName = nameInput.value.trim();
+            const commentInput = document.getElementById('order-comment');
+            const comment = commentInput ? commentInput.value.trim() : "";
             const statusDiv = document.getElementById('status');
             const sendBtn = document.querySelector('#order-modal .modal-btn');
 
             if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
             localStorage.setItem('lastUser', userName);
 
-            // AUDIO
+            // Audio
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
@@ -371,15 +345,28 @@
             if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
 
             let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
-            const messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
+            
+            // Nachricht für ntfy
+            let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
+            if(comment) messageBody += `\n💬 "${comment}"`;
 
             sendBtn.innerText = "Sende...";
 
-            // NTFY SENDEN
+            // 1. FIREBASE SAVE (Historie)
+            push(ref(db, 'orders'), {
+                user: userName,
+                coffee: currentCoffee.name,
+                details: details,
+                comment: comment,
+                timestamp: Date.now(),
+                dateString: new Date().toLocaleString()
+            });
+
+            // 2. NTFY PUSH (Benachrichtigung)
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
-                headers: { 'Title': 'Neue Bestellung', 'Priority': 'high', 'Tags': 'coffee' }
+                headers: { 'Title': 'Neue Bestellung ☕', 'Priority': 'high', 'Tags': 'coffee' }
             })
             .then(response => {
                 if (response.ok) {
