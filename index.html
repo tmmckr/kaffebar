@@ -11,16 +11,8 @@
     <meta name="theme-color" content="#2c1e16">
     <style>
         /* --- Grundlegendes Design --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative;
-        }
-        /* --- Hintergrund --- */
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg');
-            background-size: cover; background-position: center;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
         h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; }
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
@@ -28,7 +20,6 @@
         /* --- Status Ampel --- */
         .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
         .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; }
-        .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
         .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
         .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
         .status-dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -36,11 +27,9 @@
         .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
         .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
 
-        /* --- News Banner --- */
+        /* --- UI Elemente --- */
         .news-banner { background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5); color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
-
-        /* --- Bohnen-Karte --- */
         .bean-card { background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9)); border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
         .bean-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%); }
         .bean-label { color: #d4b483; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
@@ -50,7 +39,6 @@
         .progress-bar-bg { width: 120px; height: 6px; background: rgba(212, 180, 131, 0.2); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: #d4b483; width: 70%; box-shadow: 0 0 10px rgba(212, 180, 131, 0.5); }
 
-        /* --- Liste & Karten --- */
         .menu-list { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
         .coffee-card { background: rgba(40, 30, 25, 0.7); border: 1px solid rgba(212, 180, 131, 0.2); border-radius: 12px; padding: 20px 25px; cursor: pointer; transition: all 0.2s ease; text-align: left; position: relative; backdrop-filter: blur(5px); }
         .coffee-card:active { transform: scale(0.96); background: rgba(60, 45, 35, 0.9); border-color: rgba(212, 180, 131, 0.8); }
@@ -84,7 +72,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- CHATBOT DESIGN --- */
+        /* --- Chatbot --- */
         .chat-toggle { position: fixed; bottom: 80px; right: 20px; background: #d4b483; color: #2c1e16; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000; transition: transform 0.2s; }
         .chat-toggle:active { transform: scale(0.9); }
         .chat-window { position: fixed; bottom: 150px; right: 20px; width: 300px; height: 450px; background: #2c1e16; border: 2px solid #d4b483; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; overflow: hidden; animation: popIn 0.3s; }
@@ -105,8 +93,8 @@
     <div class="subtitle">Barista Bar</div>
 
     <div class="status-container">
-        <div id="status-badge" class="status-badge status-loading">
-            <span class="status-dot dot-gray"></span>
+        <div id="status-badge" class="status-badge status-open">
+            <span class="status-dot dot-green"></span>
             <span id="status-text">Prüfe Status...</span>
         </div>
     </div>
@@ -174,7 +162,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // DEINE KONFIGURATION
+        // FIREBASE CONFIG (Deine echten Keys)
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -189,8 +177,8 @@
         const db = getDatabase(app);
 
         const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
-        
-        // Elemente
+        const GEMINI_API_KEY = "AIzaSyDrlZgjfP78l5Q_5rwrHF53Qk-_BKEgYvY"; 
+
         const statusBadge = document.getElementById('status-badge');
         const statusText = document.getElementById('status-text');
         const statusDot = document.querySelector('.status-dot');
@@ -203,7 +191,7 @@
         let currentCoffee = null;
         let isShopOpen = true; 
 
-        // FIREBASE STATUS CHECK
+        // --- FIREBASE STATUS ---
         const statusRef = ref(db, 'status');
         onValue(statusRef, (snapshot) => {
             const data = snapshot.val(); 
@@ -231,7 +219,7 @@
             container.classList.add('shop-closed-mode');
         }
 
-        // MASCHINEN DATEN
+        // --- MASCHINEN DATEN ---
         const maschinenDaten = {
             "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
             "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -265,7 +253,7 @@
             { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
         ];
 
-        // GLOBALISIERUNG
+        // --- GLOBAL: MODAL LOGIK ---
         window.openOrderModal = function(sorteName) {
             const sorte = kaffeeSorten.find(k => k.name === sorteName);
             if(!sorte || !isShopOpen) return;
@@ -277,6 +265,7 @@
 
             const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
+            // 1. Slider
             if (config.stufen) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -284,10 +273,12 @@
                         <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
                     </div>`;
             }
+            // 2. Selects
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
             
+            // 3. Cycles
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -300,7 +291,8 @@
                         </div>
                     </div>`;
             }
-            // SONDERWUNSCH
+
+            // 4. Sonderwunsch & Extras (IMMER dabei)
             customOptionsDiv.innerHTML += `
                 <div class="form-group">
                     <label class="form-label">Sonderwunsch / Ort</label>
@@ -313,6 +305,7 @@
                         <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
                     </div>
                 </div>`;
+            
             orderModal.style.display = 'flex';
             if(!nameInput.value) nameInput.focus();
         }
@@ -320,7 +313,7 @@
         window.closeOrderModal = function() { orderModal.style.display = 'none'; }
         window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
 
-        // SEND ORDER (REPARIERT)
+        // --- GLOBAL: SEND LOGIK ---
         window.sendOrder = function() {
             const userName = nameInput.value.trim();
             const commentInput = document.getElementById('order-comment');
@@ -331,6 +324,7 @@
             if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
             localStorage.setItem('lastUser', userName);
 
+            // AUDIO PLAY
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
@@ -346,19 +340,29 @@
                 oscillator.stop(audioCtx.currentTime + 0.5);
             } catch (e) { }
 
+            // DATEN SAMMELN (SAFE CHECKS)
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
+            
             const coffeeVolEl = document.getElementById('input-coffee-vol');
             if(coffeeVolEl) details.push(`${coffeeVolEl.value}ml Kaffee`);
+            
             const milkVolEl = document.getElementById('input-milk-vol');
             if(milkVolEl) details.push(`${milkVolEl.value}ml Milch`);
+            
             const totalVolEl = document.getElementById('input-total-vol');
             if(totalVolEl) details.push(`${totalVolEl.value}ml`);
+            
             const cyclesEl = document.querySelector('input[name="cycles"]:checked');
             if(cyclesEl) details.push(cyclesEl.value);
-            if(document.getElementById('extra-vanilla').checked) details.push("Vanille Sirup");
-            if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
+            
+            // Safe Access für Checkboxen
+            const vanillaEl = document.getElementById('extra-vanilla');
+            if(vanillaEl && vanillaEl.checked) details.push("Vanille Sirup");
+            
+            const sweetEl = document.getElementById('extra-sweetener');
+            if(sweetEl && sweetEl.checked) details.push("Süßstoff");
 
             let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
             let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
@@ -366,7 +370,7 @@
 
             sendBtn.innerText = "Sende...";
 
-            // 1. Firebase
+            // 1. FIREBASE SAVE
             push(ref(db, 'orders'), {
                 user: userName,
                 coffee: currentCoffee.name,
@@ -376,7 +380,7 @@
                 dateString: new Date().toLocaleString()
             });
 
-            // 2. NTFY (REPARIERT)
+            // 2. NTFY PUSH
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
@@ -398,9 +402,7 @@
             });
         }
 
-        // --- GEMINI CHATBOT ---
-        const GEMINI_API_KEY = "AIzaSyDrlZgjfP78l5Q_5rwrHF53Qk-_BKEgYvY"; 
-
+        // --- GLOBAL: CHATBOT ---
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -424,6 +426,7 @@
             addMessage(text, 'user-msg');
             chatInput.value = "";
             const loadingDiv = addMessage("Barista denkt nach...", 'bot-msg');
+            
             try {
                 const answer = await fetchGeminiResponse(text);
                 loadingDiv.innerText = answer;
@@ -445,7 +448,7 @@
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             const prompt = `Du bist Timo, ein freundlicher Barista.\nHier ist unsere Karte:\n${menuContext}\nFrage: "${userQuestion}"\nAntworte auf Deutsch, kurz und charmant.`;
             
-            // NEUESTE URL MIT GEMINI 2.0 FLASH (Wie im Screenshot gesehen)
+            // NEUESTE URL
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
@@ -456,7 +459,7 @@
                 });
                 const data = await response.json();
                 if (data.error) {
-                    if (data.error.message.includes("not found")) return "Modell nicht gefunden. Probier 'gemini-pro'.";
+                    if (data.error.message.includes("not found")) return "Modell nicht gefunden.";
                     return `Technischer Fehler: ${data.error.message}`;
                 }
                 if (data.candidates && data.candidates[0].content) {
@@ -466,7 +469,7 @@
             } catch (e) { return `Fehler: ${e.message}`; }
         }
 
-        // Init
+        // Init Karten
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
             btn.className = 'coffee-card';
