@@ -86,54 +86,18 @@
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* --- CHATBOT DESIGN --- */
-        .chat-toggle {
-            position: fixed; bottom: 80px; right: 20px;
-            background: #d4b483; color: #2c1e16;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000;
-            transition: transform 0.2s;
-        }
+        .chat-toggle { position: fixed; bottom: 80px; right: 20px; background: #d4b483; color: #2c1e16; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000; transition: transform 0.2s; }
         .chat-toggle:active { transform: scale(0.9); }
-
-        .chat-window {
-            position: fixed; bottom: 150px; right: 20px;
-            width: 300px; height: 450px;
-            background: #2c1e16; border: 2px solid #d4b483;
-            border-radius: 15px; display: none; flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000;
-            overflow: hidden; animation: popIn 0.3s;
-        }
-
-        .chat-header {
-            background: #d4b483; color: #2c1e16; padding: 10px;
-            font-weight: bold; text-align: center;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .chat-window { position: fixed; bottom: 150px; right: 20px; width: 300px; height: 450px; background: #2c1e16; border: 2px solid #d4b483; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; overflow: hidden; animation: popIn 0.3s; }
+        .chat-header { background: #d4b483; color: #2c1e16; padding: 10px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
         .close-chat { cursor: pointer; font-size: 1.2rem; }
-
-        .chat-messages {
-            flex: 1; padding: 10px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-
-        .message {
-            max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; line-height: 1.4;
-        }
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; line-height: 1.4; }
         .bot-msg { background: rgba(255,255,255,0.1); color: #ddd; align-self: flex-start; border-bottom-left-radius: 0; }
         .user-msg { background: #d4b483; color: #2c1e16; align-self: flex-end; border-bottom-right-radius: 0; }
-
-        .chat-input-area {
-            padding: 10px; border-top: 1px solid rgba(212, 180, 131, 0.3);
-            display: flex; gap: 5px;
-        }
-        .chat-input {
-            flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none;
-        }
-        .chat-send {
-            background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem;
-        }
+        .chat-input-area { padding: 10px; border-top: 1px solid rgba(212, 180, 131, 0.3); display: flex; gap: 5px; }
+        .chat-input { flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none; }
+        .chat-send { background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -193,7 +157,6 @@
     <div id="status"></div>
 
     <div class="chat-toggle" onclick="window.toggleChat()">🤖</div>
-
     <div class="chat-window" id="chat-window">
         <div class="chat-header">
             <span>Barista Bot (Gemini)</span>
@@ -209,11 +172,10 @@
     </div>
 
     <script type="module">
-        // 1. Importiere Firebase & Tools (inklusive 'push' zum Speichern!)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 2. Konfiguration
+        // DEINE KONFIGURATION (EINGEFÜGT)
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -224,13 +186,8 @@
             appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
         };
 
-        // 3. Starten
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-
-        // ============================================
-        //   LOGIK
-        // ============================================
 
         const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
         
@@ -247,15 +204,11 @@
         let currentCoffee = null;
         let isShopOpen = true; 
 
-        // --- ECHTZEIT STATUS CHECK (FIREBASE) ---
+        // FIREBASE STATUS CHECK
         const statusRef = ref(db, 'status');
-        
         onValue(statusRef, (snapshot) => {
             const data = snapshot.val(); 
-            console.log("Neuer Status von Firebase:", data);
-            
             const statusStr = data ? String(data).toLowerCase() : "an";
-
             if (statusStr.includes('aus') || statusStr.includes('zu') || statusStr.includes('closed')) {
                 setShopClosed();
             } else {
@@ -279,7 +232,7 @@
             container.classList.add('shop-closed-mode');
         }
 
-        // --- MASCHINEN DATEN ---
+        // MASCHINEN DATEN
         const maschinenDaten = {
             "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
             "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -313,7 +266,7 @@
             { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
         ];
 
-        // GLOBALISIERUNG (Wichtig!)
+        // GLOBALISIERUNG
         window.openOrderModal = function(sorteName) {
             const sorte = kaffeeSorten.find(k => k.name === sorteName);
             if(!sorte || !isShopOpen) return;
@@ -335,7 +288,6 @@
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
-            
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -348,8 +300,7 @@
                         </div>
                     </div>`;
             }
-
-            // HIER IST DEIN NEUES FELD (SONDERWUNSCH)
+            // SONDERWUNSCH
             customOptionsDiv.innerHTML += `
                 <div class="form-group">
                     <label class="form-label">Sonderwunsch / Ort</label>
@@ -362,7 +313,6 @@
                         <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
                     </div>
                 </div>`;
-            
             orderModal.style.display = 'flex';
             if(!nameInput.value) nameInput.focus();
         }
@@ -370,6 +320,7 @@
         window.closeOrderModal = function() { orderModal.style.display = 'none'; }
         window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
 
+        // SEND ORDER (REPARIERT)
         window.sendOrder = function() {
             const userName = nameInput.value.trim();
             const commentInput = document.getElementById('order-comment');
@@ -380,7 +331,6 @@
             if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
             localStorage.setItem('lastUser', userName);
 
-            // Audio
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
@@ -411,14 +361,12 @@
             if(document.getElementById('extra-sweetener').checked) details.push("Süßstoff");
 
             let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
-            
-            // Nachricht für ntfy
             let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
             if(comment) messageBody += `\n💬 "${comment}"`;
 
             sendBtn.innerText = "Sende...";
 
-            // 1. FIREBASE SAVE
+            // 1. Firebase
             push(ref(db, 'orders'), {
                 user: userName,
                 coffee: currentCoffee.name,
@@ -428,8 +376,7 @@
                 dateString: new Date().toLocaleString()
             });
 
-            // 2. NTFY PUSH
-            // HIER WAR DER FEHLER: Das fetch war nicht vollständig geschlossen
+            // 2. NTFY (REPARIERT)
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
@@ -437,13 +384,11 @@
             })
             .then(response => {
                 if (response.ok) {
-                    orderModal.style.display = 'none'; // Fenster zu
+                    orderModal.style.display = 'none';
                     document.getElementById('confirm-details').innerText = messageBody;
-                    confirmModal.style.display = 'flex'; // Bestätigung auf
+                    confirmModal.style.display = 'flex';
                     sendBtn.innerText = "Bestellen";
-                } else { 
-                    throw new Error('Send Error'); 
-                }
+                } else { throw new Error('Send Error'); }
             })
             .catch(error => {
                 sendBtn.innerText = "Bestellen";
@@ -453,11 +398,8 @@
             });
         }
 
-        // ============================================
-        //   GEMINI CHATBOT LOGIK
-        // ============================================
-        
-        const GEMINI_API_KEY = "AIzaSyDrlZgjfP78l5Q_5rwrHF53Qk-_BKEgYvY"; 
+        // --- GEMINI CHATBOT ---
+        const GEMINI_API_KEY = "AIzaSyDrlZgjfP78l5Q_5rwrHF53Qk-_BKEgYvY"; // DEIN KEY (EINGEFÜGT)
 
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
@@ -468,7 +410,7 @@
                 chatWindow.style.display = 'none';
             } else {
                 chatWindow.style.display = 'flex';
-                chatInput.focus();
+                setTimeout(() => chatInput.focus(), 100);
             }
         }
 
@@ -479,21 +421,14 @@
         window.sendMessage = async function() {
             const text = chatInput.value.trim();
             if (!text) return;
-
-            // 1. User Nachricht anzeigen
             addMessage(text, 'user-msg');
             chatInput.value = "";
-
-            // Lade-Animation
             const loadingDiv = addMessage("Barista denkt nach...", 'bot-msg');
-
             try {
-                // 2. Antwort von Gemini holen
                 const answer = await fetchGeminiResponse(text);
-                loadingDiv.innerText = answer; // Text ersetzen
+                loadingDiv.innerText = answer;
             } catch (error) {
-                loadingDiv.innerText = "Sorry, mein KI-Gehirn hat gerade Pause.";
-                console.error(error);
+                loadingDiv.innerText = "Sorry, Fehler.";
             }
         }
 
@@ -508,80 +443,30 @@
 
         async function fetchGeminiResponse(userQuestion) {
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
+            const prompt = `Du bist Timo, ein freundlicher Barista.\nHier ist unsere Karte:\n${menuContext}\nFrage: "${userQuestion}"\nAntworte auf Deutsch, kurz und charmant.`;
             
-            const prompt = `
-                Du bist Timo, ein freundlicher Barista.
-                Hier ist unsere Getränkekarte:
-                ${menuContext}
-                
-                Die Frage des Gastes ist: "${userQuestion}"
-                
-                Antworte auf Deutsch. Empfiehl etwas von der Karte. Fasse dich kurz.
-            `;
-
-            // Wir probieren es erstmal mit dem Standard-Modell
-            const modelName = "gemini-2.5-pro"; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+            // NEUESTE URL MIT GEMINI 2.0 FLASH (Wie im Screenshot gesehen) oder 1.5
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
                 const response = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-
                 const data = await response.json();
-
-                // 1. Hat Google einen Fehler gemeldet?
                 if (data.error) {
-                    console.error("Google Fehler:", data.error);
-
-                    // DIAGNOSE: Wenn das Modell nicht gefunden wurde, fragen wir nach der Liste!
-                    if (data.error.message.includes("not found") || data.error.message.includes("not supported")) {
-                        return await listAvailableModels();
-                    }
-
+                    if (data.error.message.includes("not found")) return "Modell nicht gefunden. Probier 'gemini-pro'.";
                     return `Technischer Fehler: ${data.error.message}`;
                 }
-
-                // 2. Alles gut?
                 if (data.candidates && data.candidates[0].content) {
                     return data.candidates[0].content.parts[0].text;
-                } else {
-                    return "Keine Antwort erhalten.";
                 }
-
-            } catch (e) {
-                return `Verbindungsfehler: ${e.message}`;
-            }
+                return "Keine Antwort erhalten.";
+            } catch (e) { return `Fehler: ${e.message}`; }
         }
 
-        // --- Hilfsfunktion: Liste aller verfügbaren Modelle laden ---
-        async function listAvailableModels() {
-            try {
-                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
-                const response = await fetch(listUrl);
-                const data = await response.json();
-                
-                if (data.models) {
-                    // Wir filtern nur die "generateContent" Modelle raus
-                    const names = data.models
-                        .filter(m => m.supportedGenerationMethods.includes("generateContent"))
-                        .map(m => m.name.replace("models/", "")) // Das "models/" davor entfernen
-                        .join(", ");
-                    
-                    return `⚠️ Fehler: Das eingestellte Modell geht nicht.\n\n✅ Aber diese hier sind verfügbar:\n${names}\n\n(Bitte einen davon in den Code eintragen!)`;
-                } else {
-                    return "Fehler: Ich konnte keine Modell-Liste laden. Ist der API Key richtig?";
-                }
-            } catch (e) {
-                return "Diagnose fehlgeschlagen.";
-            }
-        }
-
-        // INIT
+        // Init
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
             btn.className = 'coffee-card';
@@ -605,17 +490,6 @@
             html += `</select></div>`;
             return html;
         }
-    
-        
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
