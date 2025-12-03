@@ -190,7 +190,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // FIREBASE CONFIG (Deine echten Keys)
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -205,8 +205,18 @@
         const db = getDatabase(app);
 
         const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
-        const GEMINI_API_KEY = "AIzaSyAxdVVLDFq55mXoRT39w8YkaobSxScURjM"; 
+        
+        // --- NEU: SCHLÜSSEL AUS DATENBANK LADEN ---
+        let GEMINI_API_KEY = null; // Startet leer
+        
+        // Wir holen den Key aus Firebase, damit er nicht im Code stehen muss
+        const keyRef = ref(db, 'geminiKey');
+        onValue(keyRef, (snapshot) => {
+            GEMINI_API_KEY = snapshot.val();
+            console.log("KI-Schlüssel geladen.");
+        });
 
+        // Elemente
         const statusBadge = document.getElementById('status-badge');
         const statusText = document.getElementById('status-text');
         const statusDot = document.querySelector('.status-dot');
@@ -238,8 +248,7 @@
             statusText.innerText = 'Barista ist bereit';
             statusDot.className = 'status-dot dot-green';
             container.classList.remove('shop-closed-mode');
-            // Nachricht ausblenden
-            closedMessageBox.style.display = 'none';
+            if(closedMessageBox) closedMessageBox.style.display = 'none';
         }
 
         function setShopClosed() {
@@ -248,8 +257,7 @@
             statusText.innerText = 'Kaffeebar geschlossen';
             statusDot.className = 'status-dot dot-red';
             container.classList.add('shop-closed-mode');
-            // Nachricht einblenden
-            closedMessageBox.style.display = 'block';
+            if(closedMessageBox) closedMessageBox.style.display = 'block';
         }
 
         // --- MASCHINEN DATEN ---
@@ -478,10 +486,14 @@
         }
 
         async function fetchGeminiResponse(userQuestion) {
+            // SICHERHEITSCHECK: Ist der Key schon geladen?
+            if (!GEMINI_API_KEY) {
+                return "Moment, ich lade noch meinen Schlüssel aus der Datenbank... Frag gleich nochmal!";
+            }
+
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             const prompt = `Du bist Timo, ein freundlicher Barista.\nHier ist unsere Karte:\n${menuContext}\nFrage: "${userQuestion}"\nAntworte auf Deutsch, kurz und charmant.`;
             
-            // NEUESTE URL
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
@@ -492,7 +504,6 @@
                 });
                 const data = await response.json();
                 if (data.error) {
-                    if (data.error.message.includes("not found")) return "Modell nicht gefunden.";
                     return `Technischer Fehler: ${data.error.message}`;
                 }
                 if (data.candidates && data.candidates[0].content) {
@@ -529,5 +540,9 @@
     </script>
 </body>
 </html>
+    </script>
+</body>
+</html>
+
 
 
