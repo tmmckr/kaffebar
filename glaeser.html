@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Die Gläser - Timo's Barista Bar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#2c1e16">
+    <style>
+        /* --- Design identisch zur Hauptseite --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #e0d0c0; margin: 0; padding: 0; min-height: 100vh; position: relative;
+        }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            /* Hintergrundbild der Hauptseite */
+            background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg');
+            background-size: cover; background-position: center;
+        }
+
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
+        
+        /* --- Navigation (Pill Style) --- */
+        .navbar {
+            position: sticky; top: 20px; z-index: 1000;
+            width: 95%; max-width: 400px; margin: 0 auto 30px auto;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: flex; justify-content: space-between; align-items: center; padding: 5px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; font-size: 0.75rem; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: bold; padding: 10px 12px; border-radius: 40px;
+            transition: all 0.3s ease; text-align: center; flex: 1;
+        }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
+
+        /* --- Inhalt Gläser --- */
+        .content-container {
+            padding: 0 20px 60px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .glass-hero {
+            width: 100%; border-radius: 15px; border: 1px solid rgba(212, 180, 131, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #d4b483;
+        }
+
+        .info-title {
+            font-family: "Times New Roman", serif;
+            font-size: 1.5rem; color: #fff; margin-bottom: 10px;
+        }
+
+        .info-text {
+            line-height: 1.6; color: #ddd; font-size: 0.95rem; text-align: justify;
+        }
+
+        .highlight { color: #d4b483; font-weight: bold; }
+
+        /* Grid für Detailansicht */
+        .glass-detail-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center;
+            margin-top: 40px;
+        }
+        
+        /* Auf Handy untereinander */
+        @media (max-width: 600px) {
+            .glass-detail-grid { grid-template-columns: 1fr; }
+        }
+
+        .detail-img {
+            width: 100%; border-radius: 15px; border: 1px solid rgba(212, 180, 131, 0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .feature-list { list-style: none; padding: 0; margin: 0; }
+        .feature-list li {
+            margin-bottom: 10px; padding-left: 20px; position: relative; color: #ccc;
+        }
+        .feature-list li::before {
+            content: "•"; color: #d4b483; font-weight: bold; position: absolute; left: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Timo's</h1>
+    <div class="subtitle">Barista Bar</div>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">Bestellen</a>
+        <a href="maschine.html" class="nav-link">Maschine</a>
+        <a href="bohnen.html" class="nav-link">Bohnen</a>
+        <a href="glaeser.html" class="nav-link active">Gläser</a>
+    </nav>
+
+    <div class="content-container">
+        
+        <img src="all-glasses-on-display-overview.jpg" alt="Gläser Auswahl" class="glass-hero">
+
+        <div class="info-card">
+            <div class="info-title">Das Geheimnis der zwei Wände</div>
+            <p class="info-text">
+                Jedes Getränk wird in exklusiven, <span class="highlight">doppelwandigen Thermogläsern</span> serviert. 
+                Zwischen den zwei Glasschichten ist eine Vakuumschicht eingeschlossen. 
+                Diese sorgt dafür, dass die Hitze von Kaffee, Espresso oder Latte Macchiato nicht nach außen dringen kann.
+                <br><br>
+                <b>Der Effekt:</b> Das äußere Glas bleibt angenehm kühl, während der Inhalt lange heiß bleibt. Andersherum bleiben Eiskaffees im Sommer länger eiskalt.
+            </p>
+        </div>
+
+        <div class="glass-detail-grid">
+            <div>
+                <img src="B01MAZ6YDE.PT04.webp" alt="Glas Detail" class="detail-img">
+            </div>
+            <div>
+                <div class="info-title">High-Tech aus dem Labor</div>
+                <p class="info-text" style="margin-bottom: 15px;">
+                    Unsere Gläser bestehen aus <span class="highlight">Borosilikatglas</span>. Im Vergleich zu normalem Glas enthält es Bor, was es extrem widerstandsfähig macht.
+                </p>
+                <ul class="feature-list">
+                    <li>Hitzebeständig & Robust</li>
+                    <li>Kein Temperaturschock</li>
+                    <li>Ultraleichtes Gewicht</li>
+                    <li>Chemikalienbeständig</li>
+                    <li>Kristallklare Optik</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
