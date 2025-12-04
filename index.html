@@ -28,6 +28,42 @@
         .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
         .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
 
+        /* --- NAVIGATION (HEADER) --- */
+        .navbar {
+            background-color: rgba(44, 30, 22, 0.95); /* Dunkles Kaffeebraun */
+            border-bottom: 1px solid #d4b483;         /* Goldene Linie unten */
+            padding: 15px 0;
+            position: sticky; /* Klebt oben fest, wenn man scrollt */
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            gap: 20px; /* Abstand zwischen Links */
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            color: #e0d0c0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            transition: color 0.3s;
+            padding-bottom: 5px;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+        }
+
+        /* Der Link der aktuellen Seite bekommt eine goldene Unterstreichung */
+        .nav-link.active {
+            color: #d4b483;
+            border-bottom: 2px solid #d4b483;
+        }
+
         /* --- NEU: Geschlossen-Nachricht --- */
         .closed-info-box {
             display: none; /* Standardmäßig versteckt */
@@ -543,6 +579,7 @@
     </script>
 </body>
 </html>
+
 
 
 
