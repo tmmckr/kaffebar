@@ -1,33 +1,138 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Unsere Maschine - Timo's Barista Bar</title>
+    <title>Die Maschine - Timo's Barista Bar</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#2c1e16">
     <style>
-        /* Hier das GLEICHE CSS rein wie in der index.html, damit es gleich aussieht! */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 0; min-height: 100vh; position: relative; }
-        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
+        /* --- Design identisch zur Hauptseite --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #e0d0c0; margin: 0; padding: 0; min-height: 100vh; position: relative;
+        }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            /* Wir nutzen das gleiche Hintergrundbild wie auf der Startseite für Einheitlichkeit */
+            background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg');
+            background-size: cover; background-position: center;
+        }
+
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         
-        /* Navbar CSS von oben hier einfügen */
-        .navbar { background-color: rgba(44, 30, 22, 0.95); border-bottom: 1px solid #d4b483; padding: 15px 0; position: sticky; top: 0; z-index: 1000; display: flex; justify-content: center; gap: 20px; backdrop-filter: blur(10px); }
-        .nav-link { color: #e0d0c0; text-decoration: none; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; padding-bottom: 5px; }
+        /* --- Navigation --- */
+        .navbar {
+            background-color: rgba(44, 30, 22, 0.95);
+            border-bottom: 1px solid #d4b483;
+            padding: 15px 0;
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: center; gap: 20px;
+            backdrop-filter: blur(10px); margin-bottom: 20px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; font-size: 0.9rem; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: bold; transition: color 0.3s; padding-bottom: 5px;
+        }
+        .nav-link:hover { color: #fff; }
         .nav-link.active { color: #d4b483; border-bottom: 2px solid #d4b483; }
 
-        /* Content Styling */
-        .content-box { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
-        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.2rem; margin-bottom: 20px; }
-        p { line-height: 1.6; color: #ccc; margin-bottom: 20px; }
-        .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; border: 1px solid rgba(212, 180, 131, 0.2); }
-        .spec-label { color: #d4b483; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
-        .spec-value { font-weight: bold; }
+        /* --- Inhalt der Maschinenseite --- */
+        .content-container {
+            padding: 0 20px 40px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .machine-title {
+            font-family: "Times New Roman", serif;
+            font-size: 1.8rem;
+            color: #fff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .machine-desc {
+            color: #ccc;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        /* Das Bild der Maschine */
+        .machine-img-wrapper {
+            background: radial-gradient(circle, rgba(212, 180, 131, 0.1) 0%, rgba(0,0,0,0) 70%);
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .machine-img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(212, 180, 131, 0.3);
+        }
+
+        /* Technische Daten Grid */
+        .specs-title {
+            color: #d4b483;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(212, 180, 131, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .spec-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .spec-label {
+            display: block;
+            font-size: 0.75rem;
+            color: #d4b483;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .spec-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .highlight-badge {
+            background: #d4b483;
+            color: #2c1e16;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
+
+    <h1>Timo's</h1>
+    <div class="subtitle">Barista Bar</div>
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">Bestellen</a>
@@ -35,32 +140,52 @@
         <a href="bohnen.html" class="nav-link">Bohnen</a>
     </nav>
 
-    <div class="content-box">
-        <h1>Die Hardware</h1>
-        <p>
-            Hier entsteht die Magie. Für den perfekten Genuss verwende ich einen Hochleistungs-Vollautomaten, 
-            der regelmäßig gewartet und kalibriert wird.
+    <div class="content-container">
+        
+        <h2 class="machine-title">Philips 5400 Series <span class="highlight-badge">LatteGo</span></h2>
+        <p class="machine-desc">
+            Das Herzstück der Barista Bar. Dieser Vollautomat sorgt mit 15 Bar Druck und einem High-Tech Keramikmahlwerk für das perfekte Aroma in jeder Tasse.
         </p>
 
-        <img src="maschine.jpg" style="width:100%; border-radius:10px; border:1px solid #d4b483; margin-bottom:20px;" alt="Meine Maschine">
+        <div class="machine-img-wrapper">
+            <img src="ep5547-90upd7png.jpg" alt="Philips EP5447/90" class="machine-img">
+        </div>
 
-        <div class="spec-grid">
-            <div>
-                <div class="spec-label">Modell</div>
-                <div class="spec-value">DeLonghi Magnifica S</div> </div>
-            <div>
-                <div class="spec-label">Druck</div>
-                <div class="spec-value">15 Bar</div>
+        [cite_start]<div class="specs-title">Technische Highlights [cite: 3, 27]</div>
+        <div class="specs-grid">
+            <div class="spec-item">
+                <span class="spec-label">Mahlwerk</span>
+                [cite_start]<span class="spec-value">100% Keramik [cite: 41]</span>
             </div>
-            <div>
-                <div class="spec-label">Mahlwerk</div>
-                <div class="spec-value">Kegelmahlwerk (Stahl)</div>
+            <div class="spec-item">
+                <span class="spec-label">Pumpendruck</span>
+                [cite_start]<span class="spec-value">15 Bar [cite: 81]</span>
             </div>
-            <div>
-                <div class="spec-label">Temperatur</div>
-                <div class="spec-value">92°C (Optimal)</div>
+            <div class="spec-item">
+                <span class="spec-label">Milchsystem</span>
+                [cite_start]<span class="spec-value">LatteGo [cite: 34]</span>
+            </div>
+            <div class="spec-item">
+                <span class="spec-label">Temperatur</span>
+                [cite_start]<span class="spec-value">90°C - 98°C [cite: 31]</span>
+            </div>
+            <div class="spec-item">
+                <span class="spec-label">Mahlgrade</span>
+                [cite_start]<span class="spec-value">12 Stufen [cite: 32]</span>
+            </div>
+            <div class="spec-item">
+                <span class="spec-label">Wasserfilter</span>
+                [cite_start]<span class="spec-value">AquaClean [cite: 25]</span>
             </div>
         </div>
+
+        <div class="specs-title">Features</div>
+        <p class="machine-desc" style="text-align: left; font-size: 0.9rem;">
+            • <b>Aroma Extract System:</b> Hält die Wassertemperatur optimal zwischen 90 und 98°C für die perfekte Extraktion.<br><br>
+            • <b>Extra Shot Funktion:</b> Für die Tage, an denen man einen doppelten Wachmacher braucht – ohne Bitterkeit.<br><br>
+            • <b>LatteGo:</b> Erzeugt samtig-cremigen Milchschaum ohne Schläuche, direkt in die Tasse.
+        </p>
+
     </div>
 
 </body>
