@@ -212,7 +212,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // WICHTIG: Hier sind neue Auth-Funktionen dabei!
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // FIREBASE CONFIG
         const firebaseConfig = {
@@ -227,6 +229,26 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app); // Auth starten
+
+        // --- TÜRSTEHER ---
+        let currentUser = null; // Hier speichern wir, wer eingeloggt ist
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Jemand ist eingeloggt!
+                currentUser = user;
+                console.log("Eingeloggt als:", user.displayName);
+            } else {
+                // Keiner eingeloggt -> Rauswurf zur Login-Seite!
+                window.location.href = "login.html";
+            }
+        });
+
+        // Logout Funktion
+        window.logout = function() {
+            signOut(auth).then(() => window.location.href = "login.html");
+        }
 
         const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
         
@@ -380,7 +402,7 @@
 
         // --- GLOBAL: SEND LOGIK ---
         window.sendOrder = function() {
-            const userName = nameInput.value.trim();
+            const userName = currentUser ? currentUser.displayName : "Gast";
             const commentInput = document.getElementById('order-comment');
             const comment = commentInput ? commentInput.value.trim() : "";
             const statusDiv = document.getElementById('status');
@@ -567,6 +589,7 @@
     </script>
 </body>
 </html>
+
 
 
 
