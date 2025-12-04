@@ -1,1 +1,226 @@
 
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Die Bohnen - Timo's Barista Bar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#2c1e16">
+    <style>
+        /* --- Design identisch zur Hauptseite --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #e0d0c0; margin: 0; padding: 0; min-height: 100vh; position: relative;
+        }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            /* Gleicher Hintergrund wie überall */
+            background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg');
+            background-size: cover; background-position: center;
+        }
+
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
+        
+        /* --- Navigation --- */
+        .navbar {
+            background-color: rgba(44, 30, 22, 0.95);
+            border-bottom: 1px solid #d4b483;
+            padding: 15px 0;
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: center; gap: 20px;
+            backdrop-filter: blur(10px); margin-bottom: 20px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; font-size: 0.9rem; text-transform: uppercase;
+            letter-spacing: 1px; font-weight: bold; transition: color 0.3s; padding-bottom: 5px;
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link.active { color: #d4b483; border-bottom: 2px solid #d4b483; }
+
+        /* --- Inhalt Bohnen --- */
+        .content-container {
+            padding: 0 20px 60px 20px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Produktbild */
+        .product-stage {
+            text-align: center;
+            margin-bottom: 30px;
+            background: radial-gradient(circle, rgba(212, 180, 131, 0.15) 0%, rgba(0,0,0,0) 70%);
+            padding: 20px;
+            border-radius: 20px;
+        }
+        .product-img {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+        }
+        .product-img:hover { transform: scale(1.05); }
+
+        /* Titel & Text */
+        .bean-title {
+            font-family: "Times New Roman", serif;
+            font-size: 2rem;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .bean-sub {
+            text-align: center;
+            color: #d4b483;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            margin-bottom: 30px;
+        }
+        .bean-text {
+            line-height: 1.6;
+            color: #ddd;
+            margin-bottom: 30px;
+            text-align: justify;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 3px solid #d4b483;
+        }
+
+        /* Mischverhältnis Balken */
+        .ratio-box {
+            margin-bottom: 40px;
+        }
+        .ratio-label { text-align: center; margin-bottom: 10px; font-weight: bold; color: #fff; }
+        .ratio-bar {
+            height: 25px;
+            width: 100%;
+            background: #333;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .arabica {
+            width: 30%;
+            background-color: #8d6e63; /* Helleres Braun */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: white; font-weight: bold;
+        }
+        .robusta {
+            width: 70%;
+            background-color: #3e2723; /* Dunkles Braun */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: white; font-weight: bold;
+        }
+
+        /* Daten Tabelle */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .data-label { color: #d4b483; font-weight: bold; }
+        .data-val { color: #fff; text-align: right; }
+
+        /* Aroma Tags */
+        .flavor-tags {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .tag {
+            background: rgba(212, 180, 131, 0.2);
+            border: 1px solid #d4b483;
+            color: #d4b483;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Timo's</h1>
+    <div class="subtitle">Barista Bar</div>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">Bestellen</a>
+        <a href="maschine.html" class="nav-link">Maschine</a>
+        <a href="bohnen.html" class="nav-link active">Bohnen</a>
+    </nav>
+
+    <div class="content-container">
+        
+        <h2 class="bean-title">Lavazza Crema e Gusto</h2>
+        <div class="bean-sub">Classico • Torino, Italia</div>
+
+        <div class="product-stage">
+            <img src="cb-lavazza-1000g-crema-e-gusto-classico-1201.webp" alt="Lavazza Kaffee" class="product-img">
+        </div>
+
+        <div class="flavor-tags">
+            <span class="tag">Würzig</span>
+            <span class="tag">Kräftig</span>
+            <span class="tag">Cremig</span>
+            <span class="tag">Intensität 7/10</span>
+        </div>
+
+        <div class="ratio-box">
+            <div class="ratio-label">Bohnenmischung</div>
+            <div class="ratio-bar">
+                <div class="arabica">30% Arabica</div>
+                <div class="robusta">70% Robusta</div>
+            </div>
+        </div>
+
+        <div class="bean-text">
+            <p>
+                Mit nur 30% Arabica- und 70% Robustabohnen bringt der <b>Lavazza Crema e Gusto Classico</b> ein ungewohntes, aber umso spannenderes Bohnenmischverhältnis mit. Dank des hohen Robusta-Anteils zeichnet der Espresso eine wunderschöne, dicke und beständige Crema.
+            </p>
+            <p style="margin-top:10px;">
+                Das Röstprofil ist mittelkräftig, der Körper harmonisch und cremig und der Geschmack kräftig und würzig. Der Espresso dient als solide Ausgangsbasis für Kreationen mit Milchschaum.
+            </p>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-row">
+                <span class="data-label">Ursprung</span>
+                <span class="data-val">Asien</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Röstung</span>
+                <span class="data-val">Espresso (Mittel)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Hauptnote</span>
+                <span class="data-val">Würzig</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Hersteller</span>
+                <span class="data-val">Luigi Lavazza S.p.A. (Turin)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Gegründet</span>
+                <span class="data-val">1895</span>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
