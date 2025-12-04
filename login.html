@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Timo's Barista Bar</title>
+    <meta name="theme-color" content="#2c1e16">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            color: #e0d0c0;
+            background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg');
+            background-size: cover; background-position: center;
+        }
+        .login-box {
+            background: rgba(44, 30, 22, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px; border-radius: 20px;
+            border: 1px solid #d4b483;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            width: 85%; max-width: 350px; text-align: center;
+        }
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; margin: 0 0 20px 0; }
+        input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            background: rgba(0,0,0,0.3); border: 1px solid #d4b483;
+            border-radius: 8px; color: white; box-sizing: border-box; font-size: 1rem;
+        }
+        button {
+            width: 100%; padding: 12px; background: #d4b483; color: #2c1e16;
+            border: none; border-radius: 8px; font-weight: bold; font-size: 1rem;
+            cursor: pointer; margin-top: 10px;
+        }
+        .switch-link {
+            margin-top: 20px; font-size: 0.9rem; color: #aaa; cursor: pointer; text-decoration: underline;
+        }
+        #error-msg { color: #ef4444; margin-bottom: 15px; display: none; font-size: 0.9rem;}
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h1 id="form-title">Anmelden</h1>
+        <div id="error-msg"></div>
+
+        <div id="login-form">
+            <input type="email" id="login-email" placeholder="E-Mail">
+            <input type="password" id="login-pass" placeholder="Passwort">
+            <button onclick="login()">Einloggen</button>
+            <div class="switch-link" onclick="showRegister()">Noch kein Konto? Registrieren</div>
+        </div>
+
+        <div id="register-form" class="hidden">
+            <input type="text" id="reg-name" placeholder="Dein Name (z.B. Mama)">
+            <input type="email" id="reg-email" placeholder="E-Mail">
+            <input type="password" id="reg-pass" placeholder="Passwort wählen">
+            <button onclick="register()">Konto erstellen</button>
+            <div class="switch-link" onclick="showLogin()">Zurück zum Login</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // *** DEINE CONFIG HIER EINFÜGEN ***
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
+            authDomain: "timos-barista-bar.firebaseapp.com",
+            databaseURL: "https://timos-barista-bar-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "timos-barista-bar",
+            storageBucket: "timos-barista-bar.firebasestorage.app",
+            messagingSenderId: "94308664114",
+            appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // UI Logik
+        window.showRegister = () => {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('form-title').innerText = "Registrieren";
+            document.getElementById('error-msg').style.display = 'none';
+        };
+
+        window.showLogin = () => {
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('form-title').innerText = "Anmelden";
+            document.getElementById('error-msg').style.display = 'none';
+        };
+
+        // LOGIN FUNKTION
+        window.login = () => {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+
+            signInWithEmailAndPassword(auth, email, pass)
+                .then(() => {
+                    window.location.href = "index.html"; // Weiterleitung zur Bar!
+                })
+                .catch((error) => {
+                    showError(error.message);
+                });
+        };
+
+        // REGISTER FUNKTION
+        window.register = () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+
+            if(!name) { showError("Bitte Namen eingeben!"); return; }
+
+            createUserWithEmailAndPassword(auth, email, pass)
+                .then((userCredential) => {
+                    // Namen im Profil speichern
+                    updateProfile(userCredential.user, { displayName: name })
+                        .then(() => {
+                            window.location.href = "index.html";
+                        });
+                })
+                .catch((error) => {
+                    showError(error.message);
+                });
+        };
+
+        function showError(msg) {
+            const errDiv = document.getElementById('error-msg');
+            errDiv.style.display = 'block';
+            if(msg.includes("auth/invalid-email")) msg = "Ungültige E-Mail.";
+            if(msg.includes("auth/weak-password")) msg = "Passwort zu schwach (min. 6 Zeichen).";
+            if(msg.includes("auth/email-already-in-use")) msg = "E-Mail wird schon benutzt.";
+            if(msg.includes("auth/wrong-password")) msg = "Falsches Passwort.";
+            if(msg.includes("auth/user-not-found")) msg = "Benutzer nicht gefunden.";
+            errDiv.innerText = msg;
+        }
+    </script>
+</body>
+</html>
