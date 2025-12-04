@@ -13,9 +13,37 @@
         /* --- Grundlegendes Design --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
-        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; }
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
+
+        /* --- Navigation (Pill Style) --- */
+        .navbar {
+            position: sticky; top: 20px; z-index: 1000;
+            width: 95%; max-width: 600px; margin: 0 auto 30px auto;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: flex; justify-content: space-between; align-items: center; padding: 4px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; font-size: 0.7rem; padding: 10px 5px; letter-spacing: 0.5px;
+            text-transform: uppercase; font-weight: bold; border-radius: 40px; transition: all 0.3s ease;
+            flex: 1; text-align: center; white-space: nowrap;
+        }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
+
+        /* --- NEU: Logout Button (Oben Rechts) --- */
+        .logout-btn {
+            position: fixed; top: 20px; right: 15px; z-index: 1100;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 30px;
+            color: #d4b483; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;
+            padding: 8px 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        .logout-btn:active { transform: scale(0.95); background: #d4b483; color: #2c1e16; }
 
         /* --- Status Ampel --- */
         .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
@@ -28,47 +56,10 @@
         .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
         .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
 
-       /* --- Navigation (Perfekter Pill Style) --- */
-        .navbar {
-            position: sticky; top: 20px; z-index: 1000;
-            width: 95%; max-width: 400px; margin: 0 auto 30px auto;
-            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
-            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-            display: flex; justify-content: space-between; align-items: center; padding: 5px;
-        }
-        .nav-link {
-            color: #e0d0c0; text-decoration: none; font-size: 0.75rem; text-transform: uppercase;
-            letter-spacing: 1px; font-weight: bold; padding: 10px 12px; border-radius: 40px;
-            transition: all 0.3s ease; text-align: center; flex: 1;
-        }
-        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-        .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
-
-        /* --- NEU: Geschlossen-Nachricht --- */
-        .closed-info-box {
-            display: none; /* Standardmäßig versteckt */
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid #ef4444;
-            color: #fca5a5;
-            padding: 15px;
-            margin: 0 auto 30px auto;
-            max-width: 600px;
-            border-radius: 12px;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            animation: fadeIn 0.5s;
-        }
-        .bot-link {
-            color: #d4b483;
-            font-weight: bold;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
         /* --- UI Elemente --- */
         .news-banner { background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5); color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
+        
         .bean-card { background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9)); border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
         .bean-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%); }
         .bean-label { color: #d4b483; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
@@ -107,11 +98,16 @@
         input[type="radio"] { display: none; }
         input[type="radio"]:checked + .radio-label { background: #d4b483; color: #2c1e16; font-weight: bold; border-color: #d4b483; }
         .modal-btn { background: #d4b483; color: #2c1e16; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; }
+        
+        /* Geschlossen-Info */
+        .closed-info-box { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; backdrop-filter: blur(5px); animation: fadeIn 0.5s; }
+        .bot-link { color: #d4b483; font-weight: bold; text-decoration: underline; cursor: pointer; }
+
         #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; text-align: center; width: 80%; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- Chatbot --- */
+        /* --- CHATBOT --- */
         .chat-toggle { position: fixed; bottom: 80px; right: 20px; background: #d4b483; color: #2c1e16; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000; transition: transform 0.2s; }
         .chat-toggle:active { transform: scale(0.9); }
         .chat-window { position: fixed; bottom: 150px; right: 20px; width: 300px; height: 450px; background: #2c1e16; border: 2px solid #d4b483; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; overflow: hidden; animation: popIn 0.3s; }
@@ -127,15 +123,17 @@
     </style>
 </head>
 <body>
+
+    <button class="logout-btn" onclick="window.logout()">Logout 🚪</button>
+
     <h1>Timo's</h1>
     <div class="subtitle">Barista Bar</div>
 
-   <nav class="navbar">
+    <nav class="navbar">
         <a href="index.html" class="nav-link active">Bestellen</a>
         <a href="maschine.html" class="nav-link">Maschine</a>
         <a href="bohnen.html" class="nav-link">Bohnen</a>
         <a href="glaeser.html" class="nav-link">Gläser</a>
-       <a href="#" onclick="window.logout()" class="nav-link" style="font-size: 1.2rem;">🚪</a>
     </nav>
 
     <div class="status-container">
@@ -171,10 +169,6 @@
     <div id="order-modal" class="modal-overlay">
         <div class="modal-box">
             <h2 class="modal-title" id="modal-coffee-title">Einstellungen</h2>
-            <div class="form-group">
-                <label class="form-label">Dein Name</label>
-                <input type="text" id="user-name-input" class="modal-input" placeholder="Wer bist du?" autocomplete="off">
-            </div>
             <div id="custom-options"></div>
             <button class="modal-btn" onclick="sendOrder()">Bestellen</button>
             <div style="margin-top:15px; font-size:0.8rem; color:#a09085; cursor:pointer;" onclick="closeOrderModal()">Abbrechen</div>
@@ -212,11 +206,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // WICHTIG: Hier sind neue Auth-Funktionen dabei!
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -229,38 +221,28 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app); // Auth starten
+        const auth = getAuth(app);
 
-        // --- TÜRSTEHER ---
-        let currentUser = null; // Hier speichern wir, wer eingeloggt ist
+        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
+        
+        // --- KEY AUS DB LADEN ---
+        let GEMINI_API_KEY = null;
+        onValue(ref(db, 'geminiKey'), (snapshot) => { GEMINI_API_KEY = snapshot.val(); });
 
+        // --- AUTHENTICATION & TÜRSTEHER ---
+        let currentUser = null;
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Jemand ist eingeloggt!
                 currentUser = user;
-                console.log("Eingeloggt als:", user.displayName);
+                console.log("Eingeloggt:", user.displayName);
             } else {
-                // Keiner eingeloggt -> Rauswurf zur Login-Seite!
                 window.location.href = "login.html";
             }
         });
 
-        // Logout Funktion
         window.logout = function() {
             signOut(auth).then(() => window.location.href = "login.html");
         }
-
-        const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
-        
-        // --- NEU: SCHLÜSSEL AUS DATENBANK LADEN ---
-        let GEMINI_API_KEY = null; // Startet leer
-        
-        // Wir holen den Key aus Firebase, damit er nicht im Code stehen muss
-        const keyRef = ref(db, 'geminiKey');
-        onValue(keyRef, (snapshot) => {
-            GEMINI_API_KEY = snapshot.val();
-            console.log("KI-Schlüssel geladen.");
-        });
 
         // Elemente
         const statusBadge = document.getElementById('status-badge');
@@ -270,13 +252,12 @@
         const orderModal = document.getElementById('order-modal');
         const customOptionsDiv = document.getElementById('custom-options');
         const confirmModal = document.getElementById('confirmation-modal');
-        const nameInput = document.getElementById('user-name-input');
         const closedMessageBox = document.getElementById('closed-message-box');
 
         let currentCoffee = null;
         let isShopOpen = true; 
 
-        // --- FIREBASE STATUS ---
+        // FIREBASE STATUS CHECK
         const statusRef = ref(db, 'status');
         onValue(statusRef, (snapshot) => {
             const data = snapshot.val(); 
@@ -306,7 +287,7 @@
             if(closedMessageBox) closedMessageBox.style.display = 'block';
         }
 
-        // --- MASCHINEN DATEN ---
+        // MASCHINEN DATEN
         const maschinenDaten = {
             "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
             "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -340,7 +321,7 @@
             { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
         ];
 
-        // --- GLOBAL: MODAL LOGIK ---
+        // GLOBALISIERUNG
         window.openOrderModal = function(sorteName) {
             const sorte = kaffeeSorten.find(k => k.name === sorteName);
             if(!sorte || !isShopOpen) return;
@@ -348,11 +329,9 @@
             currentCoffee = sorte;
             document.getElementById('modal-coffee-title').innerText = sorte.name;
             customOptionsDiv.innerHTML = "";
-            nameInput.value = localStorage.getItem('lastUser') || "";
 
             const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
-            // 1. Slider
             if (config.stufen) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -360,12 +339,10 @@
                         <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
                     </div>`;
             }
-            // 2. Selects
             if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
             if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
             if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
             
-            // 3. Cycles
             if (config.cycles) {
                 customOptionsDiv.innerHTML += `
                     <div class="form-group">
@@ -378,8 +355,6 @@
                         </div>
                     </div>`;
             }
-
-            // 4. Sonderwunsch & Extras (IMMER dabei)
             customOptionsDiv.innerHTML += `
                 <div class="form-group">
                     <label class="form-label">Sonderwunsch / Ort</label>
@@ -394,13 +369,11 @@
                 </div>`;
             
             orderModal.style.display = 'flex';
-            if(!nameInput.value) nameInput.focus();
         }
 
         window.closeOrderModal = function() { orderModal.style.display = 'none'; }
         window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
 
-        // --- GLOBAL: SEND LOGIK ---
         window.sendOrder = function() {
             const userName = currentUser ? currentUser.displayName : "Gast";
             const commentInput = document.getElementById('order-comment');
@@ -408,10 +381,7 @@
             const statusDiv = document.getElementById('status');
             const sendBtn = document.querySelector('#order-modal .modal-btn');
 
-            if (!userName) { alert("Bitte gib einen Namen ein!"); return; }
-            localStorage.setItem('lastUser', userName);
-
-            // AUDIO PLAY
+            // Audio
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioCtx.createOscillator();
@@ -427,7 +397,6 @@
                 oscillator.stop(audioCtx.currentTime + 0.5);
             } catch (e) { }
 
-            // DATEN SAMMELN (SAFE CHECKS)
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
@@ -444,7 +413,6 @@
             const cyclesEl = document.querySelector('input[name="cycles"]:checked');
             if(cyclesEl) details.push(cyclesEl.value);
             
-            // Safe Access für Checkboxen
             const vanillaEl = document.getElementById('extra-vanilla');
             if(vanillaEl && vanillaEl.checked) details.push("Vanille Sirup");
             
@@ -457,7 +425,6 @@
 
             sendBtn.innerText = "Sende...";
 
-            // 1. FIREBASE SAVE
             push(ref(db, 'orders'), {
                 user: userName,
                 coffee: currentCoffee.name,
@@ -467,11 +434,10 @@
                 dateString: new Date().toLocaleString()
             });
 
-            // 2. NTFY PUSH
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
-                headers: { 'Title': 'Neue Bestellung', 'Priority': 'high', 'Tags': 'coffee' }
+                headers: { 'Title': 'Neue Bestellung ☕', 'Priority': 'high', 'Tags': 'coffee' }
             })
             .then(response => {
                 if (response.ok) {
@@ -489,7 +455,6 @@
             });
         }
 
-        // --- GLOBAL: CHATBOT ---
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -532,10 +497,7 @@
         }
 
         async function fetchGeminiResponse(userQuestion) {
-            // SICHERHEITSCHECK: Ist der Key schon geladen?
-            if (!GEMINI_API_KEY) {
-                return "Moment, ich lade noch meinen Schlüssel aus der Datenbank... Frag gleich nochmal!";
-            }
+            if (!GEMINI_API_KEY) return "Lade Schlüssel noch...";
 
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             const prompt = `Du bist Timo, ein freundlicher Barista.\nHier ist unsere Karte:\n${menuContext}\nFrage: "${userQuestion}"\nAntworte auf Deutsch, kurz und charmant.`;
@@ -559,7 +521,7 @@
             } catch (e) { return `Fehler: ${e.message}`; }
         }
 
-        // Init Karten
+        // Init
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
             btn.className = 'coffee-card';
@@ -586,19 +548,3 @@
     </script>
 </body>
 </html>
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
