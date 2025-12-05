@@ -437,7 +437,7 @@
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
-                headers: { 'Title': 'Neue Bestellung ☕', 'Priority': 'high', 'Tags': 'coffee' }
+                headers: { 'Title': 'Neue Bestellung', 'Priority': 'high', 'Tags': 'coffee' }
             })
             .then(response => {
                 if (response.ok) {
@@ -548,3 +548,4 @@
     </script>
 </body>
 </html>
+
