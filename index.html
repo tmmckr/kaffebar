@@ -455,6 +455,67 @@
             });
         }
 
+        // --- AGENT WERKZEUG: Letzte Bestellung finden ---
+        async function repeatLastOrder() {
+            if (!currentUser) return "Du musst eingeloggt sein!";
+
+            // Wir holen die letzten 50 Bestellungen
+            // (In einer echten Profi-App würde man das besser filtern, aber für Familie reicht das)
+            const ordersRef = ref(db, 'orders');
+            
+            // Einmaliges Laden der Daten
+            return new Promise((resolve) => {
+                // Wir nutzen onValue einmalig (besser wäre get(), aber wir haben den import schon)
+                // Da wir 'onValue' schon importiert haben, nutzen wir einen Trick mit {onlyOnce: true} geht hier nicht einfach
+                // Wir nutzen einfach onValue und bestellen es sofort wieder ab.
+                
+                const unsubscribe = onValue(ordersRef, (snapshot) => {
+                    const data = snapshot.val();
+                    unsubscribe(); // Sofort aufhören zu lauschen
+
+                    if (!data) {
+                        resolve("Ich habe keine alten Bestellungen gefunden.");
+                        return;
+                    }
+
+                    // Alle Bestellungen in ein Array umwandeln
+                    const orderList = Object.values(data);
+                    
+                    // Filtern nach meinem Namen
+                    const myOrders = orderList.filter(o => o.user === currentUser.displayName);
+
+                    if (myOrders.length === 0) {
+                        resolve("Du hast hier noch nie bestellt!");
+                        return;
+                    }
+
+                    // Die letzte Bestellung finden (höchster Timestamp)
+                    const lastOrder = myOrders.sort((a, b) => b.timestamp - a.timestamp)[0];
+
+                    // --- JETZT BESTELLEN ---
+                    // Wir setzen die globalen Variablen auf die Werte von damals
+                    const coffeeName = lastOrder.coffee;
+                    
+                    // Wir suchen das Kaffe-Objekt in deiner Liste
+                    const coffeeObj = kaffeeSorten.find(k => k.name === coffeeName);
+                    
+                    if (coffeeObj) {
+                        currentCoffee = coffeeObj;
+                        
+                        // Hier tricksen wir: Wir füllen das Kommentarfeld mit dem alten Kommentar
+                        const commentInput = document.getElementById('order-comment');
+                        if(commentInput) commentInput.value = lastOrder.comment || "";
+
+                        // Und wir lösen die Bestellung aus!
+                        sendOrder(); 
+                        resolve(`Ich habe deine letzte Bestellung (${lastOrder.coffee}) erneut aufgegeben!`);
+                    } else {
+                        resolve("Den Kaffee von damals gibt es nicht mehr.");
+                    }
+                });
+            });
+        }
+
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -500,7 +561,25 @@
             if (!GEMINI_API_KEY) return "Lade Schlüssel noch...";
 
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
-            const prompt = `Du bist Timo, ein freundlicher Barista.\nHier ist unsere Karte:\n${menuContext}\nFrage: "${userQuestion}"\nAntworte auf Deutsch, kurz und charmant.`;
+            
+            // --- HIER IST DIE MAGIE: DAS PROMPT ENGINEERING ---
+            const prompt = `
+                Du bist Timo, ein freundlicher Barista-KI-Agent.
+                
+                DEINE AUFGABE:
+                1. Wenn der User fragt "Was gibt es?" oder Infos will -> Antworte basierend auf der Karte.
+                2. WICHTIG: Wenn der User sagt "Das Gleiche wie gestern", "Nochmal das Selbe", "Repeat order" oder ähnlich -> 
+                   Antworte NUR mit dem Wort: ACTION_REORDER
+                   (Schreibe keinen anderen Text dazu, nur dieses Wort).
+
+                Hier ist unsere Karte:
+                ${menuContext}
+                
+                User Name: ${currentUser ? currentUser.displayName : "Gast"}
+                Frage: "${userQuestion}"
+                
+                Antworte auf Deutsch, kurz und charmant (außer es ist der Befehl).
+            `;
             
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             
@@ -511,13 +590,23 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await response.json();
-                if (data.error) {
-                    return `Technischer Fehler: ${data.error.message}`;
-                }
+                
                 if (data.candidates && data.candidates[0].content) {
-                    return data.candidates[0].content.parts[0].text;
+                    let answer = data.candidates[0].content.parts[0].text.trim();
+                    
+                    // --- DER AGENTEN CHECK ---
+                    if (answer.includes("ACTION_REORDER")) {
+                        // Aha! Der User will bestellen. Wir führen den Code aus.
+                        addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
+                        
+                        // Wir rufen unsere JS-Funktion auf
+                        const resultText = await repeatLastOrder();
+                        return resultText; // Das Ergebnis (z.B. "Bestellt!") wird angezeigt
+                    }
+
+                    return answer;
                 }
-                return "Keine Antwort erhalten.";
+                return "Keine Antwort.";
             } catch (e) { return `Fehler: ${e.message}`; }
         }
 
@@ -548,5 +637,6 @@
     </script>
 </body>
 </html>
+
 
 
