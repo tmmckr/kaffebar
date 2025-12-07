@@ -558,11 +558,11 @@
         }
 
         async function fetchGeminiResponse(userQuestion) {
-            if (!GEMINI_API_KEY) return "Lade Schlüssel noch...";
+            // 1. Prüfen, ob Key da ist
+            if (!GEMINI_API_KEY) return "Moment, ich lade noch meinen Schlüssel... Frag gleich nochmal!";
 
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             
-            // --- HIER IST DIE MAGIE: DAS PROMPT ENGINEERING ---
             const prompt = `
                 Du bist Timo, ein freundlicher Barista-KI-Agent.
                 
@@ -578,10 +578,11 @@
                 User Name: ${currentUser ? currentUser.displayName : "Gast"}
                 Frage: "${userQuestion}"
                 
-                Antworte auf Deutsch, kurz und charmant (außer es ist der Befehl).
+                Antworte auf Deutsch, kurz und charmant.
             `;
             
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            // Wir nehmen die stabilste Version
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
                 const response = await fetch(url, {
@@ -589,25 +590,41 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
+                
                 const data = await response.json();
                 
+                // --- FEHLER-ANALYSE ---
+                
+                // 1. Hat Google einen harten Fehler gemeldet?
+                if (data.error) {
+                    return `Technik-Fehler: ${data.error.message}`;
+                }
+
+                // 2. Wurde die Antwort zensiert/geblockt? (Passiert oft bei kostenlosen Keys)
+                if (data.promptFeedback && data.promptFeedback.blockReason) {
+                    return `Blockiert von Google: ${data.promptFeedback.blockReason}`;
+                }
+
+                // 3. Alles gut?
                 if (data.candidates && data.candidates[0].content) {
                     let answer = data.candidates[0].content.parts[0].text.trim();
                     
-                    // --- DER AGENTEN CHECK ---
+                    // Agenten-Check
                     if (answer.includes("ACTION_REORDER")) {
-                        // Aha! Der User will bestellen. Wir führen den Code aus.
                         addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
-                        
-                        // Wir rufen unsere JS-Funktion auf
                         const resultText = await repeatLastOrder();
-                        return resultText; // Das Ergebnis (z.B. "Bestellt!") wird angezeigt
+                        return resultText;
                     }
 
                     return answer;
                 }
-                return "Keine Antwort.";
-            } catch (e) { return `Fehler: ${e.message}`; }
+                
+                // 4. Wenn wir hier sind, ist die Antwort leer, aber ohne Fehlercode.
+                // Wir geben das rohe Datenpaket aus, um zu sehen, was los ist.
+                console.log("Komische Antwort:", data);
+                return "Google hat eine leere Hülle geschickt. (Grund: " + (data.candidates?.[0]?.finishReason || "Unbekannt") + ")";
+
+            } catch (e) { return `Verbindungs-Fehler: ${e.message}`; }
         }
 
         // Init
@@ -637,6 +654,7 @@
     </script>
 </body>
 </html>
+
 
 
 
