@@ -15,7 +15,7 @@
         h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         
-        /* --- Navigation --- */
+        /* --- Navigation (Pill Style) --- */
         .navbar {
             position: sticky; top: 20px; z-index: 1000;
             width: 95%; max-width: 600px; margin: 0 auto 30px auto;
@@ -49,27 +49,34 @@
         .ratio-box { margin-bottom: 30px; }
         .ratio-label { text-align: center; margin-bottom: 10px; font-weight: bold; color: #fff; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
         .ratio-bar { height: 25px; width: 100%; background: #333; border-radius: 12px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.1); }
-        .arabica { width: 30%; background-color: #8d6e63; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: white; font-weight: bold; }
-        .robusta { width: 70%; background-color: #3e2723; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: white; font-weight: bold; }
+        
+        /* 100% Arabica Style */
+        .arabica-full { width: 100%; background-color: #8d6e63; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: white; font-weight: bold; letter-spacing: 1px; }
 
-        /* Aroma Profil (Neu aus deinem Bild) */
+        /* Aroma Profil */
         .aroma-section { margin-bottom: 40px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; }
         .aroma-row { display: flex; align-items: center; margin-bottom: 12px; }
         .aroma-name { width: 100px; font-size: 0.85rem; color: #d4b483; font-weight: bold; }
         .aroma-bar-bg { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
         .aroma-fill { height: 100%; background: #d4b483; border-radius: 4px; }
         
-        /* Highlight Farbe für "Würzig" */
-        .fill-spicy { background: #b91c1c; box-shadow: 0 0 10px rgba(185, 28, 28, 0.6); } 
+        /* Highlight Farben */
+        .fill-intense { background: #b91c1c; box-shadow: 0 0 10px rgba(185, 28, 28, 0.6); } 
 
         /* Daten Tabelle */
         .data-grid { display: grid; grid-template-columns: 1fr; gap: 10px; font-size: 0.9rem; }
         .data-row { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .data-label { color: #aaa; }
         .data-val { color: #fff; text-align: right; font-weight: bold; }
+
+        /* Tags */
+        .flavor-tags { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
+        .tag { background: rgba(212, 180, 131, 0.2); border: 1px solid #d4b483; color: #d4b483; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; text-transform: uppercase; }
     </style>
 </head>
 <body>
+
+    <a href="index.html" onclick="/* Hier könnte Logout Logik sein, aber wir leiten nur zurück */" style="position: fixed; top: 20px; right: 15px; z-index: 1100; text-decoration: none; font-size: 1.5rem;">🏠</a>
 
     <h1>Timo's</h1>
     <div class="subtitle">Barista Bar</div>
@@ -83,68 +90,77 @@
 
     <div class="content-container">
         
-        <h2 class="bean-title">Lavazza Crema e Gusto</h2>
-        <div class="bean-sub">Classico • Torino, Italia</div>
+        <h2 class="bean-title">Tchibo Barista Espresso</h2>
+        <div class="bean-sub">Traditionelle Trommelröstung</div>
 
         <div class="product-stage">
-            <img src="cb-lavazza-1000g-crema-e-gusto-classico-1201.webp" alt="Lavazza Kaffee" class="product-img">
+            <img src="tchibo_barista.jpg" alt="Tchibo Barista Espresso" class="product-img">
+        </div>
+
+        <div class="flavor-tags">
+            <span class="tag">Intensiv</span>
+            <span class="tag">Nussig</span>
+            <span class="tag">Zartbitter</span>
+            <span class="tag">Säurearm</span>
         </div>
 
         <div class="ratio-box">
             <div class="ratio-label">Bohnenmischung</div>
             <div class="ratio-bar">
-                <div class="arabica">30% Arabica</div>
-                <div class="robusta">70% Robusta</div>
+                <div class="arabica-full">100% Tchibo Arabica</div>
             </div>
         </div>
 
         <div class="aroma-section">
-            [cite_start]<div class="ratio-label" style="text-align: left; margin-bottom: 15px;">Aroma Profil [cite: 17]</div>
+            <div class="ratio-label" style="text-align: left; margin-bottom: 15px;">Aroma Profil</div>
             
             <div class="aroma-row">
-                <span class="aroma-name">Würzig</span>
-                <div class="aroma-bar-bg"><div class="aroma-fill fill-spicy" style="width: 90%"></div></div>
+                <span class="aroma-name">Intensität</span>
+                <div class="aroma-bar-bg"><div class="aroma-fill fill-intense" style="width: 85%"></div></div>
             </div>
             <div class="aroma-row">
-                <span class="aroma-name">Schoko</span>
-                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 40%"></div></div>
+                <span class="aroma-name">Körper</span>
+                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 80%"></div></div>
             </div>
             <div class="aroma-row">
-                <span class="aroma-name">Röstig</span>
-                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 60%"></div></div>
+                <span class="aroma-name">Säure</span>
+                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 20%"></div></div>
             </div>
             <div class="aroma-row">
-                <span class="aroma-name">Fruchtig</span>
-                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 10%"></div></div>
+                <span class="aroma-name">Röstung</span>
+                <div class="aroma-bar-bg"><div class="aroma-fill" style="width: 90%"></div></div>
             </div>
         </div>
 
         <div class="bean-text">
             <p>
-                Mit nur 30% Arabica- und 70% Robustabohnen bringt der <b>Lavazza Crema e Gusto Classico</b> ein spannendes Mischverhältnis mit. [cite_start]Dank des hohen Robusta-Anteils zeichnet der Espresso eine wunderschöne, dicke und beständige Crema. [cite: 17]
+                Mit dem <b>Tchibo Barista Espresso</b> erleben wir Kaffee-Handwerk in Perfektion. Die Bohnen werden im traditionellen <b>Trommelröster</b> veredelt. Das bedeutet: Sie werden langsamer und schonender geröstet als industrieller Kaffee.
+            </p>
+            <p style="margin-top:10px;">
+                Das Ergebnis ist ein charaktervoller, intensiver Espresso mit weichem Körper, goldbrauner Crema und einer feinen Note von Zartbitterschokolade und Nuss.
             </p>
         </div>
 
         <div class="data-grid">
             <div class="data-row">
                 <span class="data-label">Ursprung</span>
-                [cite_start]<span class="data-val">Asien [cite: 16]</span>
+                <span class="data-val">Lateinamerika & Asien</span>
             </div>
             <div class="data-row">
                 <span class="data-label">Röstung</span>
-                [cite_start]<span class="data-val">Espresso (Mittel) [cite: 16]</span>
+                <span class="data-val">Trommelröstung (Dunkel)</span>
             </div>
             <div class="data-row">
-                <span class="data-label">Hauptnote</span>
-                [cite_start]<span class="data-val">Würzig [cite: 16]</span>
+                <span class="data-label">Zertifizierung</span>
+                <span class="data-val">Fairtrade</span>
             </div>
             <div class="data-row">
                 <span class="data-label">Hersteller</span>
-                [cite_start]<span class="data-val">Luigi Lavazza S.p.A. [cite: 16]</span>
+                <span class="data-val">Tchibo GmbH</span>
             </div>
             <div class="data-row">
-                <span class="data-label">Verpackung</span>
-                [cite_start]<span class="data-val">Aromaschutztüte [cite: 16]</span>
+                <span class="data-label">Feature</span>
+                <span class="data-val">Aroma-Verschluss</span>
             </div>
         </div>
 
