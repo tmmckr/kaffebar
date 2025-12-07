@@ -581,8 +581,8 @@
                 Antworte auf Deutsch, kurz und charmant.
             `;
             
-            // Wir nehmen die stabilste Version
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+            // ÄNDERUNG: Wir nehmen das Basis-Modell ohne "-latest"
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
                 const response = await fetch(url, {
@@ -597,10 +597,14 @@
                 
                 // 1. Hat Google einen harten Fehler gemeldet?
                 if (data.error) {
+                    // Falls flash nicht geht, geben wir einen Tipp
+                    if (data.error.message.includes("not found")) {
+                        return "Modell nicht gefunden. Bitte probiere im Code 'gemini-1.5-pro' statt 'flash'.";
+                    }
                     return `Technik-Fehler: ${data.error.message}`;
                 }
 
-                // 2. Wurde die Antwort zensiert/geblockt? (Passiert oft bei kostenlosen Keys)
+                // 2. Wurde die Antwort zensiert/geblockt?
                 if (data.promptFeedback && data.promptFeedback.blockReason) {
                     return `Blockiert von Google: ${data.promptFeedback.blockReason}`;
                 }
@@ -619,8 +623,6 @@
                     return answer;
                 }
                 
-                // 4. Wenn wir hier sind, ist die Antwort leer, aber ohne Fehlercode.
-                // Wir geben das rohe Datenpaket aus, um zu sehen, was los ist.
                 console.log("Komische Antwort:", data);
                 return "Google hat eine leere Hülle geschickt. (Grund: " + (data.candidates?.[0]?.finishReason || "Unbekannt") + ")";
 
@@ -654,6 +656,7 @@
     </script>
 </body>
 </html>
+
 
 
 
