@@ -565,13 +565,6 @@
             
             const prompt = `
                 Du bist Timo, ein freundlicher Barista-KI-Agent.
-                
-                DEINE AUFGABE:
-                1. Wenn der User fragt "Was gibt es?" oder Infos will -> Antworte basierend auf der Karte.
-                2. WICHTIG: Wenn der User sagt "Das Gleiche wie gestern", "Nochmal das Selbe", "Repeat order" oder ähnlich -> 
-                   Antworte NUR mit dem Wort: ACTION_REORDER
-                   (Schreibe keinen anderen Text dazu, nur dieses Wort).
-
                 Hier ist unsere Karte:
                 ${menuContext}
                 
@@ -581,8 +574,8 @@
                 Antworte auf Deutsch, kurz und charmant.
             `;
             
-            // ÄNDERUNG: Wir nutzen jetzt "gemini-1.5-pro"
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${GEMINI_API_KEY}`;
+            // HIER IST DIE ÄNDERUNG: Wir nehmen das Modell aus deinem Screenshot
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
                 const response = await fetch(url, {
@@ -593,23 +586,15 @@
                 
                 const data = await response.json();
                 
-                // --- FEHLER-ANALYSE ---
-                
+                // Fehlerprüfung
                 if (data.error) {
-                    // Letzter Versuch: Wenn 1.5 Pro auch nicht geht, nehmen wir das ganz alte 1.0 Pro
-                    if (data.error.message.includes("not found")) {
-                        return "Modellfehler. Bitte ändere im Code 'gemini-1.5-pro' zu 'gemini-pro'.";
-                    }
                     return `Technik-Fehler: ${data.error.message}`;
-                }
-
-                if (data.promptFeedback && data.promptFeedback.blockReason) {
-                    return `Blockiert von Google: ${data.promptFeedback.blockReason}`;
                 }
 
                 if (data.candidates && data.candidates[0].content) {
                     let answer = data.candidates[0].content.parts[0].text.trim();
                     
+                    // Agenten-Check für Nachbestellung
                     if (answer.includes("ACTION_REORDER")) {
                         addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
                         const resultText = await repeatLastOrder();
@@ -651,6 +636,7 @@
     </script>
 </body>
 </html>
+
 
 
 
