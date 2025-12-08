@@ -581,7 +581,7 @@
                 Antworte auf Deutsch, kurz und charmant.
             `;
             
-            // ÄNDERUNG: Wir nehmen das Basis-Modell ohne "-latest"
+            // ÄNDERUNG: Wir nutzen jetzt "gemini-1.5-pro"
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
@@ -595,25 +595,21 @@
                 
                 // --- FEHLER-ANALYSE ---
                 
-                // 1. Hat Google einen harten Fehler gemeldet?
                 if (data.error) {
-                    // Falls flash nicht geht, geben wir einen Tipp
+                    // Letzter Versuch: Wenn 1.5 Pro auch nicht geht, nehmen wir das ganz alte 1.0 Pro
                     if (data.error.message.includes("not found")) {
-                        return "Modell nicht gefunden. Bitte probiere im Code 'gemini-1.5-pro' statt 'flash'.";
+                        return "Modellfehler. Bitte ändere im Code 'gemini-1.5-pro' zu 'gemini-pro'.";
                     }
                     return `Technik-Fehler: ${data.error.message}`;
                 }
 
-                // 2. Wurde die Antwort zensiert/geblockt?
                 if (data.promptFeedback && data.promptFeedback.blockReason) {
                     return `Blockiert von Google: ${data.promptFeedback.blockReason}`;
                 }
 
-                // 3. Alles gut?
                 if (data.candidates && data.candidates[0].content) {
                     let answer = data.candidates[0].content.parts[0].text.trim();
                     
-                    // Agenten-Check
                     if (answer.includes("ACTION_REORDER")) {
                         addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
                         const resultText = await repeatLastOrder();
@@ -623,8 +619,7 @@
                     return answer;
                 }
                 
-                console.log("Komische Antwort:", data);
-                return "Google hat eine leere Hülle geschickt. (Grund: " + (data.candidates?.[0]?.finishReason || "Unbekannt") + ")";
+                return "Keine Antwort erhalten.";
 
             } catch (e) { return `Verbindungs-Fehler: ${e.message}`; }
         }
@@ -656,6 +651,7 @@
     </script>
 </body>
 </html>
+
 
 
 
