@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Statistik - Timo's Barista Bar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#2c1e16">
+    <style>
+        /* --- Basis Design --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 0; min-height: 100vh; position: relative; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
+        
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
+
+        /* --- Navigation --- */
+        .navbar {
+            position: sticky; top: 20px; z-index: 1000;
+            width: 95%; max-width: 600px; margin: 0 auto 30px auto;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: flex; justify-content: space-between; align-items: center; padding: 4px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; font-size: 0.65rem; padding: 10px 4px; letter-spacing: 0.5px;
+            text-transform: uppercase; font-weight: bold; border-radius: 40px; transition: all 0.3s ease;
+            flex: 1; text-align: center; white-space: nowrap;
+        }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
+
+        /* --- Stats Container --- */
+        .container { max-width: 600px; margin: 0 auto; padding: 0 20px 80px 20px; }
+
+        /* Persönlicher Bereich */
+        .my-stats-card {
+            background: linear-gradient(145deg, rgba(212, 180, 131, 0.2), rgba(44, 30, 22, 0.8));
+            border: 1px solid #d4b483; border-radius: 15px; padding: 20px; text-align: center;
+            margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .big-number { font-size: 3.5rem; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(212, 180, 131, 0.5); display: block; margin: 10px 0; }
+        .stat-label { text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: #d4b483; }
+
+        /* Badges */
+        .badges-grid { display: flex; justify-content: center; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .badge { 
+            background: rgba(0,0,0,0.4); border-radius: 50%; width: 50px; height: 50px; 
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; 
+            border: 2px solid #555; opacity: 0.4; filter: grayscale(100%); transition: all 0.5s; position: relative;
+        }
+        .badge.unlocked { opacity: 1; filter: grayscale(0%); border-color: #d4b483; box-shadow: 0 0 15px rgba(212, 180, 131, 0.4); }
+        .badge-tooltip { display: none; position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); background: #2c1e16; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; white-space: nowrap; border: 1px solid #d4b483; z-index: 10; }
+        .badge:hover .badge-tooltip { display: block; }
+
+        /* Leaderboard */
+        .leaderboard { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .rank-row { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-num { width: 30px; font-weight: bold; color: #d4b483; font-size: 1.1rem; }
+        .rank-name { flex: 1; font-size: 1rem; color: #fff; }
+        .rank-count { background: #d4b483; color: #2c1e16; padding: 4px 10px; border-radius: 15px; font-weight: bold; font-size: 0.85rem; }
+        
+        /* Top 3 Highlights */
+        .rank-row:nth-child(1) .rank-num { color: #FFD700; text-shadow: 0 0 10px #FFD700; font-size: 1.4rem; } /* Gold */
+        .rank-row:nth-child(2) .rank-num { color: #C0C0C0; } /* Silber */
+        .rank-row:nth-child(3) .rank-num { color: #CD7F32; } /* Bronze */
+
+        .section-title { color: #d4b483; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 15px; text-align: center; border-bottom: 1px solid rgba(212, 180, 131, 0.3); padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" style="position: fixed; top: 20px; right: 15px; z-index: 1100; text-decoration: none; font-size: 1.5rem;">🏠</a>
+
+    <h1>Timo's</h1>
+    <div class="subtitle">Barista Bar</div>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">Bestellen</a>
+        <a href="maschine.html" class="nav-link">Maschine</a>
+        <a href="bohnen.html" class="nav-link">Bohnen</a>
+        <a href="glaeser.html" class="nav-link">Gläser</a>
+        <a href="stats.html" class="nav-link active">Stats 🏆</a>
+    </nav>
+
+    <div class="container">
+        
+        <div class="my-stats-card">
+            <span class="stat-label">Dein Koffein-Pegel</span>
+            <span id="my-count" class="big-number">0</span>
+            <span class="stat-label">Getrunkene Tassen</span>
+
+            <div class="badges-grid">
+                <div class="badge" id="badge-1">👶<div class="badge-tooltip">Erste Tasse (1)</div></div>
+                <div class="badge" id="badge-10">🚀<div class="badge-tooltip">Stammkunde (10)</div></div>
+                <div class="badge" id="badge-50">☕<div class="badge-tooltip">Koffein-Junkie (50)</div></div>
+                <div class="badge" id="badge-100">👑<div class="badge-tooltip">Barista King (100)</div></div>
+            </div>
+        </div>
+
+        <div class="section-title">Hall of Fame</div>
+        <div id="leaderboard-list" class="leaderboard">
+            <div style="text-align:center; padding:20px; color:#888;">Lade Daten...</div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
+            authDomain: "timos-barista-bar.firebaseapp.com",
+            databaseURL: "https://timos-barista-bar-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "timos-barista-bar",
+            storageBucket: "timos-barista-bar.firebasestorage.app",
+            messagingSenderId: "94308664114",
+            appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+
+        // AUTH CHECK
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadStats(); // Daten laden sobald User da ist
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        function loadStats() {
+            const ordersRef = ref(db, 'orders');
+            
+            onValue(ordersRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!data) return;
+
+                const orders = Object.values(data);
+                const userCounts = {};
+
+                // 1. Zählen
+                orders.forEach(order => {
+                    const name = order.user || "Unbekannt";
+                    userCounts[name] = (userCounts[name] || 0) + 1;
+                });
+
+                // 2. Sortieren (Wer hat am meisten?)
+                const sortedUsers = Object.entries(userCounts)
+                    .sort(([,a], [,b]) => b - a); // Absteigend
+
+                // 3. Leaderboard bauen
+                const leaderboardDiv = document.getElementById('leaderboard-list');
+                leaderboardDiv.innerHTML = ""; // Leeren
+
+                sortedUsers.forEach(([name, count], index) => {
+                    const rank = index + 1;
+                    let icon = "#" + rank;
+                    if(rank === 1) icon = "🥇";
+                    if(rank === 2) icon = "🥈";
+                    if(rank === 3) icon = "🥉";
+
+                    const row = document.createElement('div');
+                    row.className = 'rank-row';
+                    row.innerHTML = `
+                        <div class="rank-num">${icon}</div>
+                        <div class="rank-name">${name} ${name === currentUser.displayName ? "(Du)" : ""}</div>
+                        <div class="rank-count">${count}</div>
+                    `;
+                    leaderboardDiv.appendChild(row);
+                });
+
+                // 4. Eigene Stats & Badges
+                const myName = currentUser.displayName;
+                const myCount = userCounts[myName] || 0;
+                
+                // Zähler Animation
+                animateValue("my-count", 0, myCount, 1500);
+
+                // Badges freischalten
+                if (myCount >= 1) document.getElementById('badge-1').classList.add('unlocked');
+                if (myCount >= 10) document.getElementById('badge-10').classList.add('unlocked');
+                if (myCount >= 50) document.getElementById('badge-50').classList.add('unlocked');
+                if (myCount >= 100) document.getElementById('badge-100').classList.add('unlocked');
+            });
+        }
+
+        // Hilfsfunktion für Zahlen-Animation
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            if(start === end) return;
+            let range = end - start;
+            let current = start;
+            let increment = end > start ? 1 : -1;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            let timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+
+    </script>
+</body>
+</html>
