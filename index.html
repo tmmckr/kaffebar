@@ -444,7 +444,7 @@
             const topY = rect.top;
 
             // 20 Dampfwolken erzeugen
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 40; i++) {
                 const steam = document.createElement('div');
                 steam.classList.add('steam-particle');
                 
@@ -462,7 +462,7 @@
                 document.body.appendChild(steam);
 
                 // Nach 2 Sekunden wieder löschen (Aufräumen)
-                setTimeout(() => steam.remove(), 2000);
+                setTimeout(() => steam.remove(), 4000);
             }
         }
 
@@ -762,6 +762,7 @@
     <div id="snow-container"></div>
 </body>
 </html>
+
 
 
 
