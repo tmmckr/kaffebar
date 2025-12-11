@@ -49,7 +49,7 @@
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
 
-        /* --- Navigation (Pill Style) --- */
+        /* --- Navigation (Angepasst für 5 Links) --- */
         .navbar {
             position: sticky; top: 20px; z-index: 1000;
             width: 95%; max-width: 600px; margin: 0 auto 30px auto;
@@ -59,7 +59,10 @@
             display: flex; justify-content: space-between; align-items: center; padding: 4px;
         }
         .nav-link {
-            color: #e0d0c0; text-decoration: none; font-size: 0.7rem; padding: 10px 5px; letter-spacing: 0.5px;
+            color: #e0d0c0; text-decoration: none; 
+            font-size: 0.65rem; /* Etwas kleiner für 5 Elemente */
+            padding: 10px 4px; /* Weniger Abstand */
+            letter-spacing: 0.5px;
             text-transform: uppercase; font-weight: bold; border-radius: 40px; transition: all 0.3s ease;
             flex: 1; text-align: center; white-space: nowrap;
         }
@@ -166,6 +169,7 @@
         <a href="maschine.html" class="nav-link">Maschine</a>
         <a href="bohnen.html" class="nav-link">Bohnen</a>
         <a href="glaeser.html" class="nav-link">Gläser</a>
+        <a href="feedback.html" class="nav-link">Feedback</a>
     </nav>
 
     <div class="status-container">
@@ -701,6 +705,7 @@
     <div id="snow-container"></div>
 </body>
 </html>
+
 
 
 
