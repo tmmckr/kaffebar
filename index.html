@@ -131,6 +131,32 @@
         #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
         .snowflake { position: absolute; background-color: white; border-radius: 50%; opacity: 0.8; pointer-events: none; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(105vh) translateX(20px); opacity: 0.3; } }
+
+        /* --- LIVE STATUS BANNER --- */
+        #live-status-card {
+            display: none; /* Erstmal unsichtbar */
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px;
+            background: #2c2c2c; border-radius: 15px; padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000;
+            border: 2px solid #555; text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+
+        .status-icon { font-size: 2rem; display: block; margin-bottom: 5px; }
+        .status-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 5px; display: block; }
+        .status-desc { color: #aaa; font-size: 0.85rem; }
+
+        /* Status Farben */
+        .ls-new { border-color: #888; }
+        .ls-preparing { border-color: #f59e0b; background: radial-gradient(circle, rgba(245, 158, 11, 0.1), #2c2c2c); }
+        .ls-ready { border-color: #10b981; background: radial-gradient(circle, rgba(16, 185, 129, 0.1), #2c2c2c); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+
+        /* Animation für "In Arbeit" */
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+        .pulse-anim { animation: pulse-yellow 2s infinite; }
     </style>
 </head>
 <body>
@@ -218,6 +244,12 @@
             <input type="text" id="chat-input" class="chat-input" placeholder="Frage..." onkeypress="window.handleEnter(event)">
             <button class="chat-send" onclick="window.sendMessage()">➤</button>
         </div>
+    </div>
+
+    <div id="live-status-card">
+        <span id="ls-icon" class="status-icon">⏳</span>
+        <span id="ls-title" class="status-title">Status laden...</span>
+        <span id="ls-desc" class="status-desc">Bitte warten</span>
     </div>
 
     <script type="module">
@@ -632,6 +664,101 @@
             } catch (e) { return `Verbindungs-Fehler: ${e.message}`; }
         }
 
+        // ============================================
+        //   LIVE STATUS MONITORING 📡
+        // ============================================
+        let lastStatus = ""; // Damit wir Änderungen erkennen
+
+        function monitorMyOrder() {
+            // Wir hören auf ALLE Bestellungen (einfacher Filter client-seitig)
+            const ordersRef = ref(db, 'orders');
+
+            onValue(ordersRef, (snapshot) => {
+                const data = snapshot.val();
+                const card = document.getElementById('live-status-card');
+                
+                if (!data || !currentUser) {
+                    card.style.display = 'none';
+                    return;
+                }
+
+                // 1. Meine Bestellungen finden
+                const myOrders = Object.values(data).filter(o => o.user === currentUser.displayName);
+                
+                // 2. Aktive Bestellung finden (nicht archiviert)
+                // Wir nehmen die NEUESTE, die noch nicht 'archived' ist
+                const activeOrder = myOrders
+                    .filter(o => o.status !== 'archived')
+                    .sort((a, b) => b.timestamp - a.timestamp)[0];
+
+                if (!activeOrder) {
+                    card.style.display = 'none'; // Nix offen -> Ausblenden
+                    lastStatus = "";
+                    return;
+                }
+
+                // 3. UI Anzeigen & Aktualisieren
+                card.style.display = 'block';
+                const status = activeOrder.status || 'new';
+                
+                updateStatusCard(status, activeOrder.coffee);
+            });
+        }
+
+        function updateStatusCard(status, coffeeName) {
+            const card = document.getElementById('live-status-card');
+            const icon = document.getElementById('ls-icon');
+            const title = document.getElementById('ls-title');
+            const desc = document.getElementById('ls-desc');
+
+            // Reset Klassen
+            card.className = ""; 
+
+            if (status === 'new') {
+                card.classList.add('ls-new');
+                icon.innerText = "⏳";
+                title.innerText = "Warten...";
+                desc.innerText = `Deine Bestellung (${coffeeName}) ist eingegangen.`;
+            } 
+            else if (status === 'preparing') {
+                card.classList.add('ls-preparing', 'pulse-anim');
+                icon.innerText = "☕💨"; // Dampf Emoji
+                title.innerText = "Wird gebrüht...";
+                desc.innerText = "Der Barista ist an der Arbeit!";
+                
+                // Sound abspielen (nur wenn Status neu ist)
+                if (lastStatus !== 'preparing') {
+                    // Optional: Leises Brutzeln oder so
+                }
+            } 
+            else if (status === 'ready') {
+                card.classList.add('ls-ready');
+                icon.innerText = "✅";
+                title.innerText = "Wird serviert!";
+                desc.innerText = "Komm schnell, bevor er kalt wird!";
+
+                // DING SOUND! 🔔
+                if (lastStatus !== 'ready') {
+                    try {
+                        const audio = new Audio('ding.mp3');
+                        audio.play();
+                        // Konfetti oder Vibration wäre hier auch cool
+                        if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    } catch(e) {}
+                }
+            }
+
+            lastStatus = status;
+        }
+
+        // Starte Überwachung sobald eingeloggt
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                monitorMyOrder(); // <--- HIER STARTEN
+            }
+        });
+
         // Init Karten
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
@@ -659,3 +786,4 @@
     </script>
 </body>
 </html>
+
