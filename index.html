@@ -155,6 +155,29 @@
         .chat-input-area { padding: 10px; border-top: 1px solid rgba(212, 180, 131, 0.3); display: flex; gap: 5px; }
         .chat-input { flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none; }
         .chat-send { background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
+
+        /* --- DAMPF EFFEKT --- */
+        .steam-particle {
+            position: fixed; /* Damit es über dem Modal schwebt */
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000; /* Ganz oben drauf */
+            animation: steamRise 1.5s ease-out forwards;
+            filter: blur(4px); /* Macht es wolking/weich */
+        }
+
+        @keyframes steamRise {
+            0% { 
+                transform: translateY(0) scale(0.5); 
+                opacity: 0.6; 
+            }
+            100% { 
+                /* Steigt 150px nach oben und wird groß und unsichtbar */
+                transform: translateY(-150px) scale(3); 
+                opacity: 0; 
+            }
+        }
     </style>
 </head>
 <body>
@@ -410,7 +433,41 @@
         window.closeOrderModal = function() { orderModal.style.display = 'none'; }
         window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
 
+        // --- DAMPF FUNKTION ---
+        function createSteamEffect() {
+            const btn = document.querySelector('#order-modal .modal-btn');
+            if (!btn) return;
+
+            const rect = btn.getBoundingClientRect();
+            // Mitte des Buttons finden
+            const centerX = rect.left + rect.width / 2;
+            const topY = rect.top;
+
+            // 20 Dampfwolken erzeugen
+            for (let i = 0; i < 20; i++) {
+                const steam = document.createElement('div');
+                steam.classList.add('steam-particle');
+                
+                // Zufallswerte für natürliche Optik
+                const randomX = (Math.random() - 0.5) * 60; // Streuung nach links/rechts
+                const size = Math.random() * 20 + 10; // Größe zwischen 10px und 30px
+                const delay = Math.random() * 0.5; // Startet nicht alles gleichzeitig
+
+                steam.style.left = `${centerX + randomX}px`;
+                steam.style.top = `${topY}px`;
+                steam.style.width = `${size}px`;
+                steam.style.height = `${size}px`;
+                steam.style.animationDelay = `${delay}s`;
+
+                document.body.appendChild(steam);
+
+                // Nach 2 Sekunden wieder löschen (Aufräumen)
+                setTimeout(() => steam.remove(), 2000);
+            }
+        }
+
         window.sendOrder = function() {
+            createSteamEffect();
             const userName = currentUser ? currentUser.displayName : "Gast";
             const commentInput = document.getElementById('order-comment');
             const comment = commentInput ? commentInput.value.trim() : "";
@@ -705,6 +762,7 @@
     <div id="snow-container"></div>
 </body>
 </html>
+
 
 
 
