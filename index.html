@@ -10,6 +10,38 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c1e16">
     <style>
+
+        /* --- SCHNEE EFFEKT --- */
+        #snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Der Zauber-Befehl: Klicks gehen durch! */
+            z-index: 9999; /* Ganz oben drüber */
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(105vh) translateX(20px); /* Fällt nach unten & leicht zur Seite */
+                opacity: 0.3;
+            }
+        }
         /* --- Grundlegendes Design --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
@@ -633,9 +665,43 @@
             html += `</select></div>`;
             return html;
         }
+
+        // ============================================
+        //   SCHNEE-LOGIK
+        // ============================================
+        function letItSnow() {
+            const container = document.getElementById('snow-container');
+            const numberOfFlakes = 50; // Anzahl der Schneeflocken
+
+            for (let i = 0; i < numberOfFlakes; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                
+                // Zufällige Position, Größe und Geschwindigkeit
+                const xPos = Math.random() * 100; // 0 bis 100vw
+                const size = Math.random() * 5 + 2; // 2px bis 7px groß
+                const duration = Math.random() * 5 + 3; // 3s bis 8s Fallzeit
+                const delay = Math.random() * 5; // Startverzögerung
+                const opacity = Math.random() * 0.5 + 0.3; // Transparenz
+
+                flake.style.left = `${xPos}vw`;
+                flake.style.width = `${size}px`;
+                flake.style.height = `${size}px`;
+                flake.style.animationDuration = `${duration}s`;
+                flake.style.animationDelay = `-${delay}s`; // Negativ, damit es sofort voll aussieht
+                flake.style.opacity = opacity;
+
+                container.appendChild(flake);
+            }
+        }
+
+        // Schnee starten!
+        letItSnow();
     </script>
+    <div id="snow-container"></div>
 </body>
 </html>
+
 
 
 
