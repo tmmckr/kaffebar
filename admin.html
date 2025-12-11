@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Dashboard 👨‍🍳</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#1a1a1a">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1a1a1a; color: #e0d0c0; margin: 0; padding: 20px;
+        }
+
+        /* --- Header Bereich --- */
+        .admin-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;
+        }
+        h1 { margin: 0; color: #d4b483; font-family: "Times New Roman", serif; letter-spacing: 1px; }
+
+        /* --- Shop Schalter --- */
+        .shop-toggle {
+            padding: 15px 30px; border-radius: 10px; font-weight: bold; cursor: pointer;
+            border: none; font-size: 1.2rem; transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .shop-open { background-color: #10b981; color: #000; } /* Grün */
+        .shop-closed { background-color: #ef4444; color: #fff; } /* Rot */
+
+        /* --- Grid für Bestellungen --- */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* --- Bestellkarte --- */
+        .order-card {
+            background: #2c2c2c; border-radius: 12px; padding: 20px;
+            border-left: 5px solid #555; /* Standard Farbe */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; justify-content: space-between;
+            animation: popIn 0.3s ease;
+        }
+
+        /* Status Farben */
+        .card-new { border-left-color: #aaa; }
+        .card-preparing { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); } /* Orange */
+        .card-ready { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); } /* Grün */
+
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; color: #888; font-size: 0.9rem; }
+        .order-user { font-size: 1.4rem; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .order-product { font-size: 1.2rem; color: #d4b483; margin-bottom: 10px; font-family: "Times New Roman", serif; }
+        .order-details { background: #1a1a1a; padding: 10px; border-radius: 8px; font-size: 0.9rem; color: #ccc; margin-bottom: 15px; }
+        .order-comment { font-style: italic; color: #fca5a5; margin-top: 5px; display: block; }
+
+        /* --- Action Buttons --- */
+        .actions { display: flex; gap: 10px; margin-top: auto; }
+        .btn {
+            flex: 1; padding: 12px; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem;
+            transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.95); }
+
+        .btn-prep { background: #f59e0b; color: #000; }
+        .btn-ready { background: #10b981; color: #000; }
+        .btn-done { background: #333; color: #aaa; border: 1px solid #555; }
+        .btn-done:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <div>
+            <h1>Kitchen Dashboard 👨‍🍳</h1>
+            <span style="color: #666; font-size: 0.9rem;">Timo's Barista Bar Admin</span>
+        </div>
+        <div>
+            <button id="shop-toggle-btn" class="shop-toggle shop-loading" onclick="toggleShop()">
+                Lade Status...
+            </button>
+            <a href="index.html" style="color: #666; text-decoration: none; margin-left: 20px; font-size: 0.9rem;">Zur App ↗</a>
+        </div>
+    </div>
+
+    <div id="orders-container" class="orders-grid">
+        <div style="color:#666; width:100%;">Warte auf Bestellungen... ☕</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
+            authDomain: "timos-barista-bar.firebaseapp.com",
+            databaseURL: "https://timos-barista-bar-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "timos-barista-bar",
+            storageBucket: "timos-barista-bar.firebasestorage.app",
+            messagingSenderId: "94308664114",
+            appId: "1:94308664114:web:13ace1464e7b3db9054d2b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // Sicherheits-Check: Nur eingeloggt sichtbar
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+
+        // ============================
+        // 1. SHOP STATUS (AN/AUS)
+        // ============================
+        const statusRef = ref(db, 'status');
+        const shopBtn = document.getElementById('shop-toggle-btn');
+        let currentShopStatus = "";
+
+        onValue(statusRef, (snapshot) => {
+            const val = snapshot.val();
+            currentShopStatus = val ? String(val).toLowerCase() : "an";
+            updateShopUI();
+        });
+
+        function updateShopUI() {
+            if (currentShopStatus.includes('aus') || currentShopStatus.includes('zu')) {
+                shopBtn.innerText = "🔴 GESCHLOSSEN";
+                shopBtn.className = "shop-toggle shop-closed";
+            } else {
+                shopBtn.innerText = "🟢 GEÖFFNET";
+                shopBtn.className = "shop-toggle shop-open";
+            }
+        }
+
+        window.toggleShop = function() {
+            const newStatus = (currentShopStatus.includes('aus')) ? "an" : "aus";
+            update(ref(db), { status: newStatus });
+        }
+
+        // ============================
+        // 2. BESTELLUNGEN LADEN
+        // ============================
+        const ordersRef = ref(db, 'orders');
+        const grid = document.getElementById('orders-container');
+
+        onValue(ordersRef, (snapshot) => {
+            const data = snapshot.val();
+            grid.innerHTML = ""; // Alles leeren und neu bauen
+
+            if (!data) {
+                grid.innerHTML = "<div style='color:#666'>Keine offenen Bestellungen. Zeit zum Putzen! 🧹</div>";
+                return;
+            }
+
+            // Object in Array umwandeln + IDs behalten
+            const orders = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+
+            // Filtern: Archivierte Bestellungen ausblenden
+            const activeOrders = orders.filter(o => o.status !== 'archived');
+
+            // Sortieren: Älteste zuerst (FIFO)
+            activeOrders.sort((a, b) => a.timestamp - b.timestamp);
+
+            if (activeOrders.length === 0) {
+                grid.innerHTML = "<div style='color:#666'>Alles abgearbeitet. Gute Arbeit! 👍</div>";
+                return;
+            }
+
+            activeOrders.forEach(order => {
+                // Status bestimmen (Standard: 'new')
+                const status = order.status || 'new'; 
+                
+                // Zeit formatieren
+                const time = new Date(order.timestamp).toLocaleTimeString().slice(0, 5);
+                
+                // HTML Bauen
+                const card = document.createElement('div');
+                card.className = `order-card card-${status}`;
+                
+                // Details Text aufhübschen
+                let detailsText = "Standard";
+                if(order.details && order.details.length > 0) detailsText = order.details.join(", ");
+
+                // Buttons je nach Status
+                let actionButtons = "";
+                if (status === 'new') {
+                    actionButtons = `<button class="btn btn-prep" onclick="updateOrderStatus('${order.id}', 'preparing')">In Arbeit 🔥</button>`;
+                } else if (status === 'preparing') {
+                    actionButtons = `<button class="btn btn-ready" onclick="updateOrderStatus('${order.id}', 'ready')">Fertig ✅</button>`;
+                } else if (status === 'ready') {
+                    actionButtons = `<button class="btn btn-done" onclick="updateOrderStatus('${order.id}', 'archived')">Abgeholt 📦</button>`;
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="order-header">
+                            <span>ID: ...${order.id.slice(-4)}</span>
+                            <span>${time} Uhr</span>
+                        </div>
+                        <div class="order-user">${order.user}</div>
+                        <div class="order-product">${order.coffee}</div>
+                        <div class="order-details">
+                            ${detailsText}
+                            ${order.comment ? `<span class="order-comment">💬 "${order.comment}"</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="actions">
+                        ${actionButtons}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        });
+
+        // ============================
+        // 3. STATUS UPDATE FUNKTION
+        // ============================
+        window.updateOrderStatus = function(orderId, newStatus) {
+            // Wir updaten nur das Feld "status" in diesem spezifischen Order-Eintrag
+            update(ref(db, `orders/${orderId}`), {
+                status: newStatus
+            });
+        }
+
+    </script>
+</body>
+</html>
