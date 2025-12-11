@@ -6,42 +6,8 @@
     <title>Timo's Barista Bar</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#2c1e16">
     <style>
-
-        /* --- SCHNEE EFFEKT --- */
-        #snow-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Der Zauber-Befehl: Klicks gehen durch! */
-            z-index: 9999; /* Ganz oben drüber */
-            overflow: hidden;
-        }
-
-        .snowflake {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            opacity: 0.8;
-            pointer-events: none;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-10vh) translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(105vh) translateX(20px); /* Fällt nach unten & leicht zur Seite */
-                opacity: 0.3;
-            }
-        }
         /* --- Grundlegendes Design --- */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative; }
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
@@ -49,7 +15,7 @@
         .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
         .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
 
-        /* --- Navigation (Angepasst für 5 Links) --- */
+        /* --- Navigation (Pill Style) --- */
         .navbar {
             position: sticky; top: 20px; z-index: 1000;
             width: 95%; max-width: 600px; margin: 0 auto 30px auto;
@@ -60,25 +26,28 @@
         }
         .nav-link {
             color: #e0d0c0; text-decoration: none; 
-            font-size: 0.65rem; /* Etwas kleiner für 5 Elemente */
-            padding: 10px 4px; /* Weniger Abstand */
-            letter-spacing: 0.5px;
+            font-size: 0.65rem; /* Perfekt für 5 Buttons */
+            padding: 10px 2px; 
+            letter-spacing: 0px;
             text-transform: uppercase; font-weight: bold; border-radius: 40px; transition: all 0.3s ease;
-            flex: 1; text-align: center; white-space: nowrap;
+            flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
 
-        /* --- NEU: Logout Button (Oben Rechts) --- */
-        .logout-btn {
-            position: fixed; top: 20px; right: 15px; z-index: 1100;
+        /* --- HEADER BUTTONS (Oben Links & Rechts) --- */
+        .header-btn-style {
+            position: fixed; top: 20px; z-index: 1100;
             background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
             border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 30px;
             color: #d4b483; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;
             padding: 8px 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: all 0.2s ease;
+            transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center;
         }
-        .logout-btn:active { transform: scale(0.95); background: #d4b483; color: #2c1e16; }
+        .header-btn-style:active { transform: scale(0.95); background: #d4b483; color: #2c1e16; }
+
+        .logout-btn { right: 15px; } /* Rechts */
+        .stats-btn { left: 15px; }   /* Links */
 
         /* --- Status Ampel --- */
         .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
@@ -156,33 +125,21 @@
         .chat-input { flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none; }
         .chat-send { background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
 
-        /* --- DAMPF EFFEKT --- */
-        .steam-particle {
-            position: fixed; /* Damit es über dem Modal schwebt */
-            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 10000; /* Ganz oben drauf */
-            animation: steamRise 1.5s ease-out forwards;
-            filter: blur(4px); /* Macht es wolking/weich */
-        }
-
-        @keyframes steamRise {
-            0% { 
-                transform: translateY(0) scale(0.5); 
-                opacity: 0.6; 
-            }
-            100% { 
-                /* Steigt 150px nach oben und wird groß und unsichtbar */
-                transform: translateY(-150px) scale(3); 
-                opacity: 0; 
-            }
-        }
+        /* --- DAMPF & SCHNEE --- */
+        .steam-particle { position: fixed; background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none; z-index: 10000; animation: steamRise 1.5s ease-out forwards; filter: blur(4px); }
+        @keyframes steamRise { 0% { transform: translateY(0) scale(0.5); opacity: 0.6; } 100% { transform: translateY(-150px) scale(3); opacity: 0; } }
+        #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
+        .snowflake { position: absolute; background-color: white; border-radius: 50%; opacity: 0.8; pointer-events: none; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(105vh) translateX(20px); opacity: 0.3; } }
     </style>
 </head>
 <body>
 
-    <button class="logout-btn" onclick="window.logout()">Logout 🚪</button>
+    <div id="snow-container"></div>
+
+    <a href="stats.html" class="header-btn-style stats-btn">Stats 🏆</a>
+
+    <button class="header-btn-style logout-btn" onclick="window.logout()">Logout 🚪</button>
 
     <h1>Timo's</h1>
     <div class="subtitle">Barista Bar</div>
@@ -213,7 +170,7 @@
         <span>Iced Matcha Latte – auch als Protein-Version! 🍵</span>
     </div>
 
-   <div class="bean-card">
+    <div class="bean-card">
         <div class="bean-label">Aktuelle Röstung</div>
         <div class="bean-name">Tchibo Barista Espresso</div>
         <div class="bean-desc">Trommelröstung • 100% Arabica</div>
@@ -284,11 +241,11 @@
 
         const TOPIC_NAME = 'mamas-kaffee-123-geheim'; 
         
-        // --- KEY AUS DB LADEN ---
+        // KEY AUS DB
         let GEMINI_API_KEY = null;
         onValue(ref(db, 'geminiKey'), (snapshot) => { GEMINI_API_KEY = snapshot.val(); });
 
-        // --- AUTHENTICATION & TÜRSTEHER ---
+        // AUTH & TÜRSTEHER
         let currentUser = null;
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -303,7 +260,7 @@
             signOut(auth).then(() => window.location.href = "login.html");
         }
 
-        // Elemente
+        // ELEMENTE
         const statusBadge = document.getElementById('status-badge');
         const statusText = document.getElementById('status-text');
         const statusDot = document.querySelector('.status-dot');
@@ -380,7 +337,7 @@
             { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
         ];
 
-        // GLOBALISIERUNG
+        // GLOBAL: MODAL LOGIK
         window.openOrderModal = function(sorteName) {
             const sorte = kaffeeSorten.find(k => k.name === sorteName);
             if(!sorte || !isShopOpen) return;
@@ -437,69 +394,105 @@
         function createSteamEffect() {
             const btn = document.querySelector('#order-modal .modal-btn');
             if (!btn) return;
-
             const rect = btn.getBoundingClientRect();
-            // Mitte des Buttons finden
             const centerX = rect.left + rect.width / 2;
             const topY = rect.top;
-
-            // 20 Dampfwolken erzeugen
             for (let i = 0; i < 20; i++) {
                 const steam = document.createElement('div');
                 steam.classList.add('steam-particle');
-                
-                // Zufallswerte für natürliche Optik
-                const randomX = (Math.random() - 0.5) * 60; // Streuung nach links/rechts
-                const size = Math.random() * 20 + 10; // Größe zwischen 10px und 30px
-                const delay = Math.random() * 0.5; // Startet nicht alles gleichzeitig
-
+                const randomX = (Math.random() - 0.5) * 60;
+                const size = Math.random() * 20 + 10;
+                const delay = Math.random() * 0.5;
                 steam.style.left = `${centerX + randomX}px`;
                 steam.style.top = `${topY}px`;
                 steam.style.width = `${size}px`;
                 steam.style.height = `${size}px`;
                 steam.style.animationDelay = `${delay}s`;
-
                 document.body.appendChild(steam);
-
-                // Nach 2 Sekunden wieder löschen (Aufräumen)
                 setTimeout(() => steam.remove(), 2000);
             }
         }
 
+        // --- SCHNEE FUNKTION ---
+        function letItSnow() {
+            const container = document.getElementById('snow-container');
+            if(!container) return;
+            const numberOfFlakes = 50;
+            for (let i = 0; i < numberOfFlakes; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                const xPos = Math.random() * 100;
+                const size = Math.random() * 5 + 2;
+                const duration = Math.random() * 5 + 3;
+                const delay = Math.random() * 5;
+                const opacity = Math.random() * 0.5 + 0.3;
+                flake.style.left = `${xPos}vw`;
+                flake.style.width = `${size}px`;
+                flake.style.height = `${size}px`;
+                flake.style.animationDuration = `${duration}s`;
+                flake.style.animationDelay = `-${delay}s`;
+                flake.style.opacity = opacity;
+                container.appendChild(flake);
+            }
+        }
+        letItSnow();
+
+        // --- AGENT WERKZEUG: Letzte Bestellung finden ---
+        async function repeatLastOrder() {
+            if (!currentUser) return "Du musst eingeloggt sein!";
+            const ordersRef = ref(db, 'orders');
+            return new Promise((resolve) => {
+                const unsubscribe = onValue(ordersRef, (snapshot) => {
+                    const data = snapshot.val();
+                    unsubscribe();
+                    if (!data) { resolve("Keine alten Bestellungen."); return; }
+                    const orderList = Object.values(data);
+                    const myOrders = orderList.filter(o => o.user === currentUser.displayName);
+                    if (myOrders.length === 0) { resolve("Noch nie bestellt!"); return; }
+                    const lastOrder = myOrders.sort((a, b) => b.timestamp - a.timestamp)[0];
+                    const coffeeObj = kaffeeSorten.find(k => k.name === lastOrder.coffee);
+                    if (coffeeObj) {
+                        currentCoffee = coffeeObj;
+                        const commentInput = document.getElementById('order-comment');
+                        if(commentInput) commentInput.value = lastOrder.comment || "";
+                        sendOrder(); 
+                        resolve(`Deine letzte Bestellung (${lastOrder.coffee}) wird zubereitet!`);
+                    } else { resolve("Den Kaffee gibt es nicht mehr."); }
+                });
+            });
+        }
+
+        // --- GLOBAL: SEND LOGIK ---
         window.sendOrder = function() {
+            // DAMPF
             createSteamEffect();
+
+            // SOUND (Mahlwerk)
+            try {
+                const sound = new Audio('grinding.mp3');
+                sound.volume = 0.6;
+                sound.play();
+            } catch (e) { console.log("Sound-Fehler:", e); }
+
             const userName = currentUser ? currentUser.displayName : "Gast";
             const commentInput = document.getElementById('order-comment');
             const comment = commentInput ? commentInput.value.trim() : "";
             const statusDiv = document.getElementById('status');
             const sendBtn = document.querySelector('#order-modal .modal-btn');
 
-            // 2. SOUND ABSPIELEN (Mahlwerk) 🔊
-            try {
-                const sound = new Audio('grinding.mp3');
-                sound.volume = 0.5; // Lautstärke (0.1 bis 1.0)
-                sound.play();
-            } catch (e) { console.log("Sound-Fehler:", e); }
-
             let details = [];
             const strengthEl = document.getElementById('input-strength');
             if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
-            
             const coffeeVolEl = document.getElementById('input-coffee-vol');
             if(coffeeVolEl) details.push(`${coffeeVolEl.value}ml Kaffee`);
-            
             const milkVolEl = document.getElementById('input-milk-vol');
             if(milkVolEl) details.push(`${milkVolEl.value}ml Milch`);
-            
             const totalVolEl = document.getElementById('input-total-vol');
             if(totalVolEl) details.push(`${totalVolEl.value}ml`);
-            
             const cyclesEl = document.querySelector('input[name="cycles"]:checked');
             if(cyclesEl) details.push(cyclesEl.value);
-            
             const vanillaEl = document.getElementById('extra-vanilla');
             if(vanillaEl && vanillaEl.checked) details.push("Vanille Sirup");
-            
             const sweetEl = document.getElementById('extra-sweetener');
             if(sweetEl && sweetEl.checked) details.push("Süßstoff");
 
@@ -509,6 +502,7 @@
 
             sendBtn.innerText = "Sende...";
 
+            // 1. FIREBASE SAVE
             push(ref(db, 'orders'), {
                 user: userName,
                 coffee: currentCoffee.name,
@@ -518,6 +512,7 @@
                 dateString: new Date().toLocaleString()
             });
 
+            // 2. NTFY PUSH
             fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
                 method: 'POST',
                 body: messageBody, 
@@ -539,67 +534,7 @@
             });
         }
 
-        // --- AGENT WERKZEUG: Letzte Bestellung finden ---
-        async function repeatLastOrder() {
-            if (!currentUser) return "Du musst eingeloggt sein!";
-
-            // Wir holen die letzten 50 Bestellungen
-            // (In einer echten Profi-App würde man das besser filtern, aber für Familie reicht das)
-            const ordersRef = ref(db, 'orders');
-            
-            // Einmaliges Laden der Daten
-            return new Promise((resolve) => {
-                // Wir nutzen onValue einmalig (besser wäre get(), aber wir haben den import schon)
-                // Da wir 'onValue' schon importiert haben, nutzen wir einen Trick mit {onlyOnce: true} geht hier nicht einfach
-                // Wir nutzen einfach onValue und bestellen es sofort wieder ab.
-                
-                const unsubscribe = onValue(ordersRef, (snapshot) => {
-                    const data = snapshot.val();
-                    unsubscribe(); // Sofort aufhören zu lauschen
-
-                    if (!data) {
-                        resolve("Ich habe keine alten Bestellungen gefunden.");
-                        return;
-                    }
-
-                    // Alle Bestellungen in ein Array umwandeln
-                    const orderList = Object.values(data);
-                    
-                    // Filtern nach meinem Namen
-                    const myOrders = orderList.filter(o => o.user === currentUser.displayName);
-
-                    if (myOrders.length === 0) {
-                        resolve("Du hast hier noch nie bestellt!");
-                        return;
-                    }
-
-                    // Die letzte Bestellung finden (höchster Timestamp)
-                    const lastOrder = myOrders.sort((a, b) => b.timestamp - a.timestamp)[0];
-
-                    // --- JETZT BESTELLEN ---
-                    // Wir setzen die globalen Variablen auf die Werte von damals
-                    const coffeeName = lastOrder.coffee;
-                    
-                    // Wir suchen das Kaffe-Objekt in deiner Liste
-                    const coffeeObj = kaffeeSorten.find(k => k.name === coffeeName);
-                    
-                    if (coffeeObj) {
-                        currentCoffee = coffeeObj;
-                        
-                        // Hier tricksen wir: Wir füllen das Kommentarfeld mit dem alten Kommentar
-                        const commentInput = document.getElementById('order-comment');
-                        if(commentInput) commentInput.value = lastOrder.comment || "";
-
-                        // Und wir lösen die Bestellung aus!
-                        sendOrder(); 
-                        resolve(`Ich habe deine letzte Bestellung (${lastOrder.coffee}) erneut aufgegeben!`);
-                    } else {
-                        resolve("Den Kaffee von damals gibt es nicht mehr.");
-                    }
-                });
-            });
-        }
-
+        // --- GLOBAL: CHATBOT ---
         const chatWindow = document.getElementById('chat-window');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
@@ -642,13 +577,19 @@
         }
 
         async function fetchGeminiResponse(userQuestion) {
-            // 1. Prüfen, ob Key da ist
             if (!GEMINI_API_KEY) return "Moment, ich lade noch meinen Schlüssel... Frag gleich nochmal!";
 
             const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
             
             const prompt = `
                 Du bist Timo, ein freundlicher Barista-KI-Agent.
+                
+                DEINE AUFGABE:
+                1. Wenn der User fragt "Was gibt es?" oder Infos will -> Antworte basierend auf der Karte.
+                2. WICHTIG: Wenn der User sagt "Das Gleiche wie gestern", "Nochmal das Selbe", "Repeat order" oder ähnlich -> 
+                   Antworte NUR mit dem Wort: ACTION_REORDER
+                   (Schreibe keinen anderen Text dazu, nur dieses Wort).
+
                 Hier ist unsere Karte:
                 ${menuContext}
                 
@@ -658,7 +599,7 @@
                 Antworte auf Deutsch, kurz und charmant.
             `;
             
-            // HIER IST DIE ÄNDERUNG: Wir nehmen das Modell aus deinem Screenshot
+            // WIR NEHMEN GEMINI 2.0 (Da es für dich funktionierte)
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
             
             try {
@@ -670,7 +611,6 @@
                 
                 const data = await response.json();
                 
-                // Fehlerprüfung
                 if (data.error) {
                     return `Technik-Fehler: ${data.error.message}`;
                 }
@@ -678,7 +618,6 @@
                 if (data.candidates && data.candidates[0].content) {
                     let answer = data.candidates[0].content.parts[0].text.trim();
                     
-                    // Agenten-Check für Nachbestellung
                     if (answer.includes("ACTION_REORDER")) {
                         addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
                         const resultText = await repeatLastOrder();
@@ -693,7 +632,7 @@
             } catch (e) { return `Verbindungs-Fehler: ${e.message}`; }
         }
 
-        // Init
+        // Init Karten
         kaffeeSorten.forEach(sorte => {
             const btn = document.createElement('div');
             btn.className = 'coffee-card';
@@ -717,57 +656,6 @@
             html += `</select></div>`;
             return html;
         }
-
-        // ============================================
-        //   SCHNEE-LOGIK
-        // ============================================
-        function letItSnow() {
-            const container = document.getElementById('snow-container');
-            const numberOfFlakes = 50; // Anzahl der Schneeflocken
-
-            for (let i = 0; i < numberOfFlakes; i++) {
-                const flake = document.createElement('div');
-                flake.classList.add('snowflake');
-                
-                // Zufällige Position, Größe und Geschwindigkeit
-                const xPos = Math.random() * 100; // 0 bis 100vw
-                const size = Math.random() * 5 + 2; // 2px bis 7px groß
-                const duration = Math.random() * 5 + 3; // 3s bis 8s Fallzeit
-                const delay = Math.random() * 5; // Startverzögerung
-                const opacity = Math.random() * 0.5 + 0.3; // Transparenz
-
-                flake.style.left = `${xPos}vw`;
-                flake.style.width = `${size}px`;
-                flake.style.height = `${size}px`;
-                flake.style.animationDuration = `${duration}s`;
-                flake.style.animationDelay = `-${delay}s`; // Negativ, damit es sofort voll aussieht
-                flake.style.opacity = opacity;
-
-                container.appendChild(flake);
-            }
-        }
-
-        // Schnee starten!
-        letItSnow();
     </script>
-    <div id="snow-container"></div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
