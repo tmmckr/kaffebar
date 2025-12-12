@@ -157,6 +157,39 @@
         /* Animation für "In Arbeit" */
         @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
         .pulse-anim { animation: pulse-yellow 2s infinite; }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: 60px; /* Abstand zum Menü */
+            padding: 40px 20px 100px 20px; /* Viel Platz unten (wegen Live-Status Banner) */
+            text-align: center;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            border-top: 1px solid rgba(212, 180, 131, 0.1);
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-link {
+            color: #d4b483;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+            opacity: 0.7;
+        }
+        .footer-link:hover { color: #fff; opacity: 1; }
+
+        .footer-info {
+            font-size: 0.75rem;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -207,6 +240,26 @@
     </div>
 
     <div class="menu-list" id="menu-container"></div>
+
+    <footer>
+        <div class="footer-content">
+            
+            <div>
+                👤 Angemeldet als: <span id="footer-user-name" style="color: #ccc;">Gast</span>
+            </div>
+
+            <div>
+                <a href="admin.html" class="footer-link">👨‍🍳 Kitchen Dashboard</a> • 
+                <a href="https://github.com/Tmmckr/Timos-Barista-Bar" target="_blank" class="footer-link">GitHub</a>
+            </div>
+
+            <div class="footer-info">
+                &copy; 2024 Timo's Barista Bar<br>
+                Powered by Caffeine & Code ☕
+            </div>
+
+        </div>
+    </footer>
 
     <div id="order-modal" class="modal-overlay">
         <div class="modal-box">
@@ -277,12 +330,18 @@
         let GEMINI_API_KEY = null;
         onValue(ref(db, 'geminiKey'), (snapshot) => { GEMINI_API_KEY = snapshot.val(); });
 
-        // AUTH & TÜRSTEHER
+       // AUTH & TÜRSTEHER
         let currentUser = null;
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 console.log("Eingeloggt:", user.displayName);
+                
+                // --- NEU: Name im Footer anzeigen ---
+                const footerName = document.getElementById('footer-user-name');
+                if(footerName) footerName.innerText = user.displayName;
+
+                monitorMyOrder(); 
             } else {
                 window.location.href = "login.html";
             }
@@ -786,5 +845,6 @@
     </script>
 </body>
 </html>
+
 
 
