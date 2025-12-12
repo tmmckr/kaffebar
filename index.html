@@ -158,37 +158,50 @@
         @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
         .pulse-anim { animation: pulse-yellow 2s infinite; }
 
-        /* --- FOOTER --- */
+        /* --- FOOTER (Kombiniert: Chic & Funktional) --- */
         footer {
-            margin-top: 60px; /* Abstand zum Menü */
-            padding: 40px 20px 100px 20px; /* Viel Platz unten (wegen Live-Status Banner) */
+            margin-top: 60px;
+            padding: 40px 20px 120px 20px;
             text-align: center;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
             border-top: 1px solid rgba(212, 180, 131, 0.1);
             color: #888;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            font-family: "Times New Roman", serif;
+            letter-spacing: 1px;
         }
 
-        .footer-content {
-            max-width: 600px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .footer-user {
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            font-size: 0.75rem;
         }
 
         .footer-link {
             color: #d4b483;
             text-decoration: none;
-            font-weight: bold;
+            margin: 0 5px;
             transition: color 0.3s;
-            opacity: 0.7;
+            opacity: 0.8;
         }
-        .footer-link:hover { color: #fff; opacity: 1; }
+        .footer-link:hover { color: #fff; opacity: 1; text-decoration: underline; }
 
-        .footer-info {
-            font-size: 0.75rem;
-            opacity: 0.5;
+        /* Herzschlag Animation */
+        .pulse-emoji {
+            display: inline-block;
+            animation: heartbeat 2s infinite ease-in-out;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
     </style>
 </head>
@@ -242,22 +255,19 @@
     <div class="menu-list" id="menu-container"></div>
 
     <footer>
-        <div class="footer-content">
-            
-            <div>
-                👤 Angemeldet als: <span id="footer-user-name" style="color: #ccc;">Gast</span>
-            </div>
+        <div class="footer-user">
+            👤 Angemeldet als: <span id="footer-user-name" style="color: #fff; font-weight: bold;">Gast</span>
+        </div>
 
-            <div>
-                <a href="admin.html" class="footer-link">👨‍🍳 Kitchen Dashboard</a> • 
-                <a href="https://github.com/Tmmckr/Timos-Barista-Bar" target="_blank" class="footer-link">GitHub</a>
-            </div>
+        <div class="footer-links">
+            <a href="admin.html" class="footer-link">👨‍🍳 Kitchen Dashboard</a> • 
+            <a href="https://github.com/Tmmckr/Timos-Barista-Bar" target="_blank" class="footer-link">GitHub</a>
+        </div>
 
-            <div class="footer-info">
-                &copy; 2024 Timo's Barista Bar<br>
-                Powered by Caffeine & Code ☕
-            </div>
-
+        <div style="opacity: 0.6; margin-top: 15px;">
+            Made with <span class="pulse-emoji">❤️</span> & <span class="pulse-emoji">☕</span> by Timo
+            <br>
+            <span style="font-size: 0.65rem; font-family: sans-serif;">&copy; 2024 Barista Bar App</span>
         </div>
     </footer>
 
@@ -845,6 +855,7 @@
     </script>
 </body>
 </html>
+
 
 
 
