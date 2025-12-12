@@ -260,7 +260,7 @@
         </div>
 
         <div class="footer-links">
-            <a href="admin.html" class="footer-link">👨‍🍳 Kitchen Dashboard</a> • 
+            <a href="#" onclick="checkAdminAccess()" class="footer-link">👨‍🍳 Kitchen Dashboard</a> • 
             <a href="https://github.com/Tmmckr/Timos-Barista-Bar" target="_blank" class="footer-link">GitHub</a>
         </div>
 
@@ -852,9 +852,25 @@
             html += `</select></div>`;
             return html;
         }
+
+        // --- ADMIN SCHUTZ ---
+        window.checkAdminAccess = function() {
+            // 1. Passwort abfragen
+            const password = prompt("🔒 Admin-Bereich\nBitte Passwort eingeben:");
+            
+            // 2. Prüfen (Hier dein Passwort festlegen!)
+            if (password === "09052023") { 
+                // Richtig -> Weiterleiten
+                window.location.href = "admin.html";
+            } else if (password !== null) {
+                // Falsch (aber nicht Abbrechen geklickt) -> Fehlermeldung
+                alert("Zugang verweigert! Zugriff nur für Admin. ⛔");
+            }
+        }
     </script>
 </body>
 </html>
+
 
 
 
