@@ -203,6 +203,44 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.2); }
         }
+
+        /* --- FAVORITEN SECTION --- */
+        #fav-section {
+            display: none; /* Erstmal versteckt, bis Favoriten da sind */
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 180, 131, 0.2);
+            animation: fadeIn 0.5s;
+        }
+        
+        .section-title {
+            font-family: "Times New Roman", serif;
+            color: #d4b483;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Das Herz auf der Karte */
+        .fav-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10; /* Über dem Karten-Klick */
+            transition: transform 0.2s, color 0.2s;
+            color: rgba(255, 255, 255, 0.3); /* Standard: Grau/Transparent */
+        }
+        .fav-btn:hover { transform: scale(1.2); }
+        
+        /* Wenn markiert */
+        .fav-active {
+            color: #ef4444; /* Rot */
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -250,6 +288,11 @@
             INTENSITÄT 5/6
             <div class="progress-bar-bg"><div class="progress-fill" style="width: 83%"></div></div>
         </div>
+    </div>
+
+    <div id="fav-section">
+        <div class="section-title">❤️ Deine Lieblinge</div>
+        <div class="menu-list" id="fav-container"></div>
     </div>
 
     <div class="menu-list" id="menu-container"></div>
@@ -317,7 +360,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, push, update, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -828,12 +871,87 @@
             }
         });
 
-        // Init Karten
-        kaffeeSorten.forEach(sorte => {
-            const btn = document.createElement('div');
-            btn.className = 'coffee-card';
-            btn.onclick = () => window.openOrderModal(sorte.name);
+        // ============================================
+        //   FAVORITEN LOGIK ❤️
+        // ============================================
+        
+        let myFavorites = {}; // Lokaler Speicher für die Herzchen
+
+        // 1. Favoriten laden (sobald User eingeloggt)
+        function listenToFavorites() {
+            if (!currentUser) return;
             
+            const favRef = ref(db, `users/${currentUser.uid}/favorites`);
+            onValue(favRef, (snapshot) => {
+                myFavorites = snapshot.val() || {};
+                renderAllCards(); // Alles neu zeichnen mit aktuellen Herzen
+            });
+        }
+
+        // 2. Herz anklicken (Speichern/Löschen)
+        window.toggleFavorite = function(coffeeName, event) {
+            // WICHTIG: Verhindert, dass sich das Bestell-Modal öffnet
+            event.stopPropagation(); 
+
+            if (!currentUser) { alert("Bitte einloggen!"); return; }
+
+            const favRef = ref(db, `users/${currentUser.uid}/favorites/${coffeeName}`);
+
+            if (myFavorites[coffeeName]) {
+                // Ist schon Favorit -> Löschen
+                remove(favRef);
+            } else {
+                // Ist kein Favorit -> Hinzufügen
+                set(favRef, true);
+            }
+        }
+
+        // ============================================
+        //   KARTEN RENDERN (Menü & Favoriten)
+        // ============================================
+
+        function renderAllCards() {
+            const menuContainer = document.getElementById('menu-container');
+            const favContainer = document.getElementById('fav-container');
+            const favSection = document.getElementById('fav-section');
+
+            // Sicherheitscheck, falls Elemente noch nicht im HTML sind
+            if(!menuContainer || !favContainer || !favSection) return;
+
+            menuContainer.innerHTML = "";
+            favContainer.innerHTML = "";
+
+            let hasFavorites = false;
+
+            kaffeeSorten.forEach(sorte => {
+                const isFav = myFavorites[sorte.name] ? true : false;
+                
+                // HTML für die Karte bauen
+                const cardHtml = buildCardHTML(sorte, isFav);
+                
+                // 1. Zur normalen Liste hinzufügen
+                const normalCard = document.createElement('div');
+                normalCard.className = 'coffee-card';
+                normalCard.onclick = () => window.openOrderModal(sorte.name);
+                normalCard.innerHTML = cardHtml;
+                menuContainer.appendChild(normalCard);
+
+                // 2. Falls Favorit -> Auch oben hinzufügen
+                if (isFav) {
+                    hasFavorites = true;
+                    const favCard = document.createElement('div');
+                    favCard.className = 'coffee-card';
+                    favCard.onclick = () => window.openOrderModal(sorte.name);
+                    favCard.innerHTML = cardHtml;
+                    favContainer.appendChild(favCard);
+                }
+            });
+
+            // Favoriten-Bereich zeigen oder verstecken
+            favSection.style.display = hasFavorites ? 'block' : 'none';
+        }
+
+        function buildCardHTML(sorte, isFav) {
             let dots = "";
             if(sorte.strength > 0) {
                 dots = '<span class="dots">';
@@ -841,8 +959,34 @@
                 dots += '</span>';
                 dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
             }
-            btn.innerHTML = `<div class="name">${sorte.name}</div><div class="desc">${sorte.desc}</div>${dots}`;
-            container.appendChild(btn);
+
+            const heartClass = isFav ? "fav-btn fav-active" : "fav-btn";
+            const heartIcon = isFav ? "❤️" : "🤍"; 
+
+            return `
+                <div class="${heartClass}" onclick="window.toggleFavorite('${sorte.name}', event)">${heartIcon}</div>
+                <div class="name">${sorte.name}</div>
+                <div class="desc">${sorte.desc}</div>
+                ${dots}
+            `;
+        }
+
+        // Init: Starten sobald Auth fertig ist (Ersetzt deinen alten onAuthStateChanged Block oben, falls vorhanden, oder ergänzt ihn)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log("Eingeloggt:", user.displayName);
+                
+                // Name im Footer
+                const footerName = document.getElementById('footer-user-name');
+                if(footerName) footerName.innerText = user.displayName;
+
+                // Features starten
+                if(typeof monitorMyOrder === "function") monitorMyOrder();
+                listenToFavorites(); // <--- HIER STARTEN WIR DIE FAVORITEN
+            } else {
+                window.location.href = "login.html";
+            }
         });
 
         function createSelect(id, label, options, suffix) {
@@ -870,6 +1014,7 @@
     </script>
 </body>
 </html>
+
 
 
 
