@@ -56,6 +56,30 @@
         </div>
     </div>
 
+    <div class="stamp-card scroll-reveal">
+        <div class="stamp-header">
+            <span>☕ Deine Treuekarte</span>
+            <span id="stamp-counter" style="color: #d4b483;">0 / 10</span>
+        </div>
+        <div class="stamp-grid" id="stamp-grid">
+            </div>
+        <div id="stamp-message" class="stamp-footer">
+            Noch 10 Kaffees bis zum Gratis-Keks! 🍪
+        </div>
+    </div>
+
+    <div id="reward-modal" class="modal-overlay">
+        <div class="modal-box" style="border-color: gold; box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);">
+            <div style="font-size: 4rem;">🏆</div>
+            <h2 class="modal-title" style="color: gold;">Glückwunsch!</h2>
+            <p class="modal-text">
+                Du hast deine Stempelkarte voll! <br>
+                Als Dankeschön gibt es zur nächsten Bestellung einen <b>Gratis-Keks</b>.
+            </p>
+            <button class="modal-btn" onclick="closeRewardModal()" style="background: gold; color: #000;">Juhu!</button>
+        </div>
+    </div>
+
     <div id="fav-section">
         <div class="section-title">❤️ Deine Lieblinge</div>
         <div class="menu-list" id="fav-container"></div>
@@ -152,6 +176,7 @@
 
 </body>
 </html>
+
 
 
 
