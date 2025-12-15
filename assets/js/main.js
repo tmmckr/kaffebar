@@ -330,6 +330,7 @@ window.sendOrder = function() {
             document.getElementById('confirm-details').innerText = messageBody;
             confirmModal.style.display = 'flex';
             sendBtn.innerText = "Bestellen";
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
         } else { throw new Error('Send Error'); }
     })
     .catch(error => {
@@ -817,3 +818,23 @@ function triggerConfetti() {
 window.closeRewardModal = function() {
     document.getElementById('reward-modal').style.display = 'none';
 }
+
+// ============================================
+//   HAPTIC FEEDBACK (Vibration) 📳
+// ============================================
+
+// 1. Generelles Klick-Feedback für alle Buttons & Links
+document.addEventListener('click', (e) => {
+    // Prüfen, ob ein Button oder Link geklickt wurde
+    if (e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('.coffee-card')) {
+        // Ganz kurz vibrieren (10ms) - fühlt sich an wie ein "Tick"
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+});
+
+// 2. Erfolgsvibration für Bestellungen
+// Suche deine 'sendOrder' Funktion und füge das im Erfolgs-Fall hinzu:
+/* In der .then(response => { ... }) Klammer, direkt unter confirmModal.style.display = 'flex':
+   
+   if (navigator.vibrate) navigator.vibrate([50, 30, 50]); // Zweimal kurz brummen
+*/
