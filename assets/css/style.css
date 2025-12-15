@@ -300,4 +300,34 @@
 
 .spec-value { font-size: 1.1rem; font-weight: bold; color: #fff; }
 
+/* --- 3D TILT EFFEKT --- */
+.coffee-card {
+    /* Wichtig für 3D */
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    transition: transform 0.1s ease-out; /* Sehr schnell, damit es der Maus folgt */
+}
+
+/* Ein Glanz-Effekt, der über die Karte huscht */
+.coffee-card::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(125deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 40%);
+    border-radius: 12px;
+    opacity: 0; /* Erstmal unsichtbar */
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.coffee-card:hover::after {
+    opacity: 1;
+}
+
+/* Damit der Inhalt (Text) etwas über dem Hintergrund schwebt */
+.coffee-card .name, 
+.coffee-card .desc, 
+.coffee-card .fav-btn {
+    transform: translateZ(20px); /* Schwebt 20px vor dem Hintergrund */
+}
 .highlight-badge { background: #d4b483; color: #2c1e16; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; vertical-align: middle; margin-left: 5px; }
