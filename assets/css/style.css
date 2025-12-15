@@ -330,3 +330,19 @@
 .coffee-card .fav-btn {
     transform: translateZ(20px); /* Schwebt 20px vor dem Hintergrund */
 }
+
+/* ========================================= */
+/* --- VIEW TRANSITIONS (Seitenübergänge) --- */
+/* ========================================= */
+
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    /* Dauer der Animation: 0.5 Sekunden ist schön weich */
+    animation-duration: 0.5s; 
+    /* Ein sanfteres Starten und Stoppen der Bewegung */
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
