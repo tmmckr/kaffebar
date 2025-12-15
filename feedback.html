@@ -160,6 +160,15 @@
 
             input.value = "";
             setRating(0);
+
+            if (!text && currentRating === 0) { 
+                showToast("Bitte Text oder Sterne eingeben!", "error"); 
+                
+                // NEU: Langes Fehler-Brummen
+                if(navigator.vibrate) navigator.vibrate(200); 
+                
+                return; 
+            }
         }
 
         const guestbookRef = ref(db, 'guestbook');
