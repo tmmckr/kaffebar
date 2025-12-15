@@ -4,61 +4,215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Login - Timo's Barista Bar</title>
-    <meta name="theme-color" content="#2c1e16">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/img/icon.png">
+    <meta name="theme-color" content="#1a1a1a">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary: #d4b483; /* Gold */
+            --primary-hover: #c4a473;
+            --bg-overlay: rgba(20, 15, 10, 0.85);
+            --glass-bg: rgba(30, 25, 20, 0.65);
+            --glass-border: rgba(212, 180, 131, 0.2);
+            --text-color: #e0d0c0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0; padding: 0; height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            color: #e0d0c0;
-            background: linear-gradient(rgba(44, 30, 22, 0.9), rgba(15, 10, 6, 0.98)), url('coffee-5447420_1920.jpg');
+            color: var(--text-color);
+            /* Hintergrundbild mit dunklem Overlay */
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), url('assets/img/coffee-5447420_1920.jpg');
             background-size: cover; background-position: center;
+            overflow: hidden;
         }
-        .login-box {
-            background: rgba(44, 30, 22, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 30px; border-radius: 20px;
-            border: 1px solid #d4b483;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            width: 85%; max-width: 350px; text-align: center;
+
+        /* Die Glassmorphism Karte */
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px); /* Der Milchglas-Effekt */
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            width: 90%; max-width: 380px;
+            text-align: center;
+            position: relative;
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        h1 { font-family: "Times New Roman", serif; color: #d4b483; margin: 0 0 20px 0; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo / Icon Bereich */
+        .brand-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            filter: drop-shadow(0 0 15px rgba(212, 180, 131, 0.3));
+        }
+
+        h1 {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 30px;
+            margin-top: 0;
+        }
+
+        /* Modern Inputs */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
         input {
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            background: rgba(0,0,0,0.3); border: 1px solid #d4b483;
-            border-radius: 8px; color: white; box-sizing: border-box; font-size: 1rem;
+            width: 100%;
+            padding: 15px 15px 15px 45px; /* Platz für Icon links */
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            outline: none;
         }
+
+        /* Icons im Input Feld */
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(212, 180, 131, 0.15);
+        }
+
+        /* Der Button */
         button {
-            width: 100%; padding: 12px; background: #d4b483; color: #2c1e16;
-            border: none; border-radius: 8px; font-weight: bold; font-size: 1rem;
-            cursor: pointer; margin-top: 10px;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #1a1a1a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.5px;
         }
+
+        button:active { transform: scale(0.97); }
+        button:hover { box-shadow: 0 5px 20px rgba(212, 180, 131, 0.3); }
+
+        /* Links umschalten */
         .switch-link {
-            margin-top: 20px; font-size: 0.9rem; color: #aaa; cursor: pointer; text-decoration: underline;
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: #bbb;
+            cursor: pointer;
+            transition: color 0.3s;
         }
-        #error-msg { color: #ef4444; margin-bottom: 15px; display: none; font-size: 0.9rem;}
+        .switch-link span { color: var(--primary); font-weight: bold; text-decoration: none; }
+        .switch-link:hover { color: white; }
+
+        /* Fehlermeldung */
+        #error-msg {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.85rem;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
         .hidden { display: none; }
+        
+        /* Fade Effekt beim Wechseln */
+        .fade-in { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="login-box">
-        <h1 id="form-title">Anmelden</h1>
+    <div class="login-card">
+        <div class="brand-icon">☕</div>
+        <h1 id="form-title">Willkommen</h1>
+        <p class="subtitle">Bei Timo's Barista Bar</p>
+
         <div id="error-msg"></div>
 
-        <div id="login-form">
-            <input type="email" id="login-email" placeholder="E-Mail">
-            <input type="password" id="login-pass" placeholder="Passwort">
+        <div id="login-form" class="fade-in">
+            <div class="input-group">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="login-email" placeholder="E-Mail Adresse">
+            </div>
+            <div class="input-group">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="login-pass" placeholder="Passwort">
+            </div>
+            
             <button onclick="login()">Einloggen</button>
-            <div class="switch-link" onclick="showRegister()">Noch kein Konto? Registrieren</div>
+            
+            <div class="switch-link" onclick="showRegister()">
+                Neu hier? <span>Konto erstellen</span>
+            </div>
         </div>
 
-        <div id="register-form" class="hidden">
-            <input type="text" id="reg-name" placeholder="Dein Name">
-            <input type="email" id="reg-email" placeholder="E-Mail">
-            <input type="password" id="reg-pass" placeholder="Passwort wählen">
-            <button onclick="register()">Konto erstellen</button>
-            <div class="switch-link" onclick="showLogin()">Zurück zum Login</div>
+        <div id="register-form" class="hidden fade-in">
+            <div class="input-group">
+                <span class="input-icon">👤</span>
+                <input type="text" id="reg-name" placeholder="Dein Name">
+            </div>
+            <div class="input-group">
+                <span class="input-icon">✉️</span>
+                <input type="email" id="reg-email" placeholder="E-Mail Adresse">
+            </div>
+            <div class="input-group">
+                <span class="input-icon">🔒</span>
+                <input type="password" id="reg-pass" placeholder="Passwort wählen">
+            </div>
+
+            <button onclick="register()">Registrieren</button>
+            
+            <div class="switch-link" onclick="showLogin()">
+                Schon dabei? <span>Zum Login</span>
+            </div>
         </div>
     </div>
 
@@ -66,7 +220,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // *** DEINE CONFIG HIER EINFÜGEN ***
+        // *** DEINE CONFIG ***
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -84,48 +238,58 @@
         window.showRegister = () => {
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('register-form').classList.remove('hidden');
-            document.getElementById('form-title').innerText = "Registrieren";
+            document.getElementById('form-title').innerText = "Neues Konto";
             document.getElementById('error-msg').style.display = 'none';
         };
 
         window.showLogin = () => {
             document.getElementById('register-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
-            document.getElementById('form-title').innerText = "Anmelden";
+            document.getElementById('form-title').innerText = "Willkommen";
             document.getElementById('error-msg').style.display = 'none';
         };
 
-        // LOGIN FUNKTION
+        // LOGIN
         window.login = () => {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
+            const btn = document.querySelector('#login-form button');
+            
+            // Kleiner Ladeeffekt
+            const oldText = btn.innerText;
+            btn.innerText = "Lade...";
 
             signInWithEmailAndPassword(auth, email, pass)
                 .then(() => {
-                    window.location.href = "index.html"; // Weiterleitung zur Bar!
+                    window.location.href = "index.html"; 
                 })
                 .catch((error) => {
+                    btn.innerText = oldText;
                     showError(error.message);
                 });
         };
 
-        // REGISTER FUNKTION
+        // REGISTER
         window.register = () => {
             const name = document.getElementById('reg-name').value;
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-pass').value;
+            const btn = document.querySelector('#register-form button');
 
             if(!name) { showError("Bitte Namen eingeben!"); return; }
 
+            const oldText = btn.innerText;
+            btn.innerText = "Erstelle...";
+
             createUserWithEmailAndPassword(auth, email, pass)
                 .then((userCredential) => {
-                    // Namen im Profil speichern
                     updateProfile(userCredential.user, { displayName: name })
                         .then(() => {
                             window.location.href = "index.html";
                         });
                 })
                 .catch((error) => {
+                    btn.innerText = oldText;
                     showError(error.message);
                 });
         };
@@ -136,7 +300,7 @@
             if(msg.includes("auth/invalid-email")) msg = "Ungültige E-Mail.";
             if(msg.includes("auth/weak-password")) msg = "Passwort zu schwach (min. 6 Zeichen).";
             if(msg.includes("auth/email-already-in-use")) msg = "E-Mail wird schon benutzt.";
-            if(msg.includes("auth/wrong-password")) msg = "Falsches Passwort.";
+            if(msg.includes("auth/wrong-password") || msg.includes("auth/invalid-credential")) msg = "E-Mail oder Passwort falsch.";
             if(msg.includes("auth/user-not-found")) msg = "Benutzer nicht gefunden.";
             errDiv.innerText = msg;
         }
