@@ -457,3 +457,25 @@
 
 .msg-time { color: #888; font-size: 0.7rem; font-weight: normal; }
 .msg-body { font-size: 1rem; line-height: 1.4; color: #eee; }
+
+/* ========================================= */
+/* --- SCROLL REVEAL ANIMATION ✨ --- */
+/* ========================================= */
+
+/* Startzustand: Unsichtbar und etwas weiter unten */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px); /* 30px nach unten verschoben */
+    transition: all 0.6s cubic-bezier(0.5, 0, 0, 1); /* Weiche Bewegung */
+    will-change: opacity, transform; /* Performance-Optimierung */
+}
+
+/* Endzustand: Sichtbar und an Originalposition */
+.scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Optional: Elemente sollen nacheinander reinkommen (Staggering) */
+.scroll-reveal:nth-child(2) { transition-delay: 0.1s; }
+.scroll-reveal:nth-child(3) { transition-delay: 0.2s; }
