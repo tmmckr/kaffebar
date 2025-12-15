@@ -7,9 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="assets/img/icon.png">
     <meta name="theme-color" content="#2c1e16">
-    
     <meta name="view-transition" content="same-origin">
-    
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -27,9 +25,26 @@
         <a href="feedback.html" class="nav-link active">Feedback</a>
     </nav>
 
-    <div class="content-container"> <div class="input-card">
-            <div style="margin-bottom: 10px; color: #d4b483; font-weight: bold;">📝 Dein Eintrag</div>
-            <textarea id="msg-input" class="feedback-input" rows="3" placeholder="Wie hat's geschmeckt?"></textarea>
+    <div class="content-container">
+
+        <div class="rating-summary scroll-reveal">
+            <div id="avg-score" class="avg-score">--</div>
+            <div id="avg-stars" class="avg-stars">☆☆☆☆☆</div>
+            <div id="avg-count" class="avg-count">Lade Bewertungen...</div>
+        </div>
+        
+        <div class="input-card scroll-reveal">
+            <div style="margin-bottom: 10px; color: #d4b483; font-weight: bold;">📝 Dein Feedback</div>
+            
+            <div class="star-input-wrapper">
+                <span class="star-btn" onclick="setRating(1)">★</span>
+                <span class="star-btn" onclick="setRating(2)">★</span>
+                <span class="star-btn" onclick="setRating(3)">★</span>
+                <span class="star-btn" onclick="setRating(4)">★</span>
+                <span class="star-btn" onclick="setRating(5)">★</span>
+            </div>
+
+            <textarea id="msg-input" class="feedback-input" rows="3" placeholder="Wie hat der Kaffee geschmeckt?"></textarea>
             <button class="send-btn" onclick="postMessage()">Senden</button>
             <div style="clear:both"></div>
         </div>
@@ -45,7 +60,6 @@
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCy8RnpwpL0RdjfaU690j7mKAzr1fiWFXk",
             authDomain: "timos-barista-bar.firebaseapp.com",
@@ -61,64 +75,116 @@
         const auth = getAuth(app);
 
         let currentUser = null;
+        let currentRating = 0; // Speichert die gewählten Sterne (1-5)
 
-        // AUTH CHECK
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-            } else {
-                window.location.href = "login.html";
-            }
+            if (user) currentUser = user;
+            else window.location.href = "login.html";
         });
 
-        // --- NACHRICHT SENDEN ---
+        // --- STERNE LOGIK (Klick) ---
+        window.setRating = function(n) {
+            currentRating = n;
+            const stars = document.querySelectorAll('.star-btn');
+            stars.forEach((star, index) => {
+                if (index < n) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+        }
+
+        // --- SENDEN ---
         window.postMessage = function() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
 
-            if (!text) return;
+            if (!text && currentRating === 0) { alert("Bitte Text oder Sterne eingeben!"); return; }
             if (!currentUser) { alert("Bitte erst einloggen!"); return; }
 
             push(ref(db, 'guestbook'), {
                 user: currentUser.displayName || "Unbekannt",
                 text: text,
+                rating: currentRating, // Speichert die Sterne
                 timestamp: Date.now()
             });
 
-            input.value = ""; // Feld leeren
+            // Reset
+            input.value = "";
+            setRating(0); // Sterne zurücksetzen
         }
 
-        // --- NACHRICHTEN LADEN (LIVE) ---
+        // --- LADEN & DURCHSCHNITT BERECHNEN ---
         const guestbookRef = ref(db, 'guestbook');
         const listDiv = document.getElementById('message-stream');
 
+        // Elemente für den Durchschnitt
+        const scoreEl = document.getElementById('avg-score');
+        const starsEl = document.getElementById('avg-stars');
+        const countEl = document.getElementById('avg-count');
+
         onValue(guestbookRef, (snapshot) => {
             const data = snapshot.val();
-            listDiv.innerHTML = ""; // Liste leeren
+            listDiv.innerHTML = "";
 
             if (!data) {
-                listDiv.innerHTML = "<div style='text-align:center; color:#888;'>Noch keine Einträge. Sei der Erste!</div>";
+                listDiv.innerHTML = "<div style='text-align:center; color:#888;'>Noch keine Einträge.</div>";
+                scoreEl.innerText = "--";
                 return;
             }
 
-            // In Array umwandeln und sortieren (Neueste oben)
             const messages = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
 
+            // 1. Durchschnitt berechnen
+            let totalStars = 0;
+            let ratingCount = 0;
+
+            messages.forEach(msg => {
+                if (msg.rating > 0) {
+                    totalStars += msg.rating;
+                    ratingCount++;
+                }
+            });
+
+            if (ratingCount > 0) {
+                const average = (totalStars / ratingCount).toFixed(1); // z.B. 4.8
+                scoreEl.innerText = average;
+                countEl.innerText = `Basierend auf ${ratingCount} Bewertungen`;
+                
+                // Sterne String bauen (z.B. ★★★★☆)
+                let starStr = "";
+                const rounded = Math.round(average);
+                for(let i=0; i<5; i++) starStr += i < rounded ? "★" : "☆";
+                starsEl.innerText = starStr;
+            } else {
+                scoreEl.innerText = "-.-";
+                countEl.innerText = "Noch keine Bewertungen";
+            }
+
+            // 2. Liste anzeigen
             messages.forEach(msg => {
                 const date = new Date(msg.timestamp);
-                const dateStr = date.toLocaleDateString() + " " + date.toLocaleTimeString().slice(0,5);
+                const dateStr = date.toLocaleDateString();
+
+                // Sterne für diesen Eintrag generieren
+                let userStars = "";
+                if(msg.rating > 0) {
+                    for(let i=0; i<msg.rating; i++) userStars += "★";
+                }
 
                 const card = document.createElement('div');
-                card.className = 'msg-card';
+                card.className = 'msg-card scroll-reveal'; // Scroll Animation
                 card.innerHTML = `
                     <div class="msg-header">
                         <span>${msg.user}</span>
                         <span class="msg-time">${dateStr}</span>
                     </div>
-                    <div class="msg-body">${msg.text}</div>
+                    ${userStars ? `<div class="msg-rating">${userStars}</div>` : ''}
+                    <div class="msg-body" style="margin-top:5px;">${msg.text}</div>
                 `;
                 listDiv.appendChild(card);
             });
+            
+            // Animationen initialisieren (falls du die main.js Funktionen hier hättest, 
+            // aber wir lassen es simpel per CSS Animation)
         });
     </script>
 </body>
