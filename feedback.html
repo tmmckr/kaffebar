@@ -74,15 +74,29 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
+        // --- HIER IST DER RETTER: ANIMATIONS-BEOBACHTER ---
+        // Sorgt dafür, dass Elemente sichtbar werden, wenn sie da sind
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        // Sofort die statischen Elemente (Eingabefeld etc.) beobachten
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+        // --------------------------------------------------
+
         let currentUser = null;
-        let currentRating = 0; // Speichert die gewählten Sterne (1-5)
+        let currentRating = 0; 
 
         onAuthStateChanged(auth, (user) => {
             if (user) currentUser = user;
             else window.location.href = "login.html";
         });
 
-        // --- STERNE LOGIK (Klick) ---
         window.setRating = function(n) {
             currentRating = n;
             const stars = document.querySelectorAll('.star-btn');
@@ -92,7 +106,6 @@
             });
         }
 
-        // --- SENDEN ---
         window.postMessage = function() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
@@ -103,20 +116,16 @@
             push(ref(db, 'guestbook'), {
                 user: currentUser.displayName || "Unbekannt",
                 text: text,
-                rating: currentRating, // Speichert die Sterne
+                rating: currentRating,
                 timestamp: Date.now()
             });
 
-            // Reset
             input.value = "";
-            setRating(0); // Sterne zurücksetzen
+            setRating(0);
         }
 
-        // --- LADEN & DURCHSCHNITT BERECHNEN ---
         const guestbookRef = ref(db, 'guestbook');
         const listDiv = document.getElementById('message-stream');
-
-        // Elemente für den Durchschnitt
         const scoreEl = document.getElementById('avg-score');
         const starsEl = document.getElementById('avg-stars');
         const countEl = document.getElementById('avg-count');
@@ -133,7 +142,6 @@
 
             const messages = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
 
-            // 1. Durchschnitt berechnen
             let totalStars = 0;
             let ratingCount = 0;
 
@@ -145,11 +153,10 @@
             });
 
             if (ratingCount > 0) {
-                const average = (totalStars / ratingCount).toFixed(1); // z.B. 4.8
+                const average = (totalStars / ratingCount).toFixed(1); 
                 scoreEl.innerText = average;
                 countEl.innerText = `Basierend auf ${ratingCount} Bewertungen`;
                 
-                // Sterne String bauen (z.B. ★★★★☆)
                 let starStr = "";
                 const rounded = Math.round(average);
                 for(let i=0; i<5; i++) starStr += i < rounded ? "★" : "☆";
@@ -159,19 +166,17 @@
                 countEl.innerText = "Noch keine Bewertungen";
             }
 
-            // 2. Liste anzeigen
             messages.forEach(msg => {
                 const date = new Date(msg.timestamp);
                 const dateStr = date.toLocaleDateString();
 
-                // Sterne für diesen Eintrag generieren
                 let userStars = "";
                 if(msg.rating > 0) {
                     for(let i=0; i<msg.rating; i++) userStars += "★";
                 }
 
                 const card = document.createElement('div');
-                card.className = 'msg-card scroll-reveal'; // Scroll Animation
+                card.className = 'msg-card scroll-reveal'; // Hat die Animations-Klasse
                 card.innerHTML = `
                     <div class="msg-header">
                         <span>${msg.user}</span>
@@ -181,10 +186,10 @@
                     <div class="msg-body" style="margin-top:5px;">${msg.text}</div>
                 `;
                 listDiv.appendChild(card);
+                
+                // WICHTIG: Die neue Karte sofort dem Beobachter melden!
+                observer.observe(card);
             });
-            
-            // Animationen initialisieren (falls du die main.js Funktionen hier hättest, 
-            // aber wir lassen es simpel per CSS Animation)
         });
     </script>
 </body>
