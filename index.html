@@ -40,7 +40,7 @@
         <span onclick="window.toggleChat()" class="bot-link">Frag den Barista Bot! 🤖</span>
     </div>
 
-    <div class="news-banner">
+    <div class="news-banner" onclick="openMatchaInfo()" style="cursor: pointer;">
         <span class="news-badge">NEU</span>
         <span>Iced Matcha Latte – auch als Protein-Version! 🍵</span>
     </div>
@@ -100,6 +100,29 @@
         </div>
     </div>
 
+    <div id="info-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="modal-title">Iced Matcha Latte 🍵</h2>
+            
+            <div style="margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #d4b483;">
+                <img src="assets/img/matchalatte.jpg" alt="Matcha Latte" style="width: 100%; height: auto; display: block;">
+            </div>
+
+            <p class="modal-text" style="color: #ddd; line-height: 1.6; text-align: left; font-size: 0.95rem;">
+                Unser neuer Sommer-Hit! ☀️<br><br>
+                Zubereitet aus <b>4g Premium Bio-Matcha</b>, der traditionell mit dem Bambusbesen (Chasen) in heißem Wasser schaumig geschlagen wird.<br><br>
+                Serviert auf Eiswürfeln mit kalter Milch oder Hafermilch für den perfekten Frische-Kick.
+            </p>
+
+            <button class="modal-btn" onclick="closeInfoModal()">Alles klar!</button>
+            
+            <div style="margin-top: 15px; color: #d4b483; text-decoration: underline; cursor: pointer; font-size: 0.9rem;" 
+                 onclick="closeInfoModal(); openOrderModal('Iced Matcha Latte')">
+                Jetzt direkt bestellen 🛒
+            </div>
+        </div>
+    </div>
+
     <div id="status"></div>
 
     <div class="chat-toggle" onclick="window.toggleChat()">🤖</div>
@@ -127,3 +150,4 @@
 
 </body>
 </html>
+
