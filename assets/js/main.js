@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, update, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, update, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -35,7 +35,8 @@ onAuthStateChanged(auth, (user) => {
 
         // Features starten
         if(typeof monitorMyOrder === "function") monitorMyOrder();
-        listenToFavorites(); 
+        listenToFavorites();
+        monitorStampCard();
     } else {
         window.location.href = "login.html";
     }
@@ -295,6 +296,26 @@ window.sendOrder = function() {
         comment: comment,
         timestamp: Date.now(),
         dateString: new Date().toLocaleString()
+    });
+
+    // 2. STEMPEL HOCHZÄHLEN (Transaction für Sicherheit)
+    const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
+    runTransaction(countRef, (currentCount) => {
+        return (currentCount || 0) + 1;
+    }).then((result) => {
+        // Prüfen, ob die 10 voll sind (Modulo)
+        const newCount = result.snapshot.val();
+        if (newCount > 0 && newCount % 10 === 0) {
+            // PARTY! 🎉
+            triggerConfetti();
+            // Modal zeigen (kurz verzögert)
+            setTimeout(() => {
+                const rewardModal = document.getElementById('reward-modal');
+                if(rewardModal) rewardModal.style.display = 'flex';
+                // Sound abspielen (optional)
+                try { new Audio('assets/audio/ding.mp3').play(); } catch(e){}
+            }, 500);
+        }
     });
 
     // 2. NTFY PUSH
@@ -715,4 +736,84 @@ function initScrollReveal() {
     document.querySelectorAll('.scroll-reveal').forEach(el => {
         observer.observe(el);
     });
+}
+
+// ============================================
+//   DIGITALE STEMPELKARTE 🎫
+// ============================================
+
+// 1. Stempel-Logik überwachen (Live-Update)
+function monitorStampCard() {
+    if (!currentUser) return;
+    
+    const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
+    onValue(countRef, (snapshot) => {
+        const totalCount = snapshot.val() || 0;
+        renderStampCard(totalCount);
+    });
+}
+
+// 2. Karte zeichnen (HTML generieren)
+function renderStampCard(totalCount) {
+    const grid = document.getElementById('stamp-grid');
+    const counterText = document.getElementById('stamp-counter');
+    const msgText = document.getElementById('stamp-message');
+    
+    if(!grid) return; // Falls wir nicht auf der index.html sind
+
+    // Wir schauen immer nur auf den aktuellen 10er Block
+    // Beispiel: Bei 13 Kaffees haben wir 3 Stempel auf der aktuellen Karte
+    const currentStamps = totalCount % 10;
+    const remaining = 10 - currentStamps;
+
+    // Text Updates
+    counterText.innerText = `${currentStamps} / 10`;
+    
+    if (currentStamps === 0 && totalCount > 0) {
+        msgText.innerText = "Neue Karte, neues Glück! 🍀";
+    } else if (remaining === 0) {
+        msgText.innerHTML = "<b>VOLL!</b> Dein nächster Kaffee bringt einen Keks! 🍪";
+    } else {
+        msgText.innerText = `Noch ${remaining} Kaffees bis zum Gratis-Keks! 🍪`;
+    }
+
+    // Kreise generieren
+    grid.innerHTML = "";
+    for (let i = 1; i <= 10; i++) {
+        const circle = document.createElement('div');
+        circle.className = 'stamp-circle';
+        
+        if (i <= currentStamps) {
+            circle.classList.add('active');
+            circle.innerText = "☕"; // Stempel-Icon
+        } else {
+            circle.innerText = i;
+        }
+        grid.appendChild(circle);
+    }
+}
+
+// 3. Konfetti Funktion 🎉
+function triggerConfetti() {
+    const colors = ['#d4b483', '#f2d74e', '#ffffff', '#e74c3c'];
+    
+    for (let i = 0; i < 100; i++) {
+        const conf = document.createElement('div');
+        conf.classList.add('confetti');
+        
+        // Zufällige Position & Farbe
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5 Sekunden Fallzeit
+        
+        document.body.appendChild(conf);
+        
+        // Aufräumen
+        setTimeout(() => conf.remove(), 5000);
+    }
+}
+
+// Belohnungs-Modal schließen
+window.closeRewardModal = function() {
+    document.getElementById('reward-modal').style.display = 'none';
 }
