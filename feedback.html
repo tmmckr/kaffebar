@@ -55,6 +55,8 @@
 
     </div>
 
+    <div id="toast-container"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -74,8 +76,32 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // --- HIER IST DER RETTER: ANIMATIONS-BEOBACHTER ---
-        // Sorgt dafür, dass Elemente sichtbar werden, wenn sie da sind
+        // --- TOAST FUNKTION (Ersetzt Alert) ---
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = '💬';
+            if(type === 'success') icon = '✅';
+            if(type === 'error') icon = '❌';
+
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Animation starten
+            requestAnimationFrame(() => { toast.classList.add('show'); });
+
+            // Nach 3s entfernen
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // Observer für Scroll Animation
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -84,10 +110,8 @@
                 }
             });
         }, { threshold: 0.1 });
-
-        // Sofort die statischen Elemente (Eingabefeld etc.) beobachten
         document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
-        // --------------------------------------------------
+
 
         let currentUser = null;
         let currentRating = 0; 
@@ -104,14 +128,24 @@
                 if (index < n) star.classList.add('active');
                 else star.classList.remove('active');
             });
+            // Kleines Feedback beim Tippen
+            if(navigator.vibrate) navigator.vibrate(10);
         }
 
         window.postMessage = function() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
 
-            if (!text && currentRating === 0) { alert("Bitte Text oder Sterne eingeben!"); return; }
-            if (!currentUser) { alert("Bitte erst einloggen!"); return; }
+            // *** HIER SIND JETZT DIE TOASTS STATT ALERTS ***
+            if (!text && currentRating === 0) { 
+                showToast("Bitte Text oder Sterne eingeben!", "error"); 
+                if(navigator.vibrate) navigator.vibrate(100); // Fehler-Vibration
+                return; 
+            }
+            if (!currentUser) { 
+                showToast("Bitte erst einloggen!", "error"); 
+                return; 
+            }
 
             push(ref(db, 'guestbook'), {
                 user: currentUser.displayName || "Unbekannt",
@@ -119,6 +153,10 @@
                 rating: currentRating,
                 timestamp: Date.now()
             });
+
+            // Erfolg!
+            showToast("Danke für dein Feedback!", "success");
+            if(navigator.vibrate) navigator.vibrate([50, 50]); 
 
             input.value = "";
             setRating(0);
@@ -176,7 +214,7 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = 'msg-card scroll-reveal'; // Hat die Animations-Klasse
+                card.className = 'msg-card scroll-reveal';
                 card.innerHTML = `
                     <div class="msg-header">
                         <span>${msg.user}</span>
@@ -186,8 +224,6 @@
                     <div class="msg-body" style="margin-top:5px;">${msg.text}</div>
                 `;
                 listDiv.appendChild(card);
-                
-                // WICHTIG: Die neue Karte sofort dem Beobachter melden!
                 observer.observe(card);
             });
         });
