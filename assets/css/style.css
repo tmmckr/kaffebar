@@ -1,1 +1,233 @@
+ /* --- Grundlegendes Design --- */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e0d0c0; margin: 0; padding: 25px 15px; min-height: 100vh; position: relative; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(rgba(44, 30, 22, 0.85), rgba(15, 10, 6, 0.95)), url('assets/img/coffee-5447420_1920.jpg'); background-size: cover; background-position: center; }
+        h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal; font-size: 2.8rem; margin-bottom: 5px; text-align: center; letter-spacing: 1px; padding-top: 25px; }
+        .subtitle { text-align: center; color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.2rem; margin-bottom: 20px; position: relative; }
+        .subtitle::after { content: ''; display: block; width: 50px; height: 2px; background: #d4b483; margin: 15px auto 0; opacity: 0.6; }
 
+        /* --- Navigation (Pill Style) --- */
+        .navbar {
+            position: sticky; top: 20px; z-index: 1000;
+            width: 95%; max-width: 600px; margin: 0 auto 30px auto;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            display: flex; justify-content: space-between; align-items: center; padding: 4px;
+        }
+        .nav-link {
+            color: #e0d0c0; text-decoration: none; 
+            font-size: 0.65rem; /* Perfekt für 5 Buttons */
+            padding: 10px 2px; 
+            letter-spacing: 0px;
+            text-transform: uppercase; font-weight: bold; border-radius: 40px; transition: all 0.3s ease;
+            flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .nav-link.active { background-color: #d4b483; color: #2c1e16; box-shadow: 0 2px 10px rgba(212, 180, 131, 0.3); }
+
+        /* --- HEADER BUTTONS (Oben Links & Rechts) --- */
+        .header-btn-style {
+            position: fixed; top: 20px; z-index: 1100;
+            background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 30px;
+            color: #d4b483; font-size: 0.7rem; font-weight: bold; text-transform: uppercase;
+            padding: 8px 15px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.2s ease; text-decoration: none; display: flex; align-items: center;
+        }
+        .header-btn-style:active { transform: scale(0.95); background: #d4b483; color: #2c1e16; }
+
+        .logout-btn { right: 15px; } /* Rechts */
+        .stats-btn { left: 15px; }   /* Links */
+
+        /* --- Status Ampel --- */
+        .status-container { text-align: center; margin-bottom: 25px; min-height: 40px; }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.3s ease; }
+        .status-loading { background: rgba(255, 255, 255, 0.1); border: 1px solid #aaa; color: #aaa; }
+        .status-open { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #10b981; }
+        .status-closed { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-green { background-color: #10b981; box-shadow: 0 0 10px #10b981; }
+        .dot-red { background-color: #ef4444; box-shadow: 0 0 10px #ef4444; }
+        .shop-closed-mode { opacity: 0.4; pointer-events: none; filter: grayscale(100%); transition: all 0.5s; }
+
+        /* --- UI Elemente --- */
+        .news-banner { background: rgba(212, 180, 131, 0.1); border: 1px solid rgba(212, 180, 131, 0.5); color: #e0d0c0; padding: 12px 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 12px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .news-badge { background: #d4b483; color: #2c1e16; font-weight: bold; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; letter-spacing: 1px; white-space: nowrap; }
+        
+        .bean-card { background: linear-gradient(145deg, rgba(40, 30, 25, 0.9), rgba(20, 15, 10, 0.9)); border: 1px solid rgba(212, 180, 131, 0.4); padding: 20px; border-radius: 12px; margin: 0 auto 40px auto; max-width: 600px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
+        .bean-card::before { content: ''; position: absolute; top: -50px; left: -50px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(255,255,255,0.1), transparent 70%); }
+        .bean-label { color: #d4b483; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
+        .bean-name { font-family: "Times New Roman", serif; font-size: 1.6rem; color: #fff; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .bean-desc { color: #a09085; font-size: 0.9rem; margin-bottom: 15px; font-style: italic; }
+        .intensity-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 0.8rem; color: #d4b483; font-weight: bold; letter-spacing: 1px;}
+        .progress-bar-bg { width: 120px; height: 6px; background: rgba(212, 180, 131, 0.2); border-radius: 3px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #d4b483; width: 70%; box-shadow: 0 0 10px rgba(212, 180, 131, 0.5); }
+
+        .menu-list { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        .coffee-card { background: rgba(40, 30, 25, 0.7); border: 1px solid rgba(212, 180, 131, 0.2); border-radius: 12px; padding: 20px 25px; cursor: pointer; transition: all 0.2s ease; text-align: left; position: relative; backdrop-filter: blur(5px); }
+        .coffee-card:active { transform: scale(0.96); background: rgba(60, 45, 35, 0.9); border-color: rgba(212, 180, 131, 0.8); }
+        .name { font-size: 1.3rem; font-weight: 500; color: #fff; margin-bottom: 12px; }
+        .desc { font-size: 0.95rem; color: #a09085; line-height: 1.5; margin-bottom: 20px; }
+        .strength-container { display: flex; align-items: center; font-size: 0.75rem; color: #d4b483; letter-spacing: 1.5px; text-transform: uppercase; }
+        .dots { margin-left: 10px; letter-spacing: 3px; font-size: 1rem; }
+        .dot-filled { color: #d4b483; } .dot-empty { color: rgba(212, 180, 131, 0.2); }
+
+        /* --- Modals --- */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); animation: fadeIn 0.3s; }
+        .modal-box { background: #2c1e16; border: 2px solid #d4b483; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(212, 180, 131, 0.2); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; overflow-y: auto; }
+        .modal-title { color: #d4b483; font-family: "Times New Roman", serif; font-size: 1.6rem; margin: 0 0 15px 0; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-label { display: block; color: #a09085; font-size: 0.85rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .modal-input, .modal-select { width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.3); border: 1px solid #d4b483; border-radius: 8px; color: white; font-size: 1rem; outline: none; box-sizing: border-box; }
+        .modal-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d4b483'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 20px; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(212, 180, 131, 0.1); }
+        .checkbox-item { display: flex; align-items: center; gap: 12px; cursor: pointer; color: white; font-size: 1rem; }
+        .checkbox-item input { accent-color: #d4b483; width: 20px; height: 20px; cursor: pointer; }
+        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #d4b483; margin-top: -8px; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(212, 180, 131, 0.3); border-radius: 2px; }
+        .range-value { float: right; color: #d4b483; font-weight: bold; }
+        .radio-group { display: flex; gap: 10px; }
+        .radio-label { flex: 1; text-align: center; padding: 10px; border: 1px solid rgba(212, 180, 131, 0.5); border-radius: 8px; cursor: pointer; color: #a09085; transition: 0.2s; }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .radio-label { background: #d4b483; color: #2c1e16; font-weight: bold; border-color: #d4b483; }
+        .modal-btn { background: #d4b483; color: #2c1e16; border: none; padding: 12px 30px; font-size: 1rem; font-weight: bold; border-radius: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 10px; }
+        
+        /* Geschlossen-Info */
+        .closed-info-box { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 15px; margin: 0 auto 30px auto; max-width: 600px; border-radius: 12px; text-align: center; backdrop-filter: blur(5px); animation: fadeIn 0.5s; }
+        .bot-link { color: #d4b483; font-weight: bold; text-decoration: underline; cursor: pointer; }
+
+        #status { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444; color: white; padding: 12px 25px; border-radius: 30px; display: none; z-index: 100; font-weight: bold; text-align: center; width: 80%; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- CHATBOT --- */
+        .chat-toggle { position: fixed; bottom: 80px; right: 20px; background: #d4b483; color: #2c1e16; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2000; transition: transform 0.2s; }
+        .chat-toggle:active { transform: scale(0.9); }
+        .chat-window { position: fixed; bottom: 150px; right: 20px; width: 300px; height: 450px; background: #2c1e16; border: 2px solid #d4b483; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; overflow: hidden; animation: popIn 0.3s; }
+        .chat-header { background: #d4b483; color: #2c1e16; padding: 10px; font-weight: bold; text-align: center; display: flex; justify-content: space-between; align-items: center; }
+        .close-chat { cursor: pointer; font-size: 1.2rem; }
+        .chat-messages { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; line-height: 1.4; }
+        .bot-msg { background: rgba(255,255,255,0.1); color: #ddd; align-self: flex-start; border-bottom-left-radius: 0; }
+        .user-msg { background: #d4b483; color: #2c1e16; align-self: flex-end; border-bottom-right-radius: 0; }
+        .chat-input-area { padding: 10px; border-top: 1px solid rgba(212, 180, 131, 0.3); display: flex; gap: 5px; }
+        .chat-input { flex: 1; padding: 10px; border-radius: 5px; border: none; outline: none; }
+        .chat-send { background: #d4b483; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
+
+        /* --- DAMPF & SCHNEE --- */
+        .steam-particle { position: fixed; background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%); border-radius: 50%; pointer-events: none; z-index: 10000; animation: steamRise 1.5s ease-out forwards; filter: blur(4px); }
+        @keyframes steamRise { 0% { transform: translateY(0) scale(0.5); opacity: 0.6; } 100% { transform: translateY(-150px) scale(3); opacity: 0; } }
+        #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
+        .snowflake { position: absolute; background-color: white; border-radius: 50%; opacity: 0.8; pointer-events: none; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(105vh) translateX(20px); opacity: 0.3; } }
+
+        /* --- LIVE STATUS BANNER --- */
+        #live-status-card {
+            display: none; /* Erstmal unsichtbar */
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px;
+            background: #2c2c2c; border-radius: 15px; padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000;
+            border: 2px solid #555; text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes slideUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
+
+        .status-icon { font-size: 2rem; display: block; margin-bottom: 5px; }
+        .status-title { font-weight: bold; font-size: 1.1rem; color: #fff; margin-bottom: 5px; display: block; }
+        .status-desc { color: #aaa; font-size: 0.85rem; }
+
+        /* Status Farben */
+        .ls-new { border-color: #888; }
+        .ls-preparing { border-color: #f59e0b; background: radial-gradient(circle, rgba(245, 158, 11, 0.1), #2c2c2c); }
+        .ls-ready { border-color: #10b981; background: radial-gradient(circle, rgba(16, 185, 129, 0.1), #2c2c2c); box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+
+        /* Animation für "In Arbeit" */
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+        .pulse-anim { animation: pulse-yellow 2s infinite; }
+
+        /* --- FOOTER (Kombiniert: Chic & Funktional) --- */
+        footer {
+            margin-top: 60px;
+            padding: 40px 20px 120px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9));
+            border-top: 1px solid rgba(212, 180, 131, 0.1);
+            color: #888;
+            font-size: 0.85rem;
+            font-family: "Times New Roman", serif;
+            letter-spacing: 1px;
+        }
+
+        .footer-user {
+            font-family: sans-serif;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .footer-links {
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            font-size: 0.75rem;
+        }
+
+        .footer-link {
+            color: #d4b483;
+            text-decoration: none;
+            margin: 0 5px;
+            transition: color 0.3s;
+            opacity: 0.8;
+        }
+        .footer-link:hover { color: #fff; opacity: 1; text-decoration: underline; }
+
+        /* Herzschlag Animation */
+        .pulse-emoji {
+            display: inline-block;
+            animation: heartbeat 2s infinite ease-in-out;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* --- FAVORITEN SECTION --- */
+        #fav-section {
+            display: none; /* Erstmal versteckt, bis Favoriten da sind */
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 180, 131, 0.2);
+            animation: fadeIn 0.5s;
+        }
+        
+        .section-title {
+            font-family: "Times New Roman", serif;
+            color: #d4b483;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Das Herz auf der Karte */
+        .fav-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10; /* Über dem Karten-Klick */
+            transition: transform 0.2s, color 0.2s;
+            color: rgba(255, 255, 255, 0.3); /* Standard: Grau/Transparent */
+        }
+        .fav-btn:hover { transform: scale(1.2); }
+        
+        /* Wenn markiert */
+        .fav-active {
+            color: #ef4444; /* Rot */
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+                        }
