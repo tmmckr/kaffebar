@@ -582,6 +582,7 @@ function renderAllCards() {
 
     // Favoriten-Bereich zeigen oder verstecken
     favSection.style.display = hasFavorites ? 'block' : 'none';
+    setTimeout(initTiltEffect, 100);
 }
 
 function buildCardHTML(sorte, isFav) {
@@ -638,4 +639,48 @@ window.openMatchaInfo = function() {
 window.closeInfoModal = function() {
     const modal = document.getElementById('info-modal');
     if(modal) modal.style.display = 'none';
+}
+
+// ============================================
+//   3D TILT EFFECT 🧊
+// ============================================
+
+function initTiltEffect() {
+    const cards = document.querySelectorAll('.coffee-card');
+
+    cards.forEach(card => {
+        card.addEventListener('mousemove', handleHover);
+        card.addEventListener('mouseleave', resetCard);
+        
+        // Für Touchscreens (optional, kann aber hakelig sein beim Scrollen)
+        // card.addEventListener('touchmove', handleHover);
+        // card.addEventListener('touchend', resetCard);
+    });
+}
+
+function handleHover(e) {
+    const card = this;
+    const width = card.offsetWidth;
+    const height = card.offsetHeight;
+    
+    // Mausposition relativ zur Karte
+    const rect = card.getBoundingClientRect();
+    const mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
+    const mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
+
+    // Berechnung der Rotation (Maximal 15 Grad Neigung)
+    // Mitte der Karte ist 0, links ist negativ, rechts positiv
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+
+    const rotateX = yPct * -20; // Neigung oben/unten (invertiert)
+    const rotateY = xPct * 20;  // Neigung links/rechts
+
+    // Den Style anwenden
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+}
+
+function resetCard() {
+    // Zurück zur Ausgangsposition
+    this.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
 }
