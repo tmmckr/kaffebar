@@ -479,3 +479,53 @@
 /* Optional: Elemente sollen nacheinander reinkommen (Staggering) */
 .scroll-reveal:nth-child(2) { transition-delay: 0.1s; }
 .scroll-reveal:nth-child(3) { transition-delay: 0.2s; }
+
+/* ========================================= */
+/* --- STERNE BEWERTUNG SYSTEM ⭐ --- */
+/* ========================================= */
+
+/* Die Box für den Durchschnitt ganz oben */
+.rating-summary {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(212, 180, 131, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.avg-score {
+    font-family: "Times New Roman", serif;
+    font-size: 3.5rem;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(212, 180, 131, 0.4);
+}
+
+.avg-stars { color: #d4b483; font-size: 1.5rem; margin: 5px 0; letter-spacing: 5px; }
+.avg-count { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Sterne Eingabe (Klickbar) */
+.star-input-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.star-btn {
+    font-size: 2rem;
+    color: #444; /* Inaktiv: Grau */
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+}
+
+.star-btn:hover { transform: scale(1.2); }
+.star-btn.active { color: #d4b483; text-shadow: 0 0 10px rgba(212, 180, 131, 0.6); }
+
+/* Sterne in der Nachrichten-Liste */
+.msg-rating { color: #d4b483; font-size: 0.9rem; margin-top: 2px; }
