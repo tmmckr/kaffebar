@@ -276,3 +276,28 @@
 /* Tags */
 .flavor-tags { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
 .tag { background: rgba(212, 180, 131, 0.2); border: 1px solid #d4b483; color: #d4b483; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; text-transform: uppercase; }
+
+/* ========================================= */
+/* --- MASCHINE SEITE STYLES --- */
+/* ========================================= */
+
+.machine-title { font-family: "Times New Roman", serif; font-size: 1.8rem; color: #fff; margin-bottom: 10px; text-align: center; }
+
+.machine-desc { color: #ccc; line-height: 1.6; text-align: center; margin-bottom: 25px; font-size: 1rem; }
+
+/* Das Bild der Maschine */
+.machine-img-wrapper { background: radial-gradient(circle, rgba(212, 180, 131, 0.1) 0%, rgba(0,0,0,0) 70%); padding: 20px; margin-bottom: 30px; text-align: center; }
+.machine-img { width: 100%; max-width: 400px; height: auto; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(212, 180, 131, 0.3); }
+
+/* Technische Daten Grid */
+.specs-title { color: #d4b483; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 15px; border-bottom: 1px solid rgba(212, 180, 131, 0.3); padding-bottom: 5px; }
+
+.specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 40px; }
+
+.spec-item { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+.spec-label { display: block; font-size: 0.75rem; color: #d4b483; text-transform: uppercase; margin-bottom: 5px; }
+
+.spec-value { font-size: 1.1rem; font-weight: bold; color: #fff; }
+
+.highlight-badge { background: #d4b483; color: #2c1e16; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; vertical-align: middle; margin-left: 5px; }
