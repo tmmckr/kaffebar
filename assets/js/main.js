@@ -548,7 +548,6 @@ function renderAllCards() {
     const favContainer = document.getElementById('fav-container');
     const favSection = document.getElementById('fav-section');
 
-    // Sicherheitscheck, falls Elemente noch nicht im HTML sind
     if(!menuContainer || !favContainer || !favSection) return;
 
     menuContainer.innerHTML = "";
@@ -558,31 +557,38 @@ function renderAllCards() {
 
     kaffeeSorten.forEach(sorte => {
         const isFav = myFavorites[sorte.name] ? true : false;
-        
-        // HTML für die Karte bauen
         const cardHtml = buildCardHTML(sorte, isFav);
         
         // 1. Zur normalen Liste hinzufügen
         const normalCard = document.createElement('div');
-        normalCard.className = 'coffee-card';
+        
+        // --- HIER IST DIE ÄNDERUNG (Klasse hinzufügen) ---
+        normalCard.className = 'coffee-card scroll-reveal'; 
+        // ------------------------------------------------
+        
         normalCard.onclick = () => window.openOrderModal(sorte.name);
         normalCard.innerHTML = cardHtml;
         menuContainer.appendChild(normalCard);
 
-        // 2. Falls Favorit -> Auch oben hinzufügen
         if (isFav) {
             hasFavorites = true;
             const favCard = document.createElement('div');
-            favCard.className = 'coffee-card';
+            // Auch Favoriten animieren
+            favCard.className = 'coffee-card scroll-reveal'; 
             favCard.onclick = () => window.openOrderModal(sorte.name);
             favCard.innerHTML = cardHtml;
             favContainer.appendChild(favCard);
         }
     });
 
-    // Favoriten-Bereich zeigen oder verstecken
     favSection.style.display = hasFavorites ? 'block' : 'none';
+
+    // Tilt Effekt starten (falls du den noch hast)
     setTimeout(initTiltEffect, 100);
+
+    // --- HIER NEU: Scroll Reveal starten ---
+    // Wir warten kurz (50ms), damit der Browser die Elemente sicher platziert hat
+    setTimeout(initScrollReveal, 50);
 }
 
 function buildCardHTML(sorte, isFav) {
@@ -683,4 +689,30 @@ function handleHover(e) {
 function resetCard() {
     // Zurück zur Ausgangsposition
     this.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
+}
+
+// ============================================
+//   SCROLL REVEAL LOGIK ✨
+// ============================================
+
+function initScrollReveal() {
+    // Der Beobachter: Prüft, ob Elemente sichtbar sind
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            // Wenn das Element im Bild ist (isIntersecting)
+            if (entry.isIntersecting) {
+                // Klasse 'visible' hinzufügen -> CSS Animation startet
+                entry.target.classList.add('visible');
+                // Aufhören zu beobachten (damit es nur 1x passiert)
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1 // Animation startet, sobald 10% des Elements sichtbar sind
+    });
+
+    // Alle Elemente mit der Klasse .scroll-reveal suchen und beobachten
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+        observer.observe(el);
+    });
 }
