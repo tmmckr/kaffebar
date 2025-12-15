@@ -626,3 +626,16 @@ window.checkAdminAccess = function() {
         alert("Zugang verweigert! Zugriff nur für Admin. ⛔");
     }
           }
+
+// ============================================
+//   INFO MODAL (Matcha)
+// ============================================
+window.openMatchaInfo = function() {
+    const modal = document.getElementById('info-modal');
+    if(modal) modal.style.display = 'flex';
+}
+
+window.closeInfoModal = function() {
+    const modal = document.getElementById('info-modal');
+    if(modal) modal.style.display = 'none';
+}
