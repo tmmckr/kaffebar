@@ -529,3 +529,73 @@
 
 /* Sterne in der Nachrichten-Liste */
 .msg-rating { color: #d4b483; font-size: 0.9rem; margin-top: 2px; }
+
+/* ========================================= */
+/* --- STEMPELKARTE (Gamification) 🎫 --- */
+/* ========================================= */
+
+.stamp-card {
+    background: linear-gradient(135deg, #2c1e16 0%, #1a120b 100%);
+    border: 1px solid rgba(212, 180, 131, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 0 auto 30px auto;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Goldener Schimmer Effekt */
+.stamp-card::before {
+    content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(212, 180, 131, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.stamp-header {
+    display: flex; justify-content: space-between;
+    font-weight: bold; color: #fff; margin-bottom: 15px;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;
+}
+
+.stamp-grid {
+    display: flex; justify-content: space-between; gap: 8px;
+    margin-bottom: 15px;
+}
+
+.stamp-circle {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(212, 180, 131, 0.3);
+    background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: rgba(255,255,255,0.2);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Wenn abgestempelt */
+.stamp-circle.active {
+    background: #d4b483;
+    border-color: #d4b483;
+    color: #2c1e16;
+    box-shadow: 0 0 10px rgba(212, 180, 131, 0.6);
+    transform: scale(1.1);
+}
+
+.stamp-footer {
+    text-align: center; font-size: 0.8rem; color: #aaa; font-style: italic;
+}
+
+/* KONFETTI ANIMATION TEILCHEN */
+.confetti {
+    position: fixed; width: 10px; height: 10px;
+    background-color: #f2d74e;
+    z-index: 9999;
+    animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
