@@ -288,7 +288,7 @@ window.sendOrder = function() {
 
     sendBtn.innerText = "Sende...";
 
-    // 1. FIREBASE SAVE
+    // 1. FIREBASE SAVE (Bestellung an die Bar)
     push(ref(db, 'orders'), {
         user: userName,
         coffee: currentCoffee.name,
@@ -297,6 +297,16 @@ window.sendOrder = function() {
         timestamp: Date.now(),
         dateString: new Date().toLocaleString()
     });
+
+    // --- NEU: STATISTIK HISTORY SPEICHERN ---
+    if (currentUser) {
+        push(ref(db, `users/${currentUser.uid}/history`), {
+            product: currentCoffee.name,
+            timestamp: Date.now(),
+            saved: 4.50 // Wir tun so, als würde jeder Kaffee 4,50€ sparen
+        });
+    }
+    // ----------------------------------------
 
     // 2. STEMPEL HOCHZÄHLEN (Transaction für Sicherheit)
     const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
@@ -318,7 +328,7 @@ window.sendOrder = function() {
         }
     });
 
-    // 2. NTFY PUSH
+    // 3. NTFY PUSH
     fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
         method: 'POST',
         body: messageBody, 
@@ -330,7 +340,10 @@ window.sendOrder = function() {
             document.getElementById('confirm-details').innerText = messageBody;
             confirmModal.style.display = 'flex';
             sendBtn.innerText = "Bestellen";
+            
+            // HIER IST AUCH DEIN VIBRATION CODE VON VORHIN DRIN:
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
         } else { throw new Error('Send Error'); }
     })
     .catch(error => {
@@ -340,7 +353,6 @@ window.sendOrder = function() {
         setTimeout(() => statusDiv.style.display = 'none', 6000);
     });
 }
-
 // --- GLOBAL: CHATBOT ---
 const chatWindow = document.getElementById('chat-window');
 const chatMessages = document.getElementById('chat-messages');
