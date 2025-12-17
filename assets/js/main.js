@@ -298,14 +298,34 @@ window.sendOrder = function() {
         dateString: new Date().toLocaleString()
     });
 
-    // --- NEU: STATISTIK HISTORY SPEICHERN ---
+    // --- NEU: STATISTIK HISTORY SPEICHERN (Mit Preisliste) ---
     if (currentUser) {
+        // Preisliste (identisch zu stats.html)
+        const starbucksPreise = {
+            "Kaffee": 3.50,
+            "Café Crema": 3.90,
+            "Latte Macchiato": 4.50,
+            "Milchkaffee": 4.20,
+            "Cappuccino": 4.20,
+            "Espresso": 2.90,
+            "Espresso Lungo": 3.20,
+            "Americano": 3.50,
+            "Flat White": 4.50,
+            "Iced Matcha Latte": 5.50,
+            "Iced Protein Matcha": 5.90,
+            "Iced Coffee": 3.90,
+            "Iced Latte": 4.50
+        };
+        // Preis ermitteln (Fallback: 4.00)
+        const preis = starbucksPreise[currentCoffee.name] !== undefined ? starbucksPreise[currentCoffee.name] : 4.00;
+
         push(ref(db, `users/${currentUser.uid}/history`), {
             product: currentCoffee.name,
             timestamp: Date.now(),
-            saved: 4.50 // Wir tun so, als würde jeder Kaffee 4,50€ sparen
+            saved: preis // <-- Speichert den korrekten Betrag
         });
     }
+    // ----------------------------------------
     // ----------------------------------------
 
     // 2. STEMPEL HOCHZÄHLEN (Transaction für Sicherheit)
