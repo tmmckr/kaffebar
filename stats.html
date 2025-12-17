@@ -331,14 +331,48 @@
         btn.onclick = importOldData;
         document.querySelector('.container').appendChild(btn);
 
+        // ==========================================
+        // 🛠️ MIGRATIONS-WERKZEUG (V2 - Mit echten Preisen)
+        // ==========================================
+        
+        // Button
+        const btn = document.createElement('button');
+        btn.innerText = "🔄 Preise aktualisieren & neu berechnen";
+        btn.style.cssText = "display:block; margin: 30px auto; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: 10px; cursor: pointer;";
+        btn.onclick = importOldData;
+        document.querySelector('.container').appendChild(btn);
+
         function importOldData() {
             if(!currentUser) return alert("Bitte erst einloggen!");
-            if(!confirm(`Willst du alle alten Bestellungen von '${currentUser.displayName}' in die neue Statistik übertragen?`)) return;
+            if(!confirm(`Möchtest du die Ersparnisse für alle vergangenen Bestellungen basierend auf der neuen Preisliste neu berechnen?`)) return;
+
+            // --- DEINE PREISLISTE (Gespartes Geld pro Getränk) ---
+            const starbucksPreise = {
+                "Kaffee": 3.50,
+                "Café Crema": 3.90,
+                "Latte Macchiato": 4.50,
+                "Milchkaffee": 4.20,
+                
+                // Weitere Schätzungen (damit nichts 0€ ist):
+                "Cappuccino": 4.20,
+                "Espresso": 2.90,
+                "Espresso Lungo": 3.20,
+                "Americano": 3.50,
+                "Flat White": 4.50,
+                "Iced Matcha Latte": 5.50,
+                "Iced Protein Matcha": 5.90,
+                "Iced Coffee": 3.90,
+                "Iced Latte": 4.50,
+                "To-Go-Becher": 0.00,
+                "Heißes Wasser": 0.00
+            };
+            const standardPreis = 4.00; // Fallback, falls Getränk unbekannt
+            // -----------------------------------------------------
 
             const globalOrdersRef = ref(db, 'orders');
             const myHistoryRef = ref(db, `users/${currentUser.uid}/history`);
 
-            // 1. Alle Bestellungen laden (Einmalig mit 'get')
+            // 1. Alle Bestellungen laden
             get(globalOrdersRef).then((snapshot) => {
                 const data = snapshot.val();
                 if(!data) return alert("Keine Bestellungen gefunden.");
@@ -350,28 +384,33 @@
 
                 if(myOrders.length === 0) return alert("Du hast noch nie etwas bestellt!");
 
-                // 3. History komplett überschreiben (um Dopplungen zu vermeiden)
-                // Wir bauen ein neues History-Objekt
+                // 3. History neu bauen mit korrekten Preisen
                 const newHistory = {};
+                let count = 0;
                 
                 myOrders.forEach(order => {
-                    // Wir generieren einen einzigartigen Key basierend auf dem Timestamp
-                    const key = "migrated_" + order.timestamp; 
+                    const key = "migrated_" + order.timestamp;
+                    const prodName = order.coffee || "Kaffee";
+                    
+                    // Hier holen wir den passenden Preis aus der Liste
+                    const savedAmount = starbucksPreise[prodName] !== undefined ? starbucksPreise[prodName] : standardPreis;
+
                     newHistory[key] = {
-                        product: order.coffee || "Kaffee",
+                        product: prodName,
                         timestamp: order.timestamp,
-                        saved: 4.50 // Nachträglich den Preis setzen
+                        saved: savedAmount // <-- Hier steht jetzt der echte Wert!
                     };
+                    count++;
                 });
 
-                // 4. In die Datenbank speichern
+                // 4. In die Datenbank speichern (Überschreiben)
                 set(myHistoryRef, newHistory).then(() => {
-                    alert(`✅ Erfolg! ${myOrders.length} alte Bestellungen wurden importiert.\nDie Seite wird neu geladen.`);
+                    alert(`✅ Erledigt! Die Preise für ${count} Bestellungen wurden korrigiert.\nDie Seite lädt jetzt neu.`);
                     window.location.reload();
                 });
 
             }).catch((err) => {
-                alert("Fehler beim Import: " + err.message);
+                alert("Fehler: " + err.message);
             });
         }
     </script>
