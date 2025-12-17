@@ -320,16 +320,6 @@
         });
         document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
 
-        // ==========================================
-        // 🛠️ MIGRATIONS-WERKZEUG (Einmalig nutzen)
-        // ==========================================
-        
-        // Button ins HTML einfügen (nur temporär sichtbar)
-        const btn = document.createElement('button');
-        btn.innerText = "🔄 Alte Bestellungen importieren";
-        btn.style.cssText = "display:block; margin: 30px auto; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: 10px; cursor: pointer;";
-        btn.onclick = importOldData;
-        document.querySelector('.container').appendChild(btn);
 
         // ==========================================
         // 🛠️ MIGRATIONS-WERKZEUG (V2 - Mit echten Preisen)
