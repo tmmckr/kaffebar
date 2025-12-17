@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Preise - Timo's Barista Bar</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/img/icon.png">
+    <meta name="theme-color" content="#2c1e16">
+    <link rel="stylesheet" href="assets/css/style.css">
+    
+    <style>
+        /* Spezielles Design für die Preisliste */
+        .menu-card {
+            background: rgba(44, 30, 22, 0.6);
+            border: 1px solid #d4b483;
+            border-radius: 15px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+
+        .category-title {
+            color: #d4b483;
+            font-family: "Times New Roman", serif;
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(212, 180, 131, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .drink-name {
+            color: #e0d0c0;
+            font-weight: 500;
+            position: relative;
+            padding-right: 10px;
+            background: transparent; /* Wichtig für Dots */
+        }
+
+        /* Die gepunktete Linie */
+        .dots-filler {
+            flex: 1;
+            border-bottom: 1px dotted rgba(212, 180, 131, 0.4);
+            margin: 0 5px;
+            position: relative;
+            top: -5px; /* Leicht nach oben schieben */
+        }
+
+        .price-val {
+            color: #d4b483;
+            font-weight: bold;
+            font-family: "Times New Roman", serif;
+            font-size: 1.1rem;
+        }
+
+        .info-box {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 30px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="aurora-blob blob-1"></div>
+    <div class="aurora-blob blob-2"></div>
+    <div class="aurora-blob blob-3"></div>
+
+    <a href="stats.html" style="position: fixed; top: 20px; left: 15px; z-index: 1100; text-decoration: none; font-size: 1.5rem; background: rgba(0,0,0,0.2); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid rgba(212,180,131,0.3);">⬅️</a>
+
+    <h1>Preisliste</h1>
+    <div class="subtitle">Vergleichswerte</div>
+
+    <div class="content-container">
+
+        <div class="menu-card scroll-reveal">
+            <div class="category-title">Klassiker</div>
+            
+            <div class="price-row"><span class="drink-name">Kaffee</span><span class="dots-filler"></span><span class="price-val">3,50 €</span></div>
+            <div class="price-row"><span class="drink-name">Café Crema</span><span class="dots-filler"></span><span class="price-val">3,90 €</span></div>
+            <div class="price-row"><span class="drink-name">Americano</span><span class="dots-filler"></span><span class="price-val">3,50 €</span></div>
+        </div>
+
+        <div class="menu-card scroll-reveal">
+            <div class="category-title">Milch & Schaum</div>
+            
+            <div class="price-row"><span class="drink-name">Cappuccino</span><span class="dots-filler"></span><span class="price-val">4,20 €</span></div>
+            <div class="price-row"><span class="drink-name">Latte Macchiato</span><span class="dots-filler"></span><span class="price-val">4,50 €</span></div>
+            <div class="price-row"><span class="drink-name">Milchkaffee</span><span class="dots-filler"></span><span class="price-val">4,20 €</span></div>
+            <div class="price-row"><span class="drink-name">Flat White</span><span class="dots-filler"></span><span class="price-val">4,50 €</span></div>
+        </div>
+
+        <div class="menu-card scroll-reveal">
+            <div class="category-title">Espresso</div>
+            
+            <div class="price-row"><span class="drink-name">Espresso</span><span class="dots-filler"></span><span class="price-val">2,90 €</span></div>
+            <div class="price-row"><span class="drink-name">Espresso Lungo</span><span class="dots-filler"></span><span class="price-val">3,20 €</span></div>
+        </div>
+
+        <div class="menu-card scroll-reveal">
+            <div class="category-title">Specials & Iced</div>
+            
+            <div class="price-row"><span class="drink-name">Iced Matcha Latte</span><span class="dots-filler"></span><span class="price-val">5,50 €</span></div>
+            <div class="price-row"><span class="drink-name">Protein Matcha</span><span class="dots-filler"></span><span class="price-val">5,90 €</span></div>
+            <div class="price-row"><span class="drink-name">Iced Latte</span><span class="dots-filler"></span><span class="price-val">4,50 €</span></div>
+            <div class="price-row"><span class="drink-name">Iced Coffee</span><span class="dots-filler"></span><span class="price-val">3,90 €</span></div>
+        </div>
+
+        <div class="info-box scroll-reveal">
+            Diese Preise dienen als Referenzwert zur Berechnung deiner persönlichen Ersparnis gegenüber gängigen Café-Ketten.
+        </div>
+
+    </div>
+
+    <script>
+        // Scroll Animation (Identisch zu den anderen Seiten)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
