@@ -117,7 +117,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, get, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // CONFIG
@@ -319,6 +319,61 @@
             entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
         });
         document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // ==========================================
+        // 🛠️ MIGRATIONS-WERKZEUG (Einmalig nutzen)
+        // ==========================================
+        
+        // Button ins HTML einfügen (nur temporär sichtbar)
+        const btn = document.createElement('button');
+        btn.innerText = "🔄 Alte Bestellungen importieren";
+        btn.style.cssText = "display:block; margin: 30px auto; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: 10px; cursor: pointer;";
+        btn.onclick = importOldData;
+        document.querySelector('.container').appendChild(btn);
+
+        function importOldData() {
+            if(!currentUser) return alert("Bitte erst einloggen!");
+            if(!confirm(`Willst du alle alten Bestellungen von '${currentUser.displayName}' in die neue Statistik übertragen?`)) return;
+
+            const globalOrdersRef = ref(db, 'orders');
+            const myHistoryRef = ref(db, `users/${currentUser.uid}/history`);
+
+            // 1. Alle Bestellungen laden (Einmalig mit 'get')
+            get(globalOrdersRef).then((snapshot) => {
+                const data = snapshot.val();
+                if(!data) return alert("Keine Bestellungen gefunden.");
+
+                const allOrders = Object.values(data);
+                
+                // 2. Nur MEINE Bestellungen filtern
+                const myOrders = allOrders.filter(o => o.user === currentUser.displayName);
+
+                if(myOrders.length === 0) return alert("Du hast noch nie etwas bestellt!");
+
+                // 3. History komplett überschreiben (um Dopplungen zu vermeiden)
+                // Wir bauen ein neues History-Objekt
+                const newHistory = {};
+                
+                myOrders.forEach(order => {
+                    // Wir generieren einen einzigartigen Key basierend auf dem Timestamp
+                    const key = "migrated_" + order.timestamp; 
+                    newHistory[key] = {
+                        product: order.coffee || "Kaffee",
+                        timestamp: order.timestamp,
+                        saved: 4.50 // Nachträglich den Preis setzen
+                    };
+                });
+
+                // 4. In die Datenbank speichern
+                set(myHistoryRef, newHistory).then(() => {
+                    alert(`✅ Erfolg! ${myOrders.length} alte Bestellungen wurden importiert.\nDie Seite wird neu geladen.`);
+                    window.location.reload();
+                });
+
+            }).catch((err) => {
+                alert("Fehler beim Import: " + err.message);
+            });
+        }
     </script>
 </body>
 </html>
