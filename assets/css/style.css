@@ -749,3 +749,28 @@ canvas {
     max-width: 100%;
     height: auto;
 }
+
+/* Style für den Preislisten-Button */
+        .price-link-btn {
+            display: block;
+            margin: 30px auto 0 auto;
+            text-align: center;
+            background: rgba(212, 180, 131, 0.1);
+            border: 1px solid #d4b483;
+            color: #d4b483;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            max-width: 250px;
+        }
+
+        .price-link-btn:hover {
+            background: #d4b483;
+            color: #2c1e16;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(212, 180, 131, 0.4);
+        }
