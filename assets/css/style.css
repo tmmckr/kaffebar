@@ -856,3 +856,55 @@ canvas {
     background: rgba(212, 180, 131, 0.2);
     margin: 5px 0;
 }
+
+/* ========================================= */
+/* --- TRINKGELD DOSE (TIP JAR) 🐷 --- */
+/* ========================================= */
+
+.tip-jar-card {
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); /* Schweinchen-Rosa */
+    border: 2px solid #f48fb1;
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin: 0 auto 30px auto;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(244, 143, 177, 0.4);
+    transition: transform 0.1s;
+    position: relative;
+    overflow: hidden;
+}
+
+.tip-jar-card:active {
+    transform: scale(0.95);
+}
+
+.tip-icon { font-size: 2.5rem; }
+
+.tip-text { flex: 1; }
+.tip-title { color: #880e4f; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; }
+.tip-sub { color: #ad1457; font-size: 0.8rem; }
+
+/* Die fliegende Münze (Startposition unsichtbar) */
+.coin-anim {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    font-size: 2rem;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Die Animation beim Einwerfen */
+@keyframes coinToss {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    50% { transform: translateY(-50px) scale(1.2) rotate(180deg); opacity: 1; }
+    100% { transform: translateY(20px) scale(0.5) rotate(360deg); opacity: 0; }
+}
+
+.animate-coin {
+    animation: coinToss 0.6s ease-out forwards;
+}
