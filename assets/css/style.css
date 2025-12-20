@@ -858,53 +858,112 @@ canvas {
 }
 
 /* ========================================= */
-/* --- TRINKGELD DOSE (TIP JAR) 🐷 --- */
+/* --- TRINKGELD GLAS (Barista Style) --- */
 /* ========================================= */
 
-.tip-jar-card {
-    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%); /* Schweinchen-Rosa */
-    border: 2px solid #f48fb1;
+.tip-section {
+    background: rgba(44, 30, 22, 0.85); /* Dunkles Braun */
+    border: 1px solid rgba(212, 180, 131, 0.3); /* Goldener Rand */
     border-radius: 15px;
-    padding: 15px 20px;
+    padding: 20px;
     margin: 0 auto 30px auto;
     max-width: 600px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+}
+
+.tip-controls { flex: 1; padding-right: 20px; }
+
+.tip-title {
+    color: #d4b483; /* Gold */
+    font-family: "Times New Roman", serif;
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+}
+
+.tip-sub { color: #aaa; font-size: 0.85rem; margin-bottom: 15px; }
+
+.tip-btn {
+    background: linear-gradient(145deg, #d4b483, #bfa070);
+    color: #2c1e16;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(244, 143, 177, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: transform 0.1s;
+}
+
+.tip-btn:active { transform: scale(0.95); }
+
+/* --- DAS GLAS --- */
+.tip-glass-container {
     position: relative;
-    overflow: hidden;
+    width: 70px;
+    height: 90px;
+    margin-right: 10px;
 }
 
-.tip-jar-card:active {
-    transform: scale(0.95);
+.glass-body {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: none; /* Oben offen */
+    border-radius: 0 0 15px 15px;
+    position: relative;
+    overflow: hidden; /* Damit Münzen nicht rausgucken */
 }
 
-.tip-icon { font-size: 2.5rem; }
-
-.tip-text { flex: 1; }
-.tip-title { color: #880e4f; font-weight: bold; font-size: 1.1rem; text-transform: uppercase; }
-.tip-sub { color: #ad1457; font-size: 0.8rem; }
-
-/* Die fliegende Münze (Startposition unsichtbar) */
-.coin-anim {
+/* Lichtreflex auf dem Glas */
+.glass-shine {
     position: absolute;
-    right: 20px;
-    top: 50%;
-    font-size: 2rem;
-    opacity: 0;
+    top: 10%; right: 10%;
+    width: 5px; height: 60%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
     pointer-events: none;
 }
 
-/* Die Animation beim Einwerfen */
-@keyframes coinToss {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    50% { transform: translateY(-50px) scale(1.2) rotate(180deg); opacity: 1; }
-    100% { transform: translateY(20px) scale(0.5) rotate(360deg); opacity: 0; }
+/* --- DIE MÜNZEN --- */
+.dropped-coin {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle at 30% 30%, #ffd700, #f39c12); /* Gold Verlauf */
+    border: 1px solid #d35400;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    
+    /* Startposition (wird per JS überschrieben) */
+    top: -30px; 
+    left: 20px;
+    
+    /* Animation */
+    animation: dropIn 0.5s ease-out forwards;
 }
 
-.animate-coin {
-    animation: coinToss 0.6s ease-out forwards;
+/* Innerer Ring der Münze (Detail) */
+.dropped-coin::after {
+    content: "$"; /* Oder € */
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: #b76e00;
+    font-weight: bold;
+}
+
+@keyframes dropIn {
+    0% { top: -40px; opacity: 0; }
+    60% { top: var(--target-top); } /* Aufprall */
+    80% { top: calc(var(--target-top) - 5px); } /* Hüpfer */
+    100% { top: var(--target-top); opacity: 1; transform: rotate(var(--rot)); }
 }
