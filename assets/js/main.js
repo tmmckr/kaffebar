@@ -1031,3 +1031,58 @@ function calculatePrize(deg) {
     // Speichern in Firebase? (Optional)
     // Wenn es ein Keks ist, könnte man das als "Gutschein" speichern.
 }
+
+// ============================================
+//   VISUAL COFFEE LAB LOGIK 🧪
+// ============================================
+
+// Die Rezepte: Prozente für [Schaum, Espresso, Wasser, Milch]
+const coffeeRecipes = {
+    "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
+    "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
+    "Espresso Lungo":   { foam: 5,   esp: 40,  wat: 10, milk: 0 },
+    "Cappuccino":       { foam: 35,  esp: 25,  wat: 0,  milk: 30 }, // Viel Schaum
+    "Latte Macchiato":  { foam: 25,  esp: 15,  wat: 0,  milk: 55 }, // Viel Milch, Schichten
+    "Milchkaffee":      { foam: 10,  esp: 20,  wat: 0,  milk: 60 }, // Wenig Schaum
+    "Flat White":       { foam: 5,   esp: 35,  wat: 0,  milk: 55 }, // Microfoam (wenig)
+    "Americano":        { foam: 0,   esp: 25,  wat: 65, milk: 0 },
+    "Kaffee":           { foam: 5,   esp: 85,  wat: 0,  milk: 0 },
+    "Iced Latte":       { foam: 10,  esp: 20,  wat: 0,  milk: 60 },
+    // Fallback
+    "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
+};
+
+function updateCoffeeVisuals(productName, extras = []) {
+    const glass = document.querySelector('.glass-cup');
+    if(!glass) return;
+
+    // 1. Rezept suchen
+    let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
+    
+    // Kopie erstellen, damit wir das Original nicht ändern
+    let currentRecipe = { ...recipe };
+
+    // 2. Extras berechnen (Dynamik!)
+    // Wenn "Extra Shot" ausgewählt ist
+    if (extras.includes("Extra Shot")) {
+        currentRecipe.esp += 15; // Espresso Balken wird dicker
+        // Milch etwas reduzieren, damit das Glas nicht überläuft
+        if(currentRecipe.milk > 10) currentRecipe.milk -= 10;
+        else if(currentRecipe.wat > 10) currentRecipe.wat -= 10;
+    }
+
+    // Wenn "Hafermilch" etc. gewählt -> Ändert nichts an der Optik, aber wir könnten Farbe ändern (optional)
+
+    // 3. Auf das Glas anwenden (Höhe in %)
+    document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
+    document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
+    document.getElementById('layer-water').style.height = currentRecipe.wat + '%';
+    document.getElementById('layer-milk').style.height = currentRecipe.milk + '%';
+
+    // 4. Dampf anzeigen? (Nur wenn nicht "Iced")
+    if (productName.includes("Iced")) {
+        glass.classList.remove('hot');
+    } else {
+        glass.classList.add('hot');
+    }
+}
