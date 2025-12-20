@@ -34,7 +34,11 @@ onAuthStateChanged(auth, (user) => {
         listenToFavorites();
         monitorStampCard();
     } else {
-        window.location.href = "login.html";
+        // Wenn man nicht eingeloggt ist, ab zur Landing Page (index.html) oder Login
+        // Nur weiterleiten, wenn wir nicht schon dort sind, um Endlosschleifen zu vermeiden
+        if (!window.location.href.includes("login.html") && !window.location.href.includes("index.html")) {
+             window.location.href = "index.html"; 
+        }
     }
 });
 
