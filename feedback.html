@@ -15,10 +15,32 @@
     <div class="aurora-blob blob-2"></div>
     <div class="aurora-blob blob-3"></div>
 
-    <a href="index.html" style="position: fixed; top: 20px; right: 15px; z-index: 1100; text-decoration: none; font-size: 1.5rem;">🏠</a>
 
     <h1>Timo's</h1>
     <div class="subtitle">Barista Bar</div>
+
+    <div class="hamburger-btn" onclick="toggleMenu(event)">☰</div>
+
+<div id="main-dropdown" class="dropdown-menu">
+    <a href="stats.html" class="menu-item">
+        <span>🏆</span> Stats & Wrapped
+    </a>
+    <a href="preise.html" class="menu-item">
+        <span>💰</span> Preisliste
+    </a>
+    <a href="feedback.html" class="menu-item">
+        <span>💬</span> Gästebuch
+    </a>
+
+    <div class="menu-divider"></div>
+
+    <a href="javascript:checkAdminAccess()" class="menu-item">
+        <span>👨‍🍳</span> Admin
+    </a>
+    <a href="javascript:logout()" class="menu-item" style="color: #fca5a5;">
+        <span>🚪</span> Logout
+    </a>
+</div>
 
     <nav class="navbar">
         <a href="index.html" class="nav-link">Bestellen</a>
