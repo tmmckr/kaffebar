@@ -72,7 +72,7 @@ h1 { font-family: "Times New Roman", serif; color: #d4b483; font-weight: normal;
 
 /* --- Navigation (Pill Style) --- */
 .navbar {
-    position: sticky; top: 20px; z-index: 1000;
+    position: relative; top: 20px; z-index: 1000;
     width: 95%; max-width: 600px; margin: 0 auto 30px auto;
     background: rgba(44, 30, 22, 0.85); backdrop-filter: blur(12px);
     border: 1px solid rgba(212, 180, 131, 0.3); border-radius: 50px;
