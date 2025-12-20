@@ -129,12 +129,6 @@ window.openOrderModal = function(sorteName) {
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
 
-    // NEU: Sensoren anfragen beim ersten Öffnen 🌊
-    if (!gyroPermissionAsked) {
-        initGyroscope();
-        gyroPermissionAsked = true;
-    }
-
     currentCoffee = sorte;
     const modal = document.getElementById('order-modal');
     const title = document.getElementById('modal-coffee-title');
@@ -843,61 +837,4 @@ function calculatePrize(deg) {
     else prize = "🍪 GEWONNEN: Gratis Keks!";
     const resultDiv = document.getElementById('win-display');
     resultDiv.innerHTML = prize;
-}
-
-// ============================================
-//   LEBENDIGES GETRÄNK (GYROSCOPE) 🌊
-// ============================================
-
-let gyroPermissionAsked = false;
-
-// Funktion, um die Sensoren zu starten
-function initGyroscope() {
-    // Check für iOS 13+ (braucht Erlaubnis)
-    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-            .then(response => {
-                if (response === 'granted') {
-                    window.addEventListener('deviceorientation', handleTilt);
-                }
-            })
-            .catch(console.error);
-    } else {
-        // Android & ältere Geräte (funktioniert meist sofort)
-        window.addEventListener('deviceorientation', handleTilt);
-    }
-}
-
-// Die eigentliche Logik beim Wackeln
-function handleTilt(event) {
-    const glass = document.querySelector('.glass-cup');
-    // Wir wackeln nur, wenn das Glas auch sichtbar ist!
-    if(!glass || glass.offsetParent === null) return; 
-
-    // Gamma ist die Neigung links/rechts (-90 bis 90)
-    let tilt = event.gamma; 
-
-    // Begrenzung, damit das Getränk nicht "looping" macht (Max 25 Grad)
-    if (tilt > 25) tilt = 25;
-    if (tilt < -25) tilt = -25;
-
-    // Wir runden den Wert für bessere Performance
-    tilt = Math.round(tilt);
-
-    // Auf alle Flüssigkeiten anwenden
-    const liquids = document.querySelectorAll('.liquid');
-    
-    // SkewY sieht bei Flüssigkeiten oft realistischer aus als Rotate
-    // Scale 1.1 verhindert weiße Blitzer an den Rändern
-    liquids.forEach(layer => {
-        layer.style.transform = `rotate(${tilt}deg) scale(1.1)`;
-    });
-    
-    // Optional: Auch die Eiswürfel und Drops leicht mitbewegen (Parallax)
-    const floatingItems = document.querySelectorAll('.ice-cube, .syrup-drop, .sweetener-pill');
-    floatingItems.forEach(item => {
-        // Die Items bewegen sich leicht in die entgegengesetzte Richtung (Trägheit)
-        const moveX = tilt * 0.5; 
-        item.style.marginLeft = `${moveX}px`;
-    });
 }
