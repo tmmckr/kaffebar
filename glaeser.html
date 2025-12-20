@@ -19,6 +19,29 @@
     <h1>Timo's</h1>
     <div class="subtitle">Barista Bar</div>
 
+    <div class="hamburger-btn" onclick="toggleMenu(event)">☰</div>
+
+<div id="main-dropdown" class="dropdown-menu">
+    <a href="stats.html" class="menu-item">
+        <span>🏆</span> Stats & Wrapped
+    </a>
+    <a href="preise.html" class="menu-item">
+        <span>💰</span> Preisliste
+    </a>
+    <a href="feedback.html" class="menu-item">
+        <span>💬</span> Gästebuch
+    </a>
+
+    <div class="menu-divider"></div>
+
+    <a href="javascript:checkAdminAccess()" class="menu-item">
+        <span>👨‍🍳</span> Admin
+    </a>
+    <a href="javascript:logout()" class="menu-item" style="color: #fca5a5;">
+        <span>🚪</span> Logout
+    </a>
+</div>
+
     <nav class="navbar">
         <a href="index.html" class="nav-link">Bestellen</a>
         <a href="maschine.html" class="nav-link">Maschine</a>
