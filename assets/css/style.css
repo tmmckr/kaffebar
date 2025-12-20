@@ -1100,3 +1100,68 @@ canvas {
     font-weight: bold;
     min-height: 30px;
 }
+
+/* ========================================= */
+/* --- VISUAL COFFEE LAB 🧪 --- */
+/* ========================================= */
+
+.coffee-visualizer {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0 30px 0;
+    position: relative;
+}
+
+.glass-cup {
+    width: 100px;
+    height: 130px;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-top: none;
+    border-radius: 0 0 15px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column; /* Wir stapeln von oben nach unten, steuern aber die Höhe */
+    justify-content: flex-end; /* Füllt sich von unten */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Die Flüssigkeiten */
+.liquid {
+    width: 100%;
+    transition: height 0.8s cubic-bezier(0.25, 1, 0.5, 1); /* Smoothe Animation */
+    height: 0%; /* Standard: Leer */
+}
+
+/* Farben der Schichten */
+.foam { background: #fff8e1; opacity: 0.9; } /* Cremig */
+.espresso { background: linear-gradient(to right, #3e2723, #4e342e); } /* Dunkel */
+.water { background: rgba(100, 181, 246, 0.3); } /* Für Americano/Tee */
+.milk { background: #ffffff; } /* Weiß */
+
+/* Dampf Animation ♨️ */
+.steam-container {
+    position: absolute;
+    top: -30px; left: 0; width: 100%; height: 30px;
+    display: flex; justify-content: center; gap: 10px;
+    opacity: 0; transition: opacity 0.5s;
+}
+.glass-cup.hot .steam-container { opacity: 0.6; }
+
+.steam {
+    width: 6px; height: 20px;
+    background: #fff;
+    border-radius: 10px;
+    filter: blur(3px);
+    animation: rise 2s infinite;
+}
+.s1 { animation-delay: 0s; }
+.s2 { animation-delay: 0.5s; height: 25px; }
+.s3 { animation-delay: 1s; }
+
+@keyframes rise {
+    0% { transform: translateY(0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(-20px); opacity: 0; }
+}
