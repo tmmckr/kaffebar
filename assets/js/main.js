@@ -129,6 +129,12 @@ window.openOrderModal = function(sorteName) {
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
 
+    // NEU: Sensoren anfragen beim ersten Öffnen 🌊
+    if (!gyroPermissionAsked) {
+        initGyroscope();
+        gyroPermissionAsked = true;
+    }
+
     currentCoffee = sorte;
     const modal = document.getElementById('order-modal');
     const title = document.getElementById('modal-coffee-title');
