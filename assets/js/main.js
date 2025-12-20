@@ -133,11 +133,6 @@ window.openOrderModal = function(sorteName) {
     title.innerText = sorte.name;
     customContainer.innerHTML = "";
 
-    // 🧪 VISUALIZER STARTEN
-    if (typeof updateCoffeeVisuals === 'function') {
-        updateCoffeeVisuals(sorte.name);
-    }
-
     const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
     if (config.stufen) {
@@ -148,8 +143,6 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
     
-    // HIER WICHTIG: Die Selects werden erstellt.
-    // Wir nutzen jetzt die Helper-Funktion createSelect, die auch "onchange" unterstützt.
     if (config.ml_kaffee) customContainer.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
     if (config.ml_milch) customContainer.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
     if (config.ml_gesamt) customContainer.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
@@ -183,22 +176,41 @@ window.openOrderModal = function(sorteName) {
     
     modal.style.display = 'flex';
     modal.classList.add('show');
+
+    // 🧪 VISUALIZER STARTEN (Jetzt am Ende, damit die Standard-Werte der Inputs gelesen werden können!)
+    // Das sorgt dafür, dass das Glas sofort den korrekten Füllstand hat.
+    if (typeof updateVisualsFromInputs === 'function') {
+        updateVisualsFromInputs();
+    }
 }
 
-// 🧪 DIESE FUNKTION IST NEU! 
-// Sie wird aufgerufen, wenn man an den Reglern spielt.
+// 🧪 KORRIGIERTE UPDATE FUNKTION
 window.updateVisualsFromInputs = function() {
     const currentName = document.getElementById('modal-coffee-title').innerText;
     
     // Inputs suchen
     const coffeeSelect = document.getElementById('input-coffee-vol');
     const milkSelect = document.getElementById('input-milk-vol');
+    const totalSelect = document.getElementById('input-total-vol'); // Für Matcha etc
     const shotCheckbox = document.getElementById('extra-shot');
 
     // Werte auslesen (0 wenn nicht vorhanden)
-    const coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
-    const milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
+    let coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
+    let milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
     
+    // Fallback für Getränke wie Matcha, die nur "Gesamtgröße" haben
+    if (totalSelect && totalSelect.value) {
+        // Wir tun so, als wäre es 100% Milch für die Visualisierung (weiß) oder teilen es auf
+        const val = parseInt(totalSelect.value);
+        if (currentName.includes("Matcha")) {
+            // Matcha ist grün, wir nutzen Milk-Layer (weiß) und tricksen später evtl mit Farbe
+            // oder wir nutzen einfach milkMl für die Fülle
+            milkMl = val; 
+        } else {
+            coffeeMl = val; // Standard Kaffee (Americano etc)
+        }
+    }
+
     // Extras sammeln
     let extras = [];
     if(shotCheckbox && shotCheckbox.checked) extras.push("Extra Shot");
@@ -216,7 +228,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 (V2 - MIT ECHTER BERECHNUNG) ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V3 - ABSOLUTE BERECHNUNG) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -231,7 +243,6 @@ const coffeeRecipes = {
     "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
 };
 
-// Update Funktion jetzt mit ML Parametern
 function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0) {
     const glass = document.querySelector('.glass-cup');
     if(!glass) return;
@@ -239,35 +250,28 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
     let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
     let currentRecipe = { ...recipe };
 
-    // --- NEU: DYNAMISCHE BERECHNUNG ---
-    // Wenn wir manuelle ML Werte haben (weil der User was ausgewählt hat),
-    // berechnen wir die Grafik neu statt das Standard-Rezept zu nehmen.
-    if (overrideCoffeeMl > 0 || overrideMilkMl > 0) {
-        // Fall 1: Wir haben beide Werte (z.B. Latte Macchiato)
-        if (overrideCoffeeMl > 0 && overrideMilkMl > 0) {
-            const total = overrideCoffeeMl + overrideMilkMl;
-            const foamSpace = currentRecipe.foam; // Schaum bleibt konstant pro Sorte
-            const liquidSpace = 100 - foamSpace;
+    // --- NEU: ABSOLUTE BERECHNUNG (REALISTISCHE FÜLLUNG) ---
+    const MAX_GLASS_CAPACITY = 350; // Ein Standard-Glas hat ca 350ml
 
-            // Prozentrechnung für das Glas
-            currentRecipe.esp = (overrideCoffeeMl / total) * liquidSpace;
-            currentRecipe.milk = (overrideMilkMl / total) * liquidSpace;
-        } 
-        // Fall 2: Nur Kaffee (z.B. Café Crema)
-        else if (overrideCoffeeMl > 0 && overrideMilkMl === 0) {
-             // Kaffee füllt alles außer Schaum
-             currentRecipe.esp = 100 - currentRecipe.foam;
-             currentRecipe.milk = 0;
-        }
+    // Haben wir manuelle Werte? Wenn ja, überschreiben wir die Prozentwerte
+    if (overrideCoffeeMl > 0 || overrideMilkMl > 0) {
+        // Prozent der Glashöhe berechnen
+        // Beispiel: 50ml bei 350ml Glas = 14% Höhe
+        currentRecipe.esp = (overrideCoffeeMl / MAX_GLASS_CAPACITY) * 100;
+        currentRecipe.milk = (overrideMilkMl / MAX_GLASS_CAPACITY) * 100;
+        
+        // Wasser setzen wir auf 0, außer das Rezept ist explizit Americano
+        currentRecipe.wat = 0; 
     }
 
     // Extra Shot Logik (addiert einfach visuell dazu)
     if (extras.includes("Extra Shot")) {
-        currentRecipe.esp += 15; 
-        if(currentRecipe.milk > 10) currentRecipe.milk -= 10;
-        else if(currentRecipe.wat > 10) currentRecipe.wat -= 10;
-        else if(currentRecipe.esp > 90) currentRecipe.esp = 90; // Limit
+        // Ein Shot sind ca 30ml -> ~8% Höhe
+        currentRecipe.esp += 8; 
     }
+
+    // Schaum: Bleibt basierend auf Rezept erhalten (z.B. 20% Schaumkrone oben drauf)
+    // Wenn die Summe > 100 ist, schneidet CSS overflow:hidden das ab (Glas läuft über)
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
     document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
@@ -566,11 +570,9 @@ function buildCardHTML(sorte, isFav) {
     `;
 }
 
-// --- HIER DIE ÄNDERUNG: ONCHANGE HINZUGEFÜGT ---
 function createSelect(id, label, options, suffix) {
     let html = `<div class="form-group"><label class="form-label">${label}</label>`;
-    // NEU: onchange Event hinzugefügt
-    html += `<select id="${id}" class="modal-select" onchange="updateVisualsFromInputs()">`;
+    html += `<select id="${id}" class="modal-select" onchange="updateVisualsFromInputs()">`; // <-- WICHTIG!
     options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
     html += `</select></div>`;
     return html;
