@@ -160,17 +160,16 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
 
-    // --- HIER IST DIE LOGIK FÜR MATCHA vs. KAFFEE 🧊 ---
+    // --- MATCHA vs KAFFEE OPTIONEN ---
     let extraOptionHtml = "";
     
     if (sorte.name.includes("Matcha") || sorte.name.includes("Iced")) {
-        // Bei Matcha oder Iced Drinks: Eiswürfel statt Shot
         extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-ice" onchange="updateVisualsFromInputs()"> mit Eiswürfeln 🧊</label>`;
     } else {
-        // Sonst: Extra Shot
         extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>`;
     }
 
+    // --- CHECKBOXEN FÜR SIRUP & SÜSSSTOFF (Mit onchange!) ---
     customContainer.innerHTML += `
         <div class="form-group">
             <label class="form-label">Sonderwunsch / Ort</label>
@@ -179,8 +178,8 @@ window.openOrderModal = function(sorteName) {
         <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 180, 131, 0.3);">
             <label class="form-label">Extras</label>
             <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
-                <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
+                <label class="checkbox-item"><input type="checkbox" id="extra-vanilla" onchange="updateVisualsFromInputs()"> mit Vanille Sirup</label>
+                <label class="checkbox-item"><input type="checkbox" id="extra-sweetener" onchange="updateVisualsFromInputs()"> mit Süßstoff</label>
                 ${extraOptionHtml}
             </div>
         </div>`;
@@ -188,7 +187,6 @@ window.openOrderModal = function(sorteName) {
     modal.style.display = 'flex';
     modal.classList.add('show');
 
-    // Visualizer sofort starten
     if (typeof updateVisualsFromInputs === 'function') {
         updateVisualsFromInputs();
     }
@@ -204,6 +202,8 @@ window.updateVisualsFromInputs = function() {
     
     const shotCheckbox = document.getElementById('extra-shot');
     const iceCheckbox = document.getElementById('extra-ice');
+    const vanillaCheckbox = document.getElementById('extra-vanilla');
+    const sweetCheckbox = document.getElementById('extra-sweetener');
 
     let coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
     let milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
@@ -220,14 +220,16 @@ window.updateVisualsFromInputs = function() {
 
     let extras = [];
     if(shotCheckbox && shotCheckbox.checked) extras.push("Extra Shot");
-    // Eiswürfel Status checken
+    if(vanillaCheckbox && vanillaCheckbox.checked) extras.push("Vanille");
+    if(sweetCheckbox && sweetCheckbox.checked) extras.push("Süßstoff");
+    
     let hasIce = false;
     if(iceCheckbox && iceCheckbox.checked) {
         extras.push("Mit Eis");
         hasIce = true;
     }
 
-    // Wir übergeben "hasIce" an die Visual Function
+    // Wir übergeben alles an die Visual Function
     updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl, hasIce);
 }
 
@@ -240,7 +242,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 (V5 - EISWÜRFEL ANIMATION 🧊) ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V6 - FULL EXTRAS) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -283,8 +285,8 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
         espLayer.style.background = ""; 
     }
 
-    // --- EISWÜRFEL RENDERN ---
-    renderIceCubes(hasIce);
+    // --- EXTRAS RENDERN (Eis, Sirup, Süßstoff) ---
+    renderAddons(hasIce, extras);
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
     document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
@@ -298,24 +300,37 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
     }
 }
 
-// Neue Helfer-Funktion für Eis
-function renderIceCubes(show) {
+// 🧪 RENDER FUNKTION FÜR ALLE EXTRAS
+function renderAddons(hasIce, extras) {
     const glass = document.querySelector('.glass-cup');
     if(!glass) return;
 
-    // Erstmal alte Eiswürfel löschen
-    const oldIce = glass.querySelectorAll('.ice-cube');
-    oldIce.forEach(ice => ice.remove());
+    // 1. Alte Elemente löschen (damit Animation bei Toggle neu startet)
+    const toRemove = glass.querySelectorAll('.ice-cube, .syrup-drop, .sweetener-pill');
+    toRemove.forEach(el => el.remove());
 
-    if(show) {
-        // 3 Eiswürfel erzeugen
+    // 2. Eiswürfel
+    if(hasIce) {
         for(let i=1; i<=3; i++) {
             const ice = document.createElement('div');
             ice.className = `ice-cube ice-${i}`;
-            // Random Rotation für mehr Realismus
             ice.style.setProperty('--rot', (Math.random() * 20 - 10) + 'deg');
             glass.appendChild(ice);
         }
+    }
+
+    // 3. Vanille Sirup (Goldener Tropfen)
+    if(extras.includes("Vanille")) {
+        const drop = document.createElement('div');
+        drop.className = 'syrup-drop';
+        glass.appendChild(drop);
+    }
+
+    // 4. Süßstoff (Tablette)
+    if(extras.includes("Süßstoff")) {
+        const pill = document.createElement('div');
+        pill.className = 'sweetener-pill';
+        glass.appendChild(pill);
     }
 }
 
