@@ -519,6 +519,7 @@ window.sendOrder = function() {
             setTimeout(() => statusDiv.style.display = 'none', 6000);
         }
     });
+}
 
 
 // --- LIVE STATUS MONITORING ---
