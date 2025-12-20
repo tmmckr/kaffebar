@@ -126,9 +126,37 @@
             </div>
         <div class="glass-shine"></div>
     </div>
+
+        <div id="daily-spin-card" class="chart-card scroll-reveal" style="text-align:center; background: linear-gradient(135deg, #6a1b9a, #4a148c); border-color: #ba68c8; display:none;" onclick="openWheel()">
+    <div class="stat-label" style="color: #e1bee7;">Daily Spin</div>
+    <div style="font-size: 3rem; margin: 10px 0;">🎡</div>
+    <div style="color: #fff; font-weight:bold;">Dreh am Rad!</div>
+    <div style="font-size: 0.8rem; color: #e1bee7;">Dein täglicher Gewinn wartet.</div>
+</div>
+
+<div id="wheel-modal" class="wheel-overlay">
+    <div class="wheel-content">
+        <div class="close-wheel" onclick="closeWheel()">✕</div>
+        <h2>Dein Daily Spin 🎰</h2>
+        
+        <div class="wheel-wrapper">
+            <div class="wheel-pointer">🔻</div>
+            <div class="the-wheel" id="lucky-wheel">
+                <div class="wheel-segment seg-1"><span>🍪<br>Keks</span></div>
+                <div class="wheel-segment seg-2"><span>🫂<br>Niete</span></div>
+                <div class="wheel-segment seg-3"><span>☕<br>Shot</span></div>
+                <div class="wheel-segment seg-4"><span>🃏<br>Joker</span></div>
+            </div>
+        </div>
+
+        <button id="spin-btn" class="spin-button" onclick="spinTheWheel()">JETZT DREHEN</button>
+        <div id="win-display" class="win-text"></div>
+    </div>
+</div>
 </div>
 
 <audio id="kaching-sound" src="assets/audio/katching.mp3" preload="auto"></audio>
+    
 
     <footer>
         <div class="footer-user">
@@ -220,6 +248,7 @@
 
 </body>
 </html>
+
 
 
 
