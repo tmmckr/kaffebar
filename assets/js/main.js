@@ -897,3 +897,112 @@ function calculatePrize(deg) {
 window.closeReceipt = function() {
     document.getElementById('receipt-modal').style.display = 'none';
 }
+
+// ============================================
+//   BESTELLHISTORIE & ALTE BONS 📜
+// ============================================
+
+window.openOrderHistory = function() {
+    if (!currentUser) { alert("Bitte einloggen!"); return; }
+
+    const histModal = document.getElementById('history-modal');
+    const listContainer = document.getElementById('history-list');
+    
+    // Menü schließen (falls offen)
+    document.getElementById('main-dropdown').classList.remove('show');
+    
+    // Modal öffnen & Ladeanzeige
+    histModal.style.display = 'flex';
+    listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Lade Daten... ⏳</div>';
+
+    // Daten aus Firebase holen
+    const ordersRef = ref(db, 'orders');
+    onValue(ordersRef, (snapshot) => {
+        const data = snapshot.val();
+        listContainer.innerHTML = ""; // Leeren
+
+        if (!data) {
+            listContainer.innerHTML = '<div style="text-align:center; color:#888;">Keine Bestellungen gefunden.</div>';
+            return;
+        }
+
+        // Array erstellen, Filtern (nur meine User-Bestellungen) und Sortieren (Neu -> Alt)
+        const myOrders = Object.values(data)
+            .filter(o => o.user === currentUser.displayName)
+            .sort((a, b) => b.timestamp - a.timestamp);
+
+        if (myOrders.length === 0) {
+            listContainer.innerHTML = '<div style="text-align:center; color:#888;">Du hast noch nichts bestellt.</div>';
+            return;
+        }
+
+        // Liste bauen
+        myOrders.forEach(order => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            // Beim Klick: Alten Bon öffnen!
+            item.onclick = () => showOldReceipt(order);
+            
+            item.innerHTML = `
+                <div>
+                    <div class="hist-main">${order.coffee}</div>
+                    <div class="hist-date">${order.dateString || "Datum unbekannt"}</div>
+                </div>
+                <div class="hist-arrow">🧾</div>
+            `;
+            listContainer.appendChild(item);
+        });
+    }, { onlyOnce: true }); // Nur einmal laden, kein Live-Listener nötig hier
+}
+
+window.closeHistoryModal = function() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+// --- FUNKTION: ALTEN BON ANZEIGEN ---
+function showOldReceipt(order) {
+    // 1. Preise (müssen wir neu berechnen, da sie oft nicht im Order-Objekt stehen)
+    const starbucksPreise = { 
+        "Kaffee": 3.50, "Café Crema": 3.90, "Latte Macchiato": 4.50, 
+        "Milchkaffee": 4.20, "Cappuccino": 4.20, "Espresso": 2.90, 
+        "Espresso Lungo": 3.20, "Americano": 3.50, "Flat White": 4.50, 
+        "Iced Matcha Latte": 5.50, "Iced Protein Matcha": 5.90, 
+        "Iced Coffee": 3.90, "Iced Latte": 4.50 
+    };
+    const rawPrice = starbucksPreise[order.coffee] !== undefined ? starbucksPreise[order.coffee] : 4.00;
+    const formattedPrice = rawPrice.toFixed(2) + "€";
+
+    // 2. Receipt HTML befüllen (Wir nutzen das existierende Modal!)
+    document.getElementById('receipt-item-name').innerText = order.coffee;
+    document.getElementById('receipt-date').innerText = order.dateString;
+    document.getElementById('receipt-price').innerText = formattedPrice;
+    
+    // Fake ID generieren (oder Timestamp nehmen)
+    document.getElementById('receipt-id').innerText = new Date(order.timestamp).getTime().toString().slice(-4);
+
+    // Extras auflisten
+    const extrasContainer = document.getElementById('receipt-extras-container');
+    extrasContainer.innerHTML = "";
+    
+    if (order.details && Array.isArray(order.details)) {
+        order.details.forEach(extra => {
+            const row = document.createElement('div');
+            row.className = 'receipt-row';
+            row.style.fontSize = '0.85rem';
+            row.style.color = '#666';
+            row.innerHTML = `<span>+ ${extra}</span><span>0.00€</span>`;
+            extrasContainer.appendChild(row);
+        });
+    }
+
+    // Gespart-Zeile aktualisieren
+    const savedEl = document.getElementById('receipt-saved');
+    if (savedEl) savedEl.innerText = "-" + formattedPrice;
+
+    // 3. Modal öffnen
+    // Erst History schließen, damit sie sich nicht überlagern (optional)
+    // document.getElementById('history-modal').style.display = 'none'; 
+    
+    const receiptModal = document.getElementById('receipt-modal');
+    receiptModal.style.display = 'flex';
+}
