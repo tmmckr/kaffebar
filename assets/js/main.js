@@ -470,13 +470,45 @@ window.sendOrder = function() {
     })
     .then(response => {
         if (response.ok) {
+            // 1. Bestell-Fenster schließen
             const modal = document.getElementById('order-modal');
-            modal.style.display = 'none'; // Sicher schließen
+            modal.style.display = 'none'; 
             modal.classList.remove('show');
-            document.getElementById('confirm-details').innerText = messageBody;
-            confirmModal.style.display = 'flex';
+
+            // --- NEU: KASSENZETTEL BEFÜLLEN & ANZEIGEN ---
+            
+            // Name & Datum
+            document.getElementById('receipt-item-name').innerText = currentCoffee.name;
+            document.getElementById('receipt-date').innerText = new Date().toLocaleString();
+            
+            // Zufällige Bestell-Nummer (Fake)
+            document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 8999 + 1000);
+
+            // Extras auflisten (Das Array 'details' hast du oben in sendOrder schon erstellt)
+            const extrasContainer = document.getElementById('receipt-extras-container');
+            if(extrasContainer) {
+                extrasContainer.innerHTML = "";
+                details.forEach(extra => {
+                    const row = document.createElement('div');
+                    row.className = 'receipt-row';
+                    row.style.fontSize = '0.85rem';
+                    row.style.color = '#666';
+                    // Wir zeigen 0.00€ an, weil es ja "aufs Haus" ist ;)
+                    row.innerHTML = `<span>+ ${extra}</span><span>0.00€</span>`;
+                    extrasContainer.appendChild(row);
+                });
+            }
+
+            // Kassenzettel Modal öffnen (statt dem alten confirmModal)
+            const receiptModal = document.getElementById('receipt-modal');
+            if(receiptModal) receiptModal.style.display = 'flex';
+
+            // Button Reset
             if(sendBtn) sendBtn.innerText = "Bestellen";
+            
+            // Vibration
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
         } else { throw new Error('Send Error'); }
     })
     .catch(error => {
@@ -487,7 +519,7 @@ window.sendOrder = function() {
             setTimeout(() => statusDiv.style.display = 'none', 6000);
         }
     });
-}
+
 
 // --- LIVE STATUS MONITORING ---
 let lastStatus = "";
@@ -837,4 +869,8 @@ function calculatePrize(deg) {
     else prize = "🍪 GEWONNEN: Gratis Keks!";
     const resultDiv = document.getElementById('win-display');
     resultDiv.innerHTML = prize;
+}
+
+window.closeReceipt = function() {
+    document.getElementById('receipt-modal').style.display = 'none';
 }
