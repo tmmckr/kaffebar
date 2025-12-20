@@ -807,7 +807,7 @@ canvas {
 /* Das Dropdown Menü (versteckt) */
 .dropdown-menu {
     position: absolute;
-    top: 20px; /* Unter dem Button */
+    top: 75px; /* Unter dem Button */
     right: 15px;
     width: 200px;
     background: rgba(30, 20, 15, 0.95);
