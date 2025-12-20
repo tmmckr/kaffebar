@@ -1202,3 +1202,51 @@ canvas {
         opacity: 1; 
     }
 }
+
+/* ========================================= */
+/* --- EXTRAS ANIMATIONEN (Sirup & Pille) --- */
+/* ========================================= */
+
+/* --- VANILLE SIRUP 💧 --- */
+.syrup-drop {
+    position: absolute;
+    left: 50%;
+    top: -20px;
+    width: 8px;
+    height: 15px;
+    background: #FFD700; /* Goldgelb */
+    border-radius: 50%;
+    border-top-left-radius: 0;
+    transform: translateX(-50%) rotate(45deg);
+    opacity: 0.9;
+    z-index: 15;
+    animation: pourSyrup 1.5s ease-in forwards;
+}
+
+@keyframes pourSyrup {
+    0% { top: -20px; height: 15px; opacity: 1; }
+    40% { top: 60%; height: 25px; } /* Langziehen im Fall */
+    60% { top: 70%; height: 10px; width: 15px; opacity: 0.8; } /* Aufprall */
+    100% { top: 80%; opacity: 0; transform: translateX(-50%) scale(2); } /* Auflösen */
+}
+
+/* --- SÜSSSTOFF TABLETTE 💊 --- */
+.sweetener-pill {
+    position: absolute;
+    left: 60%; /* Leicht versetzt */
+    top: -20px;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    z-index: 15;
+    animation: dropPill 2s ease-out forwards;
+}
+
+@keyframes dropPill {
+    0% { top: -20px; transform: rotate(0deg); opacity: 1; }
+    30% { top: 75%; transform: rotate(180deg); } /* Plumps */
+    40% { top: 70%; } /* Kleiner Hüpfer nach oben (Auftrieb) */
+    100% { top: 85%; transform: rotate(220deg) scale(0); opacity: 0; } /* Auflösen */
+}
