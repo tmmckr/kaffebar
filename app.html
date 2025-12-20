@@ -26,6 +26,9 @@
     <div class="hamburger-btn" onclick="toggleMenu(event)">☰</div>
 
     <div id="main-dropdown" class="dropdown-menu">
+        <a href="javascript:openOrderHistory()" class="menu-item">
+        <span>📜</span> Meine Bestellungen
+        </a>
         <a href="stats.html" class="menu-item">
             <span>🏆</span> Stats & Wrapped
         </a>
@@ -284,10 +287,21 @@
         <span id="ls-desc" class="status-desc">Bitte warten</span>
     </div> 
 
+    <div id="history-modal" class="modal-overlay">
+    <div class="modal-box" style="max-height: 80vh; overflow-y: auto;">
+        <h2 class="modal-title">Deine Bestellungen</h2>
+        <div id="history-list" class="history-container">
+            <div style="text-align:center; color:#888;">Lade...</div>
+        </div>
+        <button class="modal-btn" onclick="closeHistoryModal()" style="margin-top:20px; background:#444;">Schließen</button>
+    </div>
+</div>
+
     <script type="module" src="assets/js/main.js"></script>
 
 </body>
 </html>
+
 
 
 
