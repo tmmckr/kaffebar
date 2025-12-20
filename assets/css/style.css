@@ -781,7 +781,7 @@ canvas {
 
 /* Der Button mit den 3 Strichen (ersetzt den Logout Button) */
 .hamburger-btn {
-    position: fixed;
+    position: absolute;
     top: 20px;
     right: 15px;
     z-index: 2000;
