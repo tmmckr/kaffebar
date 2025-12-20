@@ -22,18 +22,14 @@ const TOPIC_NAME = 'mamas-kaffee-123-geheim';
 let GEMINI_API_KEY = null;
 onValue(ref(db, 'geminiKey'), (snapshot) => { GEMINI_API_KEY = snapshot.val(); });
 
-// AUTH & TÜRSTEHER (Zusammengeführt!)
+// AUTH
 let currentUser = null;
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        console.log("Eingeloggt:", user.displayName);
-        
-        // Name im Footer
         const footerName = document.getElementById('footer-user-name');
         if(footerName) footerName.innerText = user.displayName;
 
-        // Features starten
         if(typeof monitorMyOrder === "function") monitorMyOrder();
         listenToFavorites();
         monitorStampCard();
@@ -52,14 +48,13 @@ const statusText = document.getElementById('status-text');
 const statusDot = document.querySelector('.status-dot');
 const container = document.getElementById('menu-container');
 const orderModal = document.getElementById('order-modal');
-const customOptionsDiv = document.getElementById('custom-options');
 const confirmModal = document.getElementById('confirmation-modal');
 const closedMessageBox = document.getElementById('closed-message-box');
 
 let currentCoffee = null;
 let isShopOpen = true; 
 
-// FIREBASE STATUS CHECK
+// STATUS CHECK
 const statusRef = ref(db, 'status');
 onValue(statusRef, (snapshot) => {
     const data = snapshot.val(); 
@@ -73,23 +68,26 @@ onValue(statusRef, (snapshot) => {
 
 function setShopOpen() {
     isShopOpen = true;
-    statusBadge.className = 'status-badge status-open';
-    statusText.innerText = 'Barista ist bereit';
-    statusDot.className = 'status-dot dot-green';
-    container.classList.remove('shop-closed-mode');
+    if(statusBadge) {
+        statusBadge.className = 'status-badge status-open';
+        statusText.innerText = 'Barista ist bereit';
+        statusDot.className = 'status-dot dot-green';
+    }
+    if(container) container.classList.remove('shop-closed-mode');
     if(closedMessageBox) closedMessageBox.style.display = 'none';
 }
 
 function setShopClosed() {
     isShopOpen = false;
-    statusBadge.className = 'status-badge status-closed';
-    statusText.innerText = 'Kaffeebar geschlossen';
-    statusDot.className = 'status-dot dot-red';
-    container.classList.add('shop-closed-mode');
+    if(statusBadge) {
+        statusBadge.className = 'status-badge status-closed';
+        statusText.innerText = 'Kaffeebar geschlossen';
+        statusDot.className = 'status-dot dot-red';
+    }
+    if(container) container.classList.add('shop-closed-mode');
     if(closedMessageBox) closedMessageBox.style.display = 'block';
 }
 
-// MASCHINEN DATEN
 const maschinenDaten = {
     "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
     "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -114,7 +112,6 @@ const kaffeeSorten = [
     { name: "Americano", configKey: "Americano", strength: 3, desc: "Espresso mit Wasser verlängert." },
     { name: "Iced Matcha Latte", configKey: "Matcha", strength: 0, desc: "Grüner Tee auf Eis & Milch." },
     { name: "Iced Protein Matcha", configKey: "Matcha", strength: 0, desc: "Matcha Latte mit Protein-Kick." },
-    { name: "Ristretto", configKey: "default", strength: 5, desc: "Ultrakurzer Extrakt." },
     { name: "Flat White", configKey: "default", strength: 4, desc: "Doppelter Ristretto mit Mikroschaum." },
     { name: "Iced Coffee", configKey: "default", strength: 3, desc: "Frisch gebrüht auf Eis." },
     { name: "Iced Latte", configKey: "default", strength: 2, desc: "Espresso auf kalter Milch & Eis." },
@@ -123,48 +120,40 @@ const kaffeeSorten = [
     { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
 ];
 
+// --- MODAL ÖFFNEN (KORRIGIERT) ---
 window.openOrderModal = function(sorteName) {
-    // 1. Kaffeesorte finden
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
 
     currentCoffee = sorte;
-    
-    // 2. Modal Elemente holen
     const modal = document.getElementById('order-modal');
     const title = document.getElementById('modal-coffee-title');
-    const container = document.getElementById('custom-options'); // Dein customOptionsDiv
+    const customContainer = document.getElementById('custom-options');
 
-    // 3. Titel setzen
     title.innerText = sorte.name;
-    container.innerHTML = "";
+    customContainer.innerHTML = "";
 
-    // ============================================
-    // 🧪 NEU: VISUALIZER STARTEN
-    // ============================================
-    // Ruft die Funktion auf, die die Schichten (Milch/Espresso) berechnet
+    // 🧪 VISUALIZER AUFRUFEN (Hier wichtig!)
     if (typeof updateCoffeeVisuals === 'function') {
         updateCoffeeVisuals(sorte.name);
     }
 
-    // 4. Formular-Felder generieren (Dein alter Code)
     const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
     if (config.stufen) {
-        container.innerHTML += `
+        customContainer.innerHTML += `
             <div class="form-group">
                 <label class="form-label">Intensität: <span id="strength-val" class="range-value">3</span></label>
                 <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
             </div>`;
     }
     
-    // Helper Funktion für Selects (falls du die inline hast, sonst hier lassen)
-    if (config.ml_kaffee) container.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
-    if (config.ml_milch) container.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
-    if (config.ml_gesamt) container.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
+    if (config.ml_kaffee) customContainer.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
+    if (config.ml_milch) customContainer.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
+    if (config.ml_gesamt) customContainer.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
     
     if (config.cycles) {
-        container.innerHTML += `
+        customContainer.innerHTML += `
             <div class="form-group">
                 <label class="form-label">Mahlvorgang</label>
                 <div class="radio-group">
@@ -176,7 +165,7 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
 
-    container.innerHTML += `
+    customContainer.innerHTML += `
         <div class="form-group">
             <label class="form-label">Sonderwunsch / Ort</label>
             <input type="text" id="order-comment" class="modal-input" placeholder="z.B. Im Garten, ohne Keks..." autocomplete="off">
@@ -190,27 +179,67 @@ window.openOrderModal = function(sorteName) {
             </div>
         </div>`;
     
-    // 5. Modal anzeigen (mit Klasse für Animation)
+    // Klasse statt style für Animation
     modal.classList.add('show');
 }
 
-// Kleine Hilfsfunktion, damit das Glas reagiert, wenn man "Extra Shot" anklickt
 window.updateVisualsFromCheckbox = function() {
     const checkbox = document.getElementById('extra-shot');
     const currentName = document.getElementById('modal-coffee-title').innerText;
     let extras = [];
-    
-    if(checkbox && checkbox.checked) {
-        extras.push("Extra Shot");
-    }
-    
+    if(checkbox && checkbox.checked) extras.push("Extra Shot");
     updateCoffeeVisuals(currentName, extras);
 }
 
-window.closeOrderModal = function() { orderModal.style.display = 'none'; }
-window.closeConfirmModal = function() { confirmModal.style.display = 'none'; }
+window.closeOrderModal = function() { 
+    const modal = document.getElementById('order-modal');
+    modal.classList.remove('show');
+}
+window.closeConfirmModal = function() { 
+    confirmModal.style.display = 'none'; 
+}
 
-// --- DAMPF FUNKTION ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 ---
+const coffeeRecipes = {
+    "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
+    "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
+    "Espresso Lungo":   { foam: 5,   esp: 40,  wat: 10, milk: 0 },
+    "Cappuccino":       { foam: 35,  esp: 25,  wat: 0,  milk: 30 }, 
+    "Latte Macchiato":  { foam: 25,  esp: 15,  wat: 0,  milk: 55 }, 
+    "Milchkaffee":      { foam: 10,  esp: 20,  wat: 0,  milk: 60 }, 
+    "Flat White":       { foam: 5,   esp: 35,  wat: 0,  milk: 55 }, 
+    "Americano":        { foam: 0,   esp: 25,  wat: 65, milk: 0 },
+    "Kaffee":           { foam: 5,   esp: 85,  wat: 0,  milk: 0 },
+    "Iced Latte":       { foam: 10,  esp: 20,  wat: 0,  milk: 60 },
+    "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
+};
+
+function updateCoffeeVisuals(productName, extras = []) {
+    const glass = document.querySelector('.glass-cup');
+    if(!glass) return;
+
+    let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
+    let currentRecipe = { ...recipe };
+
+    if (extras.includes("Extra Shot")) {
+        currentRecipe.esp += 15; 
+        if(currentRecipe.milk > 10) currentRecipe.milk -= 10;
+        else if(currentRecipe.wat > 10) currentRecipe.wat -= 10;
+    }
+
+    document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
+    document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
+    document.getElementById('layer-water').style.height = currentRecipe.wat + '%';
+    document.getElementById('layer-milk').style.height = currentRecipe.milk + '%';
+
+    if (productName.includes("Iced")) {
+        glass.classList.remove('hot');
+    } else {
+        glass.classList.add('hot');
+    }
+}
+
+// --- DAMPF ---
 function createSteamEffect() {
     const btn = document.querySelector('#order-modal .modal-btn');
     if (!btn) return;
@@ -233,7 +262,7 @@ function createSteamEffect() {
     }
 }
 
-// --- SCHNEE FUNKTION ---
+// --- SCHNEE ---
 function letItSnow() {
     const container = document.getElementById('snow-container');
     if(!container) return;
@@ -257,42 +286,14 @@ function letItSnow() {
 }
 letItSnow();
 
-// --- AGENT WERKZEUG: Letzte Bestellung finden ---
-async function repeatLastOrder() {
-    if (!currentUser) return "Du musst eingeloggt sein!";
-    const ordersRef = ref(db, 'orders');
-    return new Promise((resolve) => {
-        const unsubscribe = onValue(ordersRef, (snapshot) => {
-            const data = snapshot.val();
-            unsubscribe();
-            if (!data) { resolve("Keine alten Bestellungen."); return; }
-            const orderList = Object.values(data);
-            const myOrders = orderList.filter(o => o.user === currentUser.displayName);
-            if (myOrders.length === 0) { resolve("Noch nie bestellt!"); return; }
-            const lastOrder = myOrders.sort((a, b) => b.timestamp - a.timestamp)[0];
-            const coffeeObj = kaffeeSorten.find(k => k.name === lastOrder.coffee);
-            if (coffeeObj) {
-                currentCoffee = coffeeObj;
-                const commentInput = document.getElementById('order-comment');
-                if(commentInput) commentInput.value = lastOrder.comment || "";
-                sendOrder(); 
-                resolve(`Deine letzte Bestellung (${lastOrder.coffee}) wird zubereitet!`);
-            } else { resolve("Den Kaffee gibt es nicht mehr."); }
-        });
-    });
-}
-
-// --- GLOBAL: SEND LOGIK ---
+// --- SEND ORDER ---
 window.sendOrder = function() {
-    // DAMPF
     createSteamEffect();
-
-    // SOUND (Mahlwerk)
     try {
         const sound = new Audio('assets/audio/grinding.mp3');
         sound.volume = 0.6;
         sound.play();
-    } catch (e) { console.log("Sound-Fehler:", e); }
+    } catch (e) {}
 
     const userName = currentUser ? currentUser.displayName : "Gast";
     const commentInput = document.getElementById('order-comment');
@@ -311,18 +312,21 @@ window.sendOrder = function() {
     if(totalVolEl) details.push(`${totalVolEl.value}ml`);
     const cyclesEl = document.querySelector('input[name="cycles"]:checked');
     if(cyclesEl) details.push(cyclesEl.value);
+    
+    // Extras
     const vanillaEl = document.getElementById('extra-vanilla');
     if(vanillaEl && vanillaEl.checked) details.push("Vanille Sirup");
     const sweetEl = document.getElementById('extra-sweetener');
     if(sweetEl && sweetEl.checked) details.push("Süßstoff");
+    const shotEl = document.getElementById('extra-shot');
+    if(shotEl && shotEl.checked) details.push("Extra Shot");
 
     let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
     let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
     if(comment) messageBody += `\n💬 "${comment}"`;
 
-    sendBtn.innerText = "Sende...";
+    if(sendBtn) sendBtn.innerText = "Sende...";
 
-    // 1. FIREBASE SAVE (Bestellung an die Bar)
     push(ref(db, 'orders'), {
         user: userName,
         coffee: currentCoffee.name,
@@ -332,57 +336,31 @@ window.sendOrder = function() {
         dateString: new Date().toLocaleString()
     });
 
-    // --- NEU: STATISTIK HISTORY SPEICHERN (Mit Preisliste) ---
     if (currentUser) {
-        // Preisliste (identisch zu stats.html)
-        const starbucksPreise = {
-            "Kaffee": 3.50,
-            "Café Crema": 3.90,
-            "Latte Macchiato": 4.50,
-            "Milchkaffee": 4.20,
-            "Cappuccino": 4.20,
-            "Espresso": 2.90,
-            "Espresso Lungo": 3.20,
-            "Americano": 3.50,
-            "Flat White": 4.50,
-            "Iced Matcha Latte": 5.50,
-            "Iced Protein Matcha": 5.90,
-            "Iced Coffee": 3.90,
-            "Iced Latte": 4.50
-        };
-        // Preis ermitteln (Fallback: 4.00)
+        const starbucksPreise = { "Kaffee": 3.50, "Café Crema": 3.90, "Latte Macchiato": 4.50, "Milchkaffee": 4.20, "Cappuccino": 4.20, "Espresso": 2.90, "Espresso Lungo": 3.20, "Americano": 3.50, "Flat White": 4.50, "Iced Matcha Latte": 5.50, "Iced Protein Matcha": 5.90, "Iced Coffee": 3.90, "Iced Latte": 4.50 };
         const preis = starbucksPreise[currentCoffee.name] !== undefined ? starbucksPreise[currentCoffee.name] : 4.00;
-
         push(ref(db, `users/${currentUser.uid}/history`), {
             product: currentCoffee.name,
             timestamp: Date.now(),
-            saved: preis // <-- Speichert den korrekten Betrag
+            saved: preis
         });
     }
-    // ----------------------------------------
-    // ----------------------------------------
 
-    // 2. STEMPEL HOCHZÄHLEN (Transaction für Sicherheit)
     const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
     runTransaction(countRef, (currentCount) => {
         return (currentCount || 0) + 1;
     }).then((result) => {
-        // Prüfen, ob die 10 voll sind (Modulo)
         const newCount = result.snapshot.val();
         if (newCount > 0 && newCount % 10 === 0) {
-            // PARTY! 🎉
             triggerConfetti();
-            // Modal zeigen (kurz verzögert)
             setTimeout(() => {
                 const rewardModal = document.getElementById('reward-modal');
                 if(rewardModal) rewardModal.style.display = 'flex';
-                // Sound abspielen (optional)
                 try { new Audio('assets/audio/ding.mp3').play(); } catch(e){}
             }, 500);
         }
     });
 
-    // 3. NTFY PUSH
     fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
         method: 'POST',
         body: messageBody, 
@@ -390,159 +368,49 @@ window.sendOrder = function() {
     })
     .then(response => {
         if (response.ok) {
-            orderModal.style.display = 'none';
+            const modal = document.getElementById('order-modal');
+            modal.classList.remove('show');
             document.getElementById('confirm-details').innerText = messageBody;
             confirmModal.style.display = 'flex';
-            sendBtn.innerText = "Bestellen";
-            
-            // HIER IST AUCH DEIN VIBRATION CODE VON VORHIN DRIN:
+            if(sendBtn) sendBtn.innerText = "Bestellen";
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-
         } else { throw new Error('Send Error'); }
     })
     .catch(error => {
-        sendBtn.innerText = "Bestellen";
-        statusDiv.style.display = 'block';
-        statusDiv.innerText = `❌ Fehler: ${error.message}`;
-        setTimeout(() => statusDiv.style.display = 'none', 6000);
+        if(sendBtn) sendBtn.innerText = "Bestellen";
+        if(statusDiv) {
+            statusDiv.style.display = 'block';
+            statusDiv.innerText = `❌ Fehler: ${error.message}`;
+            setTimeout(() => statusDiv.style.display = 'none', 6000);
+        }
     });
 }
-// --- GLOBAL: CHATBOT ---
-const chatWindow = document.getElementById('chat-window');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
 
-window.toggleChat = function() {
-    if (chatWindow.style.display === 'flex') {
-        chatWindow.style.display = 'none';
-    } else {
-        chatWindow.style.display = 'flex';
-        setTimeout(() => chatInput.focus(), 100);
-    }
-}
-
-window.handleEnter = function(e) {
-    if (e.key === 'Enter') window.sendMessage();
-}
-
-window.sendMessage = async function() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-    addMessage(text, 'user-msg');
-    chatInput.value = "";
-    const loadingDiv = addMessage("Barista denkt nach...", 'bot-msg');
-    
-    try {
-        const answer = await fetchGeminiResponse(text);
-        loadingDiv.innerText = answer;
-    } catch (error) {
-        loadingDiv.innerText = "Sorry, Fehler.";
-    }
-}
-
-function addMessage(text, className) {
-    const div = document.createElement('div');
-    div.className = `message ${className}`;
-    div.innerText = text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return div;
-}
-
-async function fetchGeminiResponse(userQuestion) {
-    if (!GEMINI_API_KEY) return "Moment, ich lade noch meinen Schlüssel... Frag gleich nochmal!";
-
-    const menuContext = kaffeeSorten.map(k => `- ${k.name}: ${k.desc} (Stärke: ${k.strength}/5)`).join("\n");
-    
-    const prompt = `
-        Du bist Timo, ein freundlicher Barista-KI-Agent.
-        
-        DEINE AUFGABE:
-        1. Wenn der User fragt "Was gibt es?" oder Infos will -> Antworte basierend auf der Karte.
-        2. WICHTIG: Wenn der User sagt "Das Gleiche wie gestern", "Nochmal das Selbe", "Repeat order" oder ähnlich -> 
-            Antworte NUR mit dem Wort: ACTION_REORDER
-            (Schreibe keinen anderen Text dazu, nur dieses Wort).
-
-        Hier ist unsere Karte:
-        ${menuContext}
-        
-        User Name: ${currentUser ? currentUser.displayName : "Gast"}
-        Frage: "${userQuestion}"
-        
-        Antworte auf Deutsch, kurz und charmant.
-    `;
-    
-    // WIR NEHMEN GEMINI 2.0 (Da es für dich funktionierte)
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    try {
-        const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            return `Technik-Fehler: ${data.error.message}`;
-        }
-
-        if (data.candidates && data.candidates[0].content) {
-            let answer = data.candidates[0].content.parts[0].text.trim();
-            
-            if (answer.includes("ACTION_REORDER")) {
-                addMessage("Moment, ich schaue ins Auftragsbuch... 📖", 'bot-msg');
-                const resultText = await repeatLastOrder();
-                return resultText;
-            }
-
-            return answer;
-        }
-        
-        return "Keine Antwort erhalten.";
-
-    } catch (e) { return `Verbindungs-Fehler: ${e.message}`; }
-}
-
-// ============================================
-//   LIVE STATUS MONITORING 📡
-// ============================================
-let lastStatus = ""; // Damit wir Änderungen erkennen
+// --- LIVE STATUS MONITORING ---
+let lastStatus = "";
 
 function monitorMyOrder() {
-    // Wir hören auf ALLE Bestellungen (einfacher Filter client-seitig)
     const ordersRef = ref(db, 'orders');
-
     onValue(ordersRef, (snapshot) => {
         const data = snapshot.val();
         const card = document.getElementById('live-status-card');
         
         if (!data || !currentUser) {
-            card.style.display = 'none';
+            if(card) card.style.display = 'none';
             return;
         }
 
-        // 1. Meine Bestellungen finden
         const myOrders = Object.values(data).filter(o => o.user === currentUser.displayName);
-        
-        // 2. Aktive Bestellung finden (nicht archiviert)
-        // Wir nehmen die NEUESTE, die noch nicht 'archived' ist
-        const activeOrder = myOrders
-            .filter(o => o.status !== 'archived')
-            .sort((a, b) => b.timestamp - a.timestamp)[0];
+        const activeOrder = myOrders.filter(o => o.status !== 'archived').sort((a, b) => b.timestamp - a.timestamp)[0];
 
         if (!activeOrder) {
-            card.style.display = 'none'; // Nix offen -> Ausblenden
+            if(card) card.style.display = 'none';
             lastStatus = "";
             return;
         }
 
-        // 3. UI Anzeigen & Aktualisieren
-        card.style.display = 'block';
-        const status = activeOrder.status || 'new';
-        
-        updateStatusCard(status, activeOrder.coffee);
+        if(card) card.style.display = 'block';
+        updateStatusCard(activeOrder.status || 'new', activeOrder.coffee);
     });
 }
 
@@ -552,7 +420,6 @@ function updateStatusCard(status, coffeeName) {
     const title = document.getElementById('ls-title');
     const desc = document.getElementById('ls-desc');
 
-    // Reset Klassen
     card.className = ""; 
 
     if (status === 'new') {
@@ -563,74 +430,45 @@ function updateStatusCard(status, coffeeName) {
     } 
     else if (status === 'preparing') {
         card.classList.add('ls-preparing', 'pulse-anim');
-        icon.innerText = "☕💨"; // Dampf Emoji
+        icon.innerText = "☕💨"; 
         title.innerText = "Wird gebrüht...";
         desc.innerText = "Der Barista ist an der Arbeit!";
-        
-        // Sound abspielen (nur wenn Status neu ist)
-        if (lastStatus !== 'preparing') {
-            // Optional: Leises Brutzeln oder so
-        }
     } 
     else if (status === 'ready') {
         card.classList.add('ls-ready');
         icon.innerText = "✅";
         title.innerText = "Wird serviert!";
-    
-
-        // DING SOUND! 🔔
         if (lastStatus !== 'ready') {
             try {
                 const audio = new Audio('assets/audio/ding.mp3');
                 audio.play();
-                // Konfetti oder Vibration wäre hier auch cool
                 if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
             } catch(e) {}
         }
     }
-
     lastStatus = status;
 }
 
-// ============================================
-//   FAVORITEN LOGIK ❤️
-// ============================================
-
-let myFavorites = {}; // Lokaler Speicher für die Herzchen
-
-// 1. Favoriten laden (sobald User eingeloggt)
+// --- FAVORITEN ---
+let myFavorites = {};
 function listenToFavorites() {
     if (!currentUser) return;
-    
     const favRef = ref(db, `users/${currentUser.uid}/favorites`);
     onValue(favRef, (snapshot) => {
         myFavorites = snapshot.val() || {};
-        renderAllCards(); // Alles neu zeichnen mit aktuellen Herzen
+        renderAllCards();
     });
 }
 
-// 2. Herz anklicken (Speichern/Löschen)
 window.toggleFavorite = function(coffeeName, event) {
-    // WICHTIG: Verhindert, dass sich das Bestell-Modal öffnet
     event.stopPropagation(); 
-
     if (!currentUser) { alert("Bitte einloggen!"); return; }
-
     const favRef = ref(db, `users/${currentUser.uid}/favorites/${coffeeName}`);
-
-    if (myFavorites[coffeeName]) {
-        // Ist schon Favorit -> Löschen
-        remove(favRef);
-    } else {
-        // Ist kein Favorit -> Hinzufügen
-        set(favRef, true);
-    }
+    if (myFavorites[coffeeName]) remove(favRef);
+    else set(favRef, true);
 }
 
-// ============================================
-//   KARTEN RENDERN (Menü & Favoriten)
-// ============================================
-
+// --- RENDER CARDS ---
 function renderAllCards() {
     const menuContainer = document.getElementById('menu-container');
     const favContainer = document.getElementById('fav-container');
@@ -640,20 +478,14 @@ function renderAllCards() {
 
     menuContainer.innerHTML = "";
     favContainer.innerHTML = "";
-
     let hasFavorites = false;
 
     kaffeeSorten.forEach(sorte => {
         const isFav = myFavorites[sorte.name] ? true : false;
         const cardHtml = buildCardHTML(sorte, isFav);
         
-        // 1. Zur normalen Liste hinzufügen
         const normalCard = document.createElement('div');
-        
-        // --- HIER IST DIE ÄNDERUNG (Klasse hinzufügen) ---
         normalCard.className = 'coffee-card scroll-reveal'; 
-        // ------------------------------------------------
-        
         normalCard.onclick = () => window.openOrderModal(sorte.name);
         normalCard.innerHTML = cardHtml;
         menuContainer.appendChild(normalCard);
@@ -661,7 +493,6 @@ function renderAllCards() {
         if (isFav) {
             hasFavorites = true;
             const favCard = document.createElement('div');
-            // Auch Favoriten animieren
             favCard.className = 'coffee-card scroll-reveal'; 
             favCard.onclick = () => window.openOrderModal(sorte.name);
             favCard.innerHTML = cardHtml;
@@ -670,12 +501,7 @@ function renderAllCards() {
     });
 
     favSection.style.display = hasFavorites ? 'block' : 'none';
-
-    // Tilt Effekt starten (falls du den noch hast)
     setTimeout(initTiltEffect, 100);
-
-    // --- HIER NEU: Scroll Reveal starten ---
-    // Wir warten kurz (50ms), damit der Browser die Elemente sicher platziert hat
     setTimeout(initScrollReveal, 50);
 }
 
@@ -687,10 +513,8 @@ function buildCardHTML(sorte, isFav) {
         dots += '</span>';
         dots = `<div class="strength-container">STÄRKE ${dots}</div>`;
     }
-
     const heartClass = isFav ? "fav-btn fav-active" : "fav-btn";
     const heartIcon = isFav ? "❤️" : "🤍"; 
-
     return `
         <div class="${heartClass}" onclick="window.toggleFavorite('${sorte.name}', event)">${heartIcon}</div>
         <div class="name">${sorte.name}</div>
@@ -707,152 +531,98 @@ function createSelect(id, label, options, suffix) {
     return html;
 }
 
-// --- ADMIN SCHUTZ ---
+// --- ADMIN ---
 window.checkAdminAccess = function() {
-    // 1. Passwort abfragen
     const password = prompt("🔒 Admin-Bereich\nBitte Passwort eingeben:");
-    
-    // 2. Prüfen (Hier dein Passwort festlegen!)
     if (password === "09052023") { 
-        // Richtig -> Weiterleiten
         window.location.href = "admin.html";
     } else if (password !== null) {
-        // Falsch (aber nicht Abbrechen geklickt) -> Fehlermeldung
         alert("Zugang verweigert! Zugriff nur für Admin. ⛔");
     }
-          }
+}
 
-// ============================================
-//   INFO MODAL (Matcha)
-// ============================================
+// --- INFO MODAL ---
 window.openMatchaInfo = function() {
     const modal = document.getElementById('info-modal');
     if(modal) modal.style.display = 'flex';
 }
-
 window.closeInfoModal = function() {
     const modal = document.getElementById('info-modal');
     if(modal) modal.style.display = 'none';
 }
 
-// ============================================
-//   3D TILT EFFECT 🧊
-// ============================================
-
+// --- TILT ---
 function initTiltEffect() {
     const cards = document.querySelectorAll('.coffee-card');
-
     cards.forEach(card => {
         card.addEventListener('mousemove', handleHover);
         card.addEventListener('mouseleave', resetCard);
-        
-        // Für Touchscreens (optional, kann aber hakelig sein beim Scrollen)
-        // card.addEventListener('touchmove', handleHover);
-        // card.addEventListener('touchend', resetCard);
     });
 }
-
 function handleHover(e) {
     const card = this;
     const width = card.offsetWidth;
     const height = card.offsetHeight;
-    
-    // Mausposition relativ zur Karte
     const rect = card.getBoundingClientRect();
     const mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
     const mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
-
-    // Berechnung der Rotation (Maximal 15 Grad Neigung)
-    // Mitte der Karte ist 0, links ist negativ, rechts positiv
     const xPct = mouseX / width - 0.5;
     const yPct = mouseY / height - 0.5;
-
-    const rotateX = yPct * -20; // Neigung oben/unten (invertiert)
-    const rotateY = xPct * 20;  // Neigung links/rechts
-
-    // Den Style anwenden
+    const rotateX = yPct * -20; 
+    const rotateY = xPct * 20;  
     card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
 }
-
 function resetCard() {
-    // Zurück zur Ausgangsposition
     this.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale(1)`;
 }
 
-// ============================================
-//   SCROLL REVEAL LOGIK ✨
-// ============================================
-
+// --- SCROLL REVEAL ---
 function initScrollReveal() {
-    // Der Beobachter: Prüft, ob Elemente sichtbar sind
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            // Wenn das Element im Bild ist (isIntersecting)
             if (entry.isIntersecting) {
-                // Klasse 'visible' hinzufügen -> CSS Animation startet
                 entry.target.classList.add('visible');
-                // Aufhören zu beobachten (damit es nur 1x passiert)
                 observer.unobserve(entry.target);
             }
         });
-    }, {
-        threshold: 0.1 // Animation startet, sobald 10% des Elements sichtbar sind
-    });
-
-    // Alle Elemente mit der Klasse .scroll-reveal suchen und beobachten
-    document.querySelectorAll('.scroll-reveal').forEach(el => {
-        observer.observe(el);
-    });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
 }
 
-// ============================================
-//   DIGITALE STEMPELKARTE 🎫
-// ============================================
-
-// 1. Stempel-Logik überwachen (Live-Update)
+// --- STEMPELKARTE ---
 function monitorStampCard() {
     if (!currentUser) return;
-    
     const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
     onValue(countRef, (snapshot) => {
         const totalCount = snapshot.val() || 0;
         renderStampCard(totalCount);
     });
 }
-
-// 2. Karte zeichnen (HTML generieren)
 function renderStampCard(totalCount) {
     const grid = document.getElementById('stamp-grid');
     const counterText = document.getElementById('stamp-counter');
     const msgText = document.getElementById('stamp-message');
-    
-    if(!grid) return; // Falls wir nicht auf der index.html sind
+    if(!grid) return; 
 
-    // Wir schauen immer nur auf den aktuellen 10er Block
-    // Beispiel: Bei 13 Kaffees haben wir 3 Stempel auf der aktuellen Karte
     const currentStamps = totalCount % 10;
     const remaining = 10 - currentStamps;
-
-    // Text Updates
-    counterText.innerText = `${currentStamps} / 10`;
+    if(counterText) counterText.innerText = `${currentStamps} / 10`;
     
     if (currentStamps === 0 && totalCount > 0) {
-        msgText.innerText = "Neue Karte, neues Glück! 🍀";
+        if(msgText) msgText.innerText = "Neue Karte, neues Glück! 🍀";
     } else if (remaining === 0) {
-        msgText.innerHTML = "<b>VOLL!</b> Dein nächster Kaffee bringt einen Keks! 🍪";
+        if(msgText) msgText.innerHTML = "<b>VOLL!</b> Dein nächster Kaffee bringt einen Keks! 🍪";
     } else {
-        msgText.innerText = `Noch ${remaining} Kaffees bis zum Gratis-Keks! 🍪`;
+        if(msgText) msgText.innerText = `Noch ${remaining} Kaffees bis zum Gratis-Keks! 🍪`;
     }
 
-    // Kreise generieren
     grid.innerHTML = "";
     for (let i = 1; i <= 10; i++) {
         const circle = document.createElement('div');
         circle.className = 'stamp-circle';
-        
         if (i <= currentStamps) {
             circle.classList.add('active');
-            circle.innerText = "☕"; // Stempel-Icon
+            circle.innerText = "☕"; 
         } else {
             circle.innerText = i;
         }
@@ -860,263 +630,108 @@ function renderStampCard(totalCount) {
     }
 }
 
-// 3. Konfetti Funktion 🎉
+// --- KONFETTI ---
 function triggerConfetti() {
     const colors = ['#d4b483', '#f2d74e', '#ffffff', '#e74c3c'];
-    
     for (let i = 0; i < 100; i++) {
         const conf = document.createElement('div');
         conf.classList.add('confetti');
-        
-        // Zufällige Position & Farbe
         conf.style.left = Math.random() * 100 + 'vw';
         conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        conf.style.animationDuration = (Math.random() * 3 + 2) + 's'; // 2-5 Sekunden Fallzeit
-        
+        conf.style.animationDuration = (Math.random() * 3 + 2) + 's'; 
         document.body.appendChild(conf);
-        
-        // Aufräumen
         setTimeout(() => conf.remove(), 5000);
     }
 }
-
-// Belohnungs-Modal schließen
 window.closeRewardModal = function() {
-    document.getElementById('reward-modal').style.display = 'none';
+    const modal = document.getElementById('reward-modal');
+    if(modal) modal.style.display = 'none';
 }
 
-// ============================================
-//   HAPTIC FEEDBACK (Vibration) 📳
-// ============================================
-
-// 1. Generelles Klick-Feedback für alle Buttons & Links
+// --- VIBRATION ---
 document.addEventListener('click', (e) => {
-    // Prüfen, ob ein Button oder Link geklickt wurde
     if (e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('.coffee-card')) {
-        // Ganz kurz vibrieren (10ms) - fühlt sich an wie ein "Tick"
         if (navigator.vibrate) navigator.vibrate(10);
     }
 });
 
-// 2. Erfolgsvibration für Bestellungen
-// Suche deine 'sendOrder' Funktion und füge das im Erfolgs-Fall hinzu:
-/* In der .then(response => { ... }) Klammer, direkt unter confirmModal.style.display = 'flex':
-   
-   if (navigator.vibrate) navigator.vibrate([50, 30, 50]); // Zweimal kurz brummen
-*/
-
-// ============================================
-//   TRINKGELD LOGIK (MIT GLAS & STAPELN) 🪙
-// ============================================
-
-let coinsInGlass = 0; // Zähler für die aktuelle Sitzung
-
+// --- TRINKGELD ---
+let coinsInGlass = 0; 
 window.giveTip = function() {
-    // 1. Sound abspielen
     const audio = document.getElementById('kaching-sound');
     if(audio) {
         audio.currentTime = 0; 
         audio.play().catch(e => console.log("Audio play error", e));
     }
-
-    // 2. Münze erzeugen
     createCoin();
-
-    // 3. Vibration
     if(navigator.vibrate) navigator.vibrate([50]);
-
-    // 4. Firebase Update (wie gehabt)
     const tipRef = ref(db, 'stats/totalTips');
     runTransaction(tipRef, (currentTips) => {
         return (currentTips || 0) + 1; 
     });
 }
-
 function createCoin() {
     const glass = document.getElementById('tip-glass');
     if(!glass) return;
-
     const coin = document.createElement('div');
     coin.classList.add('dropped-coin');
-
-    // ZUFALLS-POSITIONIERUNG (Damit es natürlich aussieht)
-    // Links/Rechts Position im Glas (zwischen 5px und 40px)
     const randomLeft = Math.floor(Math.random() * 35) + 5;
-    
-    // Stapel-Höhe: Je mehr Münzen, desto höher landen sie
-    // Wir lassen sie etwas überlappen (deshalb * 4 statt * 24)
-    // Max Höhe 75px, danach fängt es wieder unten an (oder stapelt wild)
     let targetBottom = (coinsInGlass * 4); 
-    if(targetBottom > 70) targetBottom = Math.random() * 60; // Wenn voll, wirf einfach rein
-
-    // Zielposition von OBEN berechnet (da CSS 'top' nutzt für Animation)
-    // Glas Höhe ist ca 90px. Münze ist 24px.
-    // Bottom 0 entspricht Top 66px.
+    if(targetBottom > 70) targetBottom = Math.random() * 60; 
     const targetTop = 66 - targetBottom;
-
-    // Zufällige Rotation
     const randomRot = Math.floor(Math.random() * 360) + "deg";
-
-    // CSS Variablen setzen für die Animation
     coin.style.left = randomLeft + 'px';
     coin.style.setProperty('--target-top', targetTop + 'px');
     coin.style.setProperty('--rot', randomRot);
-
     glass.appendChild(coin);
     coinsInGlass++;
 }
 
-// ============================================
-//   GLÜCKSRAD LOGIK 🎡
-// ============================================
-
-// Beim Laden der Seite prüfen: Darf gedreht werden?
+// --- GLÜCKSRAD ---
 document.addEventListener('DOMContentLoaded', checkDailySpin);
-
 function checkDailySpin() {
     const lastSpin = localStorage.getItem('lastSpinDate');
-    const today = new Date().toDateString(); // "Sat Dec 20 2025"
-
-    // Wenn noch nie gedreht ODER Datum anders als heute
+    const today = new Date().toDateString(); 
     if (lastSpin !== today) {
         const btn = document.getElementById('daily-spin-card');
-        if(btn) btn.style.display = "block"; // Button anzeigen!
+        if(btn) btn.style.display = "block"; 
     }
 }
-
 window.openWheel = function() {
-    document.getElementById('wheel-modal').classList.add('open');
+    const wheel = document.getElementById('wheel-modal');
+    if(wheel) wheel.classList.add('open');
 }
-
 window.closeWheel = function() {
-    document.getElementById('wheel-modal').classList.remove('open');
+    const wheel = document.getElementById('wheel-modal');
+    if(wheel) wheel.classList.remove('open');
 }
-
 window.spinTheWheel = function() {
     const wheel = document.getElementById('lucky-wheel');
     const btn = document.getElementById('spin-btn');
     const resultDiv = document.getElementById('win-display');
-    
-    // Button deaktivieren
     btn.disabled = true;
     btn.innerText = "Dreht...";
     resultDiv.innerText = "";
-
-    // 1. Zufälligen Winkel berechnen
-    // Mindestens 5 volle Umdrehungen (1800 Grad) + Zufall (0-360)
     const randomDeg = Math.floor(Math.random() * 360);
     const totalSpin = 1800 + randomDeg; 
-
-    // 2. CSS Rotation anwenden
     wheel.style.transform = `rotate(${totalSpin}deg)`;
-
-    // 3. Nach der Animation (4 Sekunden) den Gewinn berechnen
     setTimeout(() => {
         calculatePrize(randomDeg);
         btn.innerText = "Morgen wieder!";
-        
-        // Sound abspielen (dein Kaching Sound passt auch hier!)
         const audio = document.getElementById('kaching-sound');
         if(audio) audio.play();
-
-        // HEUTE als "gedreht" speichern
         localStorage.setItem('lastSpinDate', new Date().toDateString());
-        
-        // Button auf Hauptseite ausblenden
         const mainBtn = document.getElementById('daily-spin-card');
         if(mainBtn) mainBtn.style.display = 'none';
-
-        // Konfetti? (Optional, falls du Konfetti JS hast)
-        
-    }, 4000); // Muss zur CSS transition-time passen
+    }, 4000); 
 }
-
 function calculatePrize(deg) {
-    // Die Berechnung ist etwas tricky, da CSS Rotation im Uhrzeigersinn geht,
-    // aber der Zeiger oben feststeht.
-    // 0 Grad im CSS ist bei uns Oben-Mitte (startet Segment 1, Blau).
-    // Der Zeiger ist oben. 
-    // Wenn wir um 90 Grad drehen, steht Segment 4 (Grün) oben.
-    
-    // Normalisieren auf 0-360
     const actualDeg = deg % 360;
     let prize = "";
-
-    // Das Rad dreht sich im Uhrzeigersinn. Der Zeiger ist oben (0°).
-    // Welches Segment landet oben?
-    // 0-90° Drehung -> Segment 4 (Grün) landet oben
-    // 90-180° Drehung -> Segment 3 (Orange) landet oben
-    // 180-270° Drehung -> Segment 2 (Rosa) landet oben
-    // 270-360° Drehung -> Segment 1 (Blau) landet oben
-
-    if (actualDeg >= 0 && actualDeg < 90) {
-        prize = "☕ GEWONNEN: Doppelte Punkte für Treuekarte!";
-    } else if (actualDeg >= 90 && actualDeg < 180) {
-        prize = "🃏 JOKER: Gratis Kaffee deiner Wahl!";
-    } else if (actualDeg >= 180 && actualDeg < 270) {
-        prize = "🫂 NIETE: Umarmung für Timo";
-    } else { 
-        prize = "🍪 GEWONNEN: Gratis Keks!";
-    }
-
+    if (actualDeg >= 0 && actualDeg < 90) prize = "☕ GEWONNEN: Doppelte Punkte für Treuekarte!";
+    else if (actualDeg >= 90 && actualDeg < 180) prize = "🃏 JOKER: Gratis Kaffee deiner Wahl!";
+    else if (actualDeg >= 180 && actualDeg < 270) prize = "🫂 NIETE: Umarmung für Timo";
+    else prize = "🍪 GEWONNEN: Gratis Keks!";
     const resultDiv = document.getElementById('win-display');
     resultDiv.innerHTML = prize;
-    
-    // Speichern in Firebase? (Optional)
-    // Wenn es ein Keks ist, könnte man das als "Gutschein" speichern.
-}
-
-// ============================================
-//   VISUAL COFFEE LAB LOGIK 🧪
-// ============================================
-
-// Die Rezepte: Prozente für [Schaum, Espresso, Wasser, Milch]
-const coffeeRecipes = {
-    "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
-    "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
-    "Espresso Lungo":   { foam: 5,   esp: 40,  wat: 10, milk: 0 },
-    "Cappuccino":       { foam: 35,  esp: 25,  wat: 0,  milk: 30 }, // Viel Schaum
-    "Latte Macchiato":  { foam: 25,  esp: 15,  wat: 0,  milk: 55 }, // Viel Milch, Schichten
-    "Milchkaffee":      { foam: 10,  esp: 20,  wat: 0,  milk: 60 }, // Wenig Schaum
-    "Flat White":       { foam: 5,   esp: 35,  wat: 0,  milk: 55 }, // Microfoam (wenig)
-    "Americano":        { foam: 0,   esp: 25,  wat: 65, milk: 0 },
-    "Kaffee":           { foam: 5,   esp: 85,  wat: 0,  milk: 0 },
-    "Iced Latte":       { foam: 10,  esp: 20,  wat: 0,  milk: 60 },
-    // Fallback
-    "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
-};
-
-function updateCoffeeVisuals(productName, extras = []) {
-    const glass = document.querySelector('.glass-cup');
-    if(!glass) return;
-
-    // 1. Rezept suchen
-    let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
-    
-    // Kopie erstellen, damit wir das Original nicht ändern
-    let currentRecipe = { ...recipe };
-
-    // 2. Extras berechnen (Dynamik!)
-    // Wenn "Extra Shot" ausgewählt ist
-    if (extras.includes("Extra Shot")) {
-        currentRecipe.esp += 15; // Espresso Balken wird dicker
-        // Milch etwas reduzieren, damit das Glas nicht überläuft
-        if(currentRecipe.milk > 10) currentRecipe.milk -= 10;
-        else if(currentRecipe.wat > 10) currentRecipe.wat -= 10;
-    }
-
-    // Wenn "Hafermilch" etc. gewählt -> Ändert nichts an der Optik, aber wir könnten Farbe ändern (optional)
-
-    // 3. Auf das Glas anwenden (Höhe in %)
-    document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
-    document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
-    document.getElementById('layer-water').style.height = currentRecipe.wat + '%';
-    document.getElementById('layer-milk').style.height = currentRecipe.milk + '%';
-
-    // 4. Dampf anzeigen? (Nur wenn nicht "Iced")
-    if (productName.includes("Iced")) {
-        glass.classList.remove('hot');
-    } else {
-        glass.classList.add('hot');
-    }
 }
