@@ -931,3 +931,103 @@ function createCoin() {
     glass.appendChild(coin);
     coinsInGlass++;
 }
+
+// ============================================
+//   GLÜCKSRAD LOGIK 🎡
+// ============================================
+
+// Beim Laden der Seite prüfen: Darf gedreht werden?
+document.addEventListener('DOMContentLoaded', checkDailySpin);
+
+function checkDailySpin() {
+    const lastSpin = localStorage.getItem('lastSpinDate');
+    const today = new Date().toDateString(); // "Sat Dec 20 2025"
+
+    // Wenn noch nie gedreht ODER Datum anders als heute
+    if (lastSpin !== today) {
+        const btn = document.getElementById('daily-spin-card');
+        if(btn) btn.style.display = "block"; // Button anzeigen!
+    }
+}
+
+window.openWheel = function() {
+    document.getElementById('wheel-modal').classList.add('open');
+}
+
+window.closeWheel = function() {
+    document.getElementById('wheel-modal').classList.remove('open');
+}
+
+window.spinTheWheel = function() {
+    const wheel = document.getElementById('lucky-wheel');
+    const btn = document.getElementById('spin-btn');
+    const resultDiv = document.getElementById('win-display');
+    
+    // Button deaktivieren
+    btn.disabled = true;
+    btn.innerText = "Dreht...";
+    resultDiv.innerText = "";
+
+    // 1. Zufälligen Winkel berechnen
+    // Mindestens 5 volle Umdrehungen (1800 Grad) + Zufall (0-360)
+    const randomDeg = Math.floor(Math.random() * 360);
+    const totalSpin = 1800 + randomDeg; 
+
+    // 2. CSS Rotation anwenden
+    wheel.style.transform = `rotate(${totalSpin}deg)`;
+
+    // 3. Nach der Animation (4 Sekunden) den Gewinn berechnen
+    setTimeout(() => {
+        calculatePrize(randomDeg);
+        btn.innerText = "Morgen wieder!";
+        
+        // Sound abspielen (dein Kaching Sound passt auch hier!)
+        const audio = document.getElementById('kaching-sound');
+        if(audio) audio.play();
+
+        // HEUTE als "gedreht" speichern
+        localStorage.setItem('lastSpinDate', new Date().toDateString());
+        
+        // Button auf Hauptseite ausblenden
+        const mainBtn = document.getElementById('daily-spin-card');
+        if(mainBtn) mainBtn.style.display = 'none';
+
+        // Konfetti? (Optional, falls du Konfetti JS hast)
+        
+    }, 4000); // Muss zur CSS transition-time passen
+}
+
+function calculatePrize(deg) {
+    // Die Berechnung ist etwas tricky, da CSS Rotation im Uhrzeigersinn geht,
+    // aber der Zeiger oben feststeht.
+    // 0 Grad im CSS ist bei uns Oben-Mitte (startet Segment 1, Blau).
+    // Der Zeiger ist oben. 
+    // Wenn wir um 90 Grad drehen, steht Segment 4 (Grün) oben.
+    
+    // Normalisieren auf 0-360
+    const actualDeg = deg % 360;
+    let prize = "";
+
+    // Das Rad dreht sich im Uhrzeigersinn. Der Zeiger ist oben (0°).
+    // Welches Segment landet oben?
+    // 0-90° Drehung -> Segment 4 (Grün) landet oben
+    // 90-180° Drehung -> Segment 3 (Orange) landet oben
+    // 180-270° Drehung -> Segment 2 (Rosa) landet oben
+    // 270-360° Drehung -> Segment 1 (Blau) landet oben
+
+    if (actualDeg >= 0 && actualDeg < 90) {
+        prize = "🃏 JOKER: Doppelte Punkte!";
+    } else if (actualDeg >= 90 && actualDeg < 180) {
+        prize = "☕ GEWONNEN: Extra Shot!";
+    } else if (actualDeg >= 180 && actualDeg < 270) {
+        prize = "🫂 NIETE: Umarmung von Timo";
+    } else {
+        prize = "🍪 GEWONNEN: Gratis Keks!";
+    }
+
+    const resultDiv = document.getElementById('win-display');
+    resultDiv.innerHTML = prize;
+    
+    // Speichern in Firebase? (Optional)
+    // Wenn es ein Keks ist, könnte man das als "Gutschein" speichern.
+}
