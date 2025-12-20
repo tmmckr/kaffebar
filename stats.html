@@ -168,55 +168,72 @@
         const auth = getAuth(app);
 
         // Chart.js Styles
-        Chart.defaults.color = '#a09085';
-        Chart.defaults.borderColor = 'rgba(212, 180, 131, 0.1)';
-        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto';
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.color = '#a09085';
+            Chart.defaults.borderColor = 'rgba(212, 180, 131, 0.1)';
+            Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto';
+        }
 
+        // ============================================
+        // 1. ANIMATION STARTEN (WICHTIG: ZUERST!) 🏁
+        // ============================================
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+        });
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+
+        // ============================================
+        // 2. DATEN LADEN 📡
+        // ============================================
         let currentUser = null;
 
-        // AUTH CHECK
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 loadLeaderboard(); // Globales Ranking
                 loadPersonalWrapped(user.uid); // Persönliche Charts
+                loadTips(); // Trinkgeld laden
             } else {
                 window.location.href = "login.html";
             }
-
-            // TRINKGELD LADEN
-        const tipRef = ref(db, 'stats/totalTips');
-        onValue(tipRef, (snapshot) => {
-            const coins = snapshot.val() || 0;
-            const wertProMuenze = 0.50; // Jede Münze ist 50 Cent wert
-            const totalEuro = (coins * wertProMuenze).toFixed(2).replace('.', ',');
-            
-            const el = document.getElementById('tip-amount');
-            if(el) el.innerText = totalEuro + " €";
-        }
         });
 
-        // 1. PERSÖNLICHE CHARTS LADEN (History)
+        // TRINKGELD LADEN
+        function loadTips() {
+            const tipRef = ref(db, 'stats/totalTips');
+            onValue(tipRef, (snapshot) => {
+                const coins = snapshot.val() || 0;
+                const wertProMuenze = 0.50; 
+                const totalEuro = (coins * wertProMuenze).toFixed(2).replace('.', ',');
+                
+                const el = document.getElementById('tip-amount');
+                if(el) el.innerText = totalEuro + " €";
+            });
+        }
+
+        // PERSÖNLICHE CHARTS (History)
         function loadPersonalWrapped(uid) {
             const historyRef = ref(db, `users/${uid}/history`);
             
             onValue(historyRef, (snapshot) => {
                 const data = snapshot.val();
                 
-                // Falls noch keine History da ist (neues Feature), nehmen wir 0
                 if (!data) {
-                    document.getElementById('total-saved').innerText = "0,00 €";
+                    const el = document.getElementById('total-saved');
+                    if(el) el.innerText = "0,00 €";
                     return;
                 }
 
                 const orders = Object.values(data);
                 
-                // A) GELD BERECHNEN
+                // A) GELD
                 let totalMoney = 0;
                 orders.forEach(o => totalMoney += (o.saved || 4.50));
-                document.getElementById('total-saved').innerText = totalMoney.toFixed(2).replace('.', ',') + " €";
+                const elSaved = document.getElementById('total-saved');
+                if(elSaved) elSaved.innerText = totalMoney.toFixed(2).replace('.', ',') + " €";
 
-                // B) DATEN FÜR PIE CHART
+                // B) PIE CHART
                 const typeCounts = {};
                 orders.forEach(o => {
                     const type = o.product || "Kaffee";
@@ -224,7 +241,7 @@
                 });
                 renderPieChart(typeCounts);
 
-                // C) DATEN FÜR LINE CHART (Stunden)
+                // C) LINE CHART
                 const hourCounts = new Array(24).fill(0);
                 orders.forEach(o => {
                     if(o.timestamp) {
@@ -236,7 +253,7 @@
             });
         }
 
-        // 2. LEADERBOARD & BADGES LADEN (Global Orders)
+        // LEADERBOARD & BADGES
         function loadLeaderboard() {
             const ordersRef = ref(db, 'orders');
             onValue(ordersRef, (snapshot) => {
@@ -246,37 +263,36 @@
                 const orders = Object.values(data);
                 const userCounts = {};
 
-                // Zählen
                 orders.forEach(order => {
                     const name = order.user || "Unbekannt";
                     userCounts[name] = (userCounts[name] || 0) + 1;
                 });
 
-                // Sortieren
                 const sortedUsers = Object.entries(userCounts).sort(([,a], [,b]) => b - a);
 
-                // Leaderboard bauen
                 const leaderboardDiv = document.getElementById('leaderboard-list');
-                leaderboardDiv.innerHTML = ""; 
+                if(leaderboardDiv) {
+                    leaderboardDiv.innerHTML = ""; 
 
-                sortedUsers.forEach(([name, count], index) => {
-                    const rank = index + 1;
-                    let icon = "#" + rank;
-                    if(rank === 1) icon = "🥇";
-                    if(rank === 2) icon = "🥈";
-                    if(rank === 3) icon = "🥉";
+                    sortedUsers.forEach(([name, count], index) => {
+                        const rank = index + 1;
+                        let icon = "#" + rank;
+                        if(rank === 1) icon = "🥇";
+                        if(rank === 2) icon = "🥈";
+                        if(rank === 3) icon = "🥉";
 
-                    const row = document.createElement('div');
-                    row.className = 'rank-row';
-                    row.innerHTML = `
-                        <div class="rank-num">${icon}</div>
-                        <div class="rank-name">${name} ${name === currentUser.displayName ? "(Du)" : ""}</div>
-                        <div class="rank-count">${count}</div>
-                    `;
-                    leaderboardDiv.appendChild(row);
-                });
+                        const row = document.createElement('div');
+                        row.className = 'rank-row';
+                        row.innerHTML = `
+                            <div class="rank-num">${icon}</div>
+                            <div class="rank-name">${name} ${name === currentUser.displayName ? "(Du)" : ""}</div>
+                            <div class="rank-count">${count}</div>
+                        `;
+                        leaderboardDiv.appendChild(row);
+                    });
+                }
 
-                // Eigene Badges
+                // Badges
                 const myName = currentUser.displayName;
                 const myCount = userCounts[myName] || 0;
                 animateValue("my-count", 0, myCount, 1500);
@@ -288,10 +304,15 @@
             });
         }
 
-        // --- CHART RENDER FUNKTIONEN ---
+        // ============================================
+        // 3. CHART HELPER FUNKTIONEN 📊
+        // ============================================
         let typeChartInstance = null;
         function renderPieChart(counts) {
-            const ctx = document.getElementById('typeChart').getContext('2d');
+            const canvas = document.getElementById('typeChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
             if(typeChartInstance) typeChartInstance.destroy();
 
             typeChartInstance = new Chart(ctx, {
@@ -313,7 +334,10 @@
 
         let timeChartInstance = null;
         function renderTimeChart(hours) {
-            const ctx = document.getElementById('timeChart').getContext('2d');
+            const canvas = document.getElementById('timeChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
             if(timeChartInstance) timeChartInstance.destroy();
 
             const labels = [];
@@ -342,10 +366,10 @@
             });
         }
 
-        // Zähler Animation
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
-            if(start === end) return;
+            if(!obj) return;
+            if(start === end) { obj.innerHTML = end; return; }
             let range = end - start;
             let current = start;
             let increment = end > start ? 1 : -1;
@@ -357,88 +381,58 @@
             }, stepTime);
         }
 
-        // Scroll Animation Observer
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
-        });
-        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
-
-
         // ==========================================
-        // 🛠️ MIGRATIONS-WERKZEUG (V2 - Mit echten Preisen)
+        // 4. MIGRATIONS-WERKZEUG (V2) 🛠️
         // ==========================================
-        
-        // Button
         const btn = document.createElement('button');
         btn.innerText = "🔄 Preise aktualisieren & neu berechnen";
         btn.style.cssText = "display:block; margin: 30px auto; padding: 15px; background: #333; color: #fff; border: 1px solid #777; border-radius: 10px; cursor: pointer;";
         btn.onclick = importOldData;
-        document.querySelector('.container').appendChild(btn);
+        const container = document.querySelector('.container');
+        if(container) container.appendChild(btn);
 
         function importOldData() {
             if(!currentUser) return alert("Bitte erst einloggen!");
             if(!confirm(`Möchtest du die Ersparnisse für alle vergangenen Bestellungen basierend auf der neuen Preisliste neu berechnen?`)) return;
 
-            // --- DEINE PREISLISTE (Gespartes Geld pro Getränk) ---
             const starbucksPreise = {
-                "Kaffee": 3.50,
-                "Café Crema": 3.90,
-                "Latte Macchiato": 4.50,
-                "Milchkaffee": 4.20,
-                
-                // Weitere Schätzungen (damit nichts 0€ ist):
-                "Cappuccino": 4.20,
-                "Espresso": 2.90,
-                "Espresso Lungo": 3.20,
-                "Americano": 3.50,
-                "Flat White": 4.50,
-                "Iced Matcha Latte": 5.50,
-                "Iced Protein Matcha": 5.90,
-                "Iced Coffee": 3.90,
-                "Iced Latte": 4.50,
-                "To-Go-Becher": 0.00,
-                "Heißes Wasser": 0.00
+                "Kaffee": 3.50, "Café Crema": 3.90, "Latte Macchiato": 4.50, "Milchkaffee": 4.20,
+                "Cappuccino": 4.20, "Espresso": 2.90, "Espresso Lungo": 3.20, "Americano": 3.50,
+                "Flat White": 4.50, "Iced Matcha Latte": 5.50, "Iced Protein Matcha": 5.90,
+                "Iced Coffee": 3.90, "Iced Latte": 4.50, "To-Go-Becher": 0.00, "Heißes Wasser": 0.00
             };
-            const standardPreis = 4.00; // Fallback, falls Getränk unbekannt
-            // -----------------------------------------------------
+            const standardPreis = 4.00;
 
             const globalOrdersRef = ref(db, 'orders');
             const myHistoryRef = ref(db, `users/${currentUser.uid}/history`);
 
-            // 1. Alle Bestellungen laden
             get(globalOrdersRef).then((snapshot) => {
                 const data = snapshot.val();
                 if(!data) return alert("Keine Bestellungen gefunden.");
 
                 const allOrders = Object.values(data);
-                
-                // 2. Nur MEINE Bestellungen filtern
                 const myOrders = allOrders.filter(o => o.user === currentUser.displayName);
 
                 if(myOrders.length === 0) return alert("Du hast noch nie etwas bestellt!");
 
-                // 3. History neu bauen mit korrekten Preisen
                 const newHistory = {};
                 let count = 0;
                 
                 myOrders.forEach(order => {
                     const key = "migrated_" + order.timestamp;
                     const prodName = order.coffee || "Kaffee";
-                    
-                    // Hier holen wir den passenden Preis aus der Liste
                     const savedAmount = starbucksPreise[prodName] !== undefined ? starbucksPreise[prodName] : standardPreis;
 
                     newHistory[key] = {
                         product: prodName,
                         timestamp: order.timestamp,
-                        saved: savedAmount // <-- Hier steht jetzt der echte Wert!
+                        saved: savedAmount
                     };
                     count++;
                 });
 
-                // 4. In die Datenbank speichern (Überschreiben)
                 set(myHistoryRef, newHistory).then(() => {
-                    alert(`✅ Erledigt! Die Preise für ${count} Bestellungen wurden korrigiert.\nDie Seite lädt jetzt neu.`);
+                    alert(`✅ Erledigt! Die Preise für ${count} Bestellungen wurden korrigiert.`);
                     window.location.reload();
                 });
 
