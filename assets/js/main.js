@@ -386,6 +386,7 @@ function letItSnow() {
 letItSnow();
 
 // --- SEND ORDER ---
+// --- SEND ORDER ---
 window.sendOrder = function() {
     createSteamEffect();
     try {
@@ -394,12 +395,34 @@ window.sendOrder = function() {
         sound.play();
     } catch (e) {}
 
+    // 1. PREISE & INFOS VORBEREITEN (Jetzt ganz oben!)
+    const starbucksPreise = { 
+        "Kaffee": 3.50, 
+        "Café Crema": 3.90, 
+        "Latte Macchiato": 4.50, 
+        "Milchkaffee": 4.20, 
+        "Cappuccino": 4.20, 
+        "Espresso": 2.90, 
+        "Espresso Lungo": 3.20, 
+        "Americano": 3.50, 
+        "Flat White": 4.50, 
+        "Iced Matcha Latte": 5.50, 
+        "Iced Protein Matcha": 5.90, 
+        "Iced Coffee": 3.90, 
+        "Iced Latte": 4.50 
+    };
+
+    // Preis ermitteln (Fallback 4.00€, falls was schief geht)
+    const rawPrice = starbucksPreise[currentCoffee.name] !== undefined ? starbucksPreise[currentCoffee.name] : 4.00;
+    const formattedPrice = rawPrice.toFixed(2) + "€";
+
     const userName = currentUser ? currentUser.displayName : "Gast";
     const commentInput = document.getElementById('order-comment');
     const comment = commentInput ? commentInput.value.trim() : "";
     const statusDiv = document.getElementById('status');
     const sendBtn = document.querySelector('#order-modal .modal-btn');
 
+    // Details sammeln
     let details = [];
     const strengthEl = document.getElementById('input-strength');
     if(strengthEl) details.push(`Stärke ${strengthEl.value}`);
@@ -429,6 +452,7 @@ window.sendOrder = function() {
 
     if(sendBtn) sendBtn.innerText = "Sende...";
 
+    // 2. FIREBASE SAVE (Bestellung)
     push(ref(db, 'orders'), {
         user: userName,
         coffee: currentCoffee.name,
@@ -438,16 +462,16 @@ window.sendOrder = function() {
         dateString: new Date().toLocaleString()
     });
 
+    // 3. HISTORY SAVE (Nur wenn eingeloggt)
     if (currentUser) {
-        const starbucksPreise = { "Kaffee": 3.50, "Café Crema": 3.90, "Latte Macchiato": 4.50, "Milchkaffee": 4.20, "Cappuccino": 4.20, "Espresso": 2.90, "Espresso Lungo": 3.20, "Americano": 3.50, "Flat White": 4.50, "Iced Matcha Latte": 5.50, "Iced Protein Matcha": 5.90, "Iced Coffee": 3.90, "Iced Latte": 4.50 };
-        const preis = starbucksPreise[currentCoffee.name] !== undefined ? starbucksPreise[currentCoffee.name] : 4.00;
         push(ref(db, `users/${currentUser.uid}/history`), {
             product: currentCoffee.name,
             timestamp: Date.now(),
-            saved: preis
+            saved: rawPrice // Hier nutzen wir den oben berechneten Preis
         });
     }
 
+    // 4. STEMPEL UPDATE
     const countRef = ref(db, `users/${currentUser.uid}/coffeeCount`);
     runTransaction(countRef, (currentCount) => {
         return (currentCount || 0) + 1;
@@ -463,6 +487,7 @@ window.sendOrder = function() {
         }
     });
 
+    // 5. PUSH & RECEIPT ANZEIGE
     fetch(`https://ntfy.sh/${TOPIC_NAME}`, {
         method: 'POST',
         body: messageBody, 
@@ -470,21 +495,20 @@ window.sendOrder = function() {
     })
     .then(response => {
         if (response.ok) {
-            // 1. Bestell-Fenster schließen
+            // Modal schließen
             const modal = document.getElementById('order-modal');
             modal.style.display = 'none'; 
             modal.classList.remove('show');
 
-            // --- NEU: KASSENZETTEL BEFÜLLEN & ANZEIGEN ---
-            
-            // Name & Datum
+            // --- RECEIPT BEFÜLLEN ---
             document.getElementById('receipt-item-name').innerText = currentCoffee.name;
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
-            
-            // Zufällige Bestell-Nummer (Fake)
             document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 8999 + 1000);
+            
+            // HIER IST DIE PREIS-ÄNDERUNG:
+            document.getElementById('receipt-price').innerText = formattedPrice;
 
-            // Extras auflisten (Das Array 'details' hast du oben in sendOrder schon erstellt)
+            // Extras auflisten
             const extrasContainer = document.getElementById('receipt-extras-container');
             if(extrasContainer) {
                 extrasContainer.innerHTML = "";
@@ -493,20 +517,28 @@ window.sendOrder = function() {
                     row.className = 'receipt-row';
                     row.style.fontSize = '0.85rem';
                     row.style.color = '#666';
-                    // Wir zeigen 0.00€ an, weil es ja "aufs Haus" ist ;)
                     row.innerHTML = `<span>+ ${extra}</span><span>0.00€</span>`;
                     extrasContainer.appendChild(row);
                 });
+                
+                // "Gespart" Zeile aktualisieren (optional, falls du das Element hast)
+                // Wir fügen eine Zeile hinzu oder updaten sie
+                const savedRow = document.createElement('div');
+                savedRow.className = 'receipt-row';
+                savedRow.style.fontSize = '0.85rem';
+                savedRow.style.color = '#888';
+                savedRow.style.marginTop = '10px';
+                savedRow.style.borderTop = '1px dashed #ccc';
+                savedRow.style.paddingTop = '5px';
+                savedRow.innerHTML = `<span>Gespart (vs Starbucks)</span><span>-${formattedPrice}</span>`;
+                extrasContainer.appendChild(savedRow);
             }
 
-            // Kassenzettel Modal öffnen (statt dem alten confirmModal)
+            // Receipt öffnen
             const receiptModal = document.getElementById('receipt-modal');
             if(receiptModal) receiptModal.style.display = 'flex';
 
-            // Button Reset
             if(sendBtn) sendBtn.innerText = "Bestellen";
-            
-            // Vibration
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 
         } else { throw new Error('Send Error'); }
