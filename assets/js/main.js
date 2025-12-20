@@ -870,3 +870,29 @@ document.addEventListener('click', (e) => {
    
    if (navigator.vibrate) navigator.vibrate([50, 30, 50]); // Zweimal kurz brummen
 */
+
+// ============================================
+//   HAMBURGER MENU LOGIK 🍔
+// ============================================
+
+window.toggleMenu = function(event) {
+    // Verhindern, dass der Klick sofort das "Schließen"-Event feuert
+    event.stopPropagation();
+    
+    const menu = document.getElementById('main-dropdown');
+    menu.classList.toggle('show');
+    
+    // Kleines haptisches Feedback
+    if(navigator.vibrate) navigator.vibrate(10);
+}
+
+// Menü schließen, wenn man irgendwo anders hinklickt
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('main-dropdown');
+    const btn = document.querySelector('.hamburger-btn');
+    
+    // Wenn das Menü offen ist UND man NICHT auf das Menü oder den Button geklickt hat
+    if (menu.classList.contains('show') && !menu.contains(event.target) && event.target !== btn) {
+        menu.classList.remove('show');
+    }
+});
