@@ -173,10 +173,26 @@
         </div>
     </footer>
 
-    <div id="order-modal" class="modal-overlay">
+   <div id="order-modal" class="modal-overlay">
         <div class="modal-box">
-            <h2 class="modal-title" id="modal-coffee-title">Einstellungen</h2>
+            <h2 class="modal-title" id="modal-coffee-title">Bestellung</h2>
+            
+            <div class="coffee-visualizer">
+                <div class="glass-cup">
+                    <div class="steam-container">
+                        <div class="steam s1"></div>
+                        <div class="steam s2"></div>
+                        <div class="steam s3"></div>
+                    </div>
+                    <div id="layer-foam" class="liquid foam"></div>
+                    <div id="layer-espresso" class="liquid espresso"></div>
+                    <div id="layer-water" class="liquid water"></div>
+                    <div id="layer-milk" class="liquid milk"></div>
+                </div>
+                <div class="glass-reflection"></div>
+            </div>
             <div id="custom-options"></div>
+            
             <button class="modal-btn" onclick="sendOrder()">Bestellen</button>
             <div style="margin-top:15px; font-size:0.8rem; color:#a09085; cursor:pointer;" onclick="closeOrderModal()">Abbrechen</div>
         </div>
@@ -246,6 +262,7 @@
 
 </body>
 </html>
+
 
 
 
