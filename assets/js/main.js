@@ -160,6 +160,17 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
 
+    // --- HIER IST DIE LOGIK FÜR MATCHA vs. KAFFEE 🧊 ---
+    let extraOptionHtml = "";
+    
+    if (sorte.name.includes("Matcha") || sorte.name.includes("Iced")) {
+        // Bei Matcha oder Iced Drinks: Eiswürfel statt Shot
+        extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-ice" onchange="updateVisualsFromInputs()"> mit Eiswürfeln 🧊</label>`;
+    } else {
+        // Sonst: Extra Shot
+        extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>`;
+    }
+
     customContainer.innerHTML += `
         <div class="form-group">
             <label class="form-label">Sonderwunsch / Ort</label>
@@ -170,7 +181,7 @@ window.openOrderModal = function(sorteName) {
             <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
                 <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
-                <label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>
+                ${extraOptionHtml}
             </div>
         </div>`;
     
@@ -190,19 +201,18 @@ window.updateVisualsFromInputs = function() {
     const coffeeSelect = document.getElementById('input-coffee-vol');
     const milkSelect = document.getElementById('input-milk-vol');
     const totalSelect = document.getElementById('input-total-vol'); 
+    
     const shotCheckbox = document.getElementById('extra-shot');
+    const iceCheckbox = document.getElementById('extra-ice');
 
     let coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
     let milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
     
-    // Fallback für Getränke mit "Gesamtgröße" (wie Matcha)
     if (totalSelect && totalSelect.value) {
         const val = parseInt(totalSelect.value);
         if (currentName.includes("Matcha")) {
-            // HIER IST DIE MAGIE 🍵
-            // Matcha Split: 20% Matcha-Mix (Kaffee-Layer), 80% Milch
-            coffeeMl = val * 0.20; // Das wird grün
-            milkMl = val * 0.80;   // Das bleibt weiß
+            coffeeMl = val * 0.20; 
+            milkMl = val * 0.80;   
         } else {
             coffeeMl = val; 
         }
@@ -210,8 +220,15 @@ window.updateVisualsFromInputs = function() {
 
     let extras = [];
     if(shotCheckbox && shotCheckbox.checked) extras.push("Extra Shot");
+    // Eiswürfel Status checken
+    let hasIce = false;
+    if(iceCheckbox && iceCheckbox.checked) {
+        extras.push("Mit Eis");
+        hasIce = true;
+    }
 
-    updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl);
+    // Wir übergeben "hasIce" an die Visual Function
+    updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl, hasIce);
 }
 
 window.closeOrderModal = function() { 
@@ -223,7 +240,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 (V4 - MATCHA SUPPORT 🍵) ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V5 - EISWÜRFEL ANIMATION 🧊) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -238,9 +255,9 @@ const coffeeRecipes = {
     "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
 };
 
-function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0) {
+function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0, hasIce = false) {
     const glass = document.querySelector('.glass-cup');
-    const espLayer = document.getElementById('layer-espresso'); // Wir brauchen Zugriff auf den Layer
+    const espLayer = document.getElementById('layer-espresso'); 
     if(!glass || !espLayer) return;
 
     let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
@@ -259,14 +276,15 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
         currentRecipe.esp += 8; 
     }
 
-    // --- FARB-LOGIK FÜR MATCHA 🍵 ---
+    // --- FARB-LOGIK FÜR MATCHA ---
     if (productName.includes("Matcha")) {
-        // Schönes Matcha-Grün (Gradient)
         espLayer.style.background = "linear-gradient(to right, #a4c639, #6b8c21)";
     } else {
-        // Standard Espresso Braun (Gradient zurücksetzen)
-        espLayer.style.background = ""; // Nutzt wieder CSS Default (.espresso Klasse)
+        espLayer.style.background = ""; 
     }
+
+    // --- EISWÜRFEL RENDERN ---
+    renderIceCubes(hasIce);
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
     document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
@@ -277,6 +295,27 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
         glass.classList.remove('hot');
     } else {
         glass.classList.add('hot');
+    }
+}
+
+// Neue Helfer-Funktion für Eis
+function renderIceCubes(show) {
+    const glass = document.querySelector('.glass-cup');
+    if(!glass) return;
+
+    // Erstmal alte Eiswürfel löschen
+    const oldIce = glass.querySelectorAll('.ice-cube');
+    oldIce.forEach(ice => ice.remove());
+
+    if(show) {
+        // 3 Eiswürfel erzeugen
+        for(let i=1; i<=3; i++) {
+            const ice = document.createElement('div');
+            ice.className = `ice-cube ice-${i}`;
+            // Random Rotation für mehr Realismus
+            ice.style.setProperty('--rot', (Math.random() * 20 - 10) + 'deg');
+            glass.appendChild(ice);
+        }
     }
 }
 
@@ -359,8 +398,11 @@ window.sendOrder = function() {
     if(vanillaEl && vanillaEl.checked) details.push("Vanille Sirup");
     const sweetEl = document.getElementById('extra-sweetener');
     if(sweetEl && sweetEl.checked) details.push("Süßstoff");
+    
     const shotEl = document.getElementById('extra-shot');
     if(shotEl && shotEl.checked) details.push("Extra Shot");
+    const iceEl = document.getElementById('extra-ice');
+    if(iceEl && iceEl.checked) details.push("Mit Eiswürfeln");
 
     let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
     let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
