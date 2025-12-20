@@ -872,52 +872,62 @@ document.addEventListener('click', (e) => {
 */
 
 // ============================================
-//   TRINKGELD LOGIK 🪙
+//   TRINKGELD LOGIK (MIT GLAS & STAPELN) 🪙
 // ============================================
+
+let coinsInGlass = 0; // Zähler für die aktuelle Sitzung
 
 window.giveTip = function() {
     // 1. Sound abspielen
     const audio = document.getElementById('kaching-sound');
     if(audio) {
-        audio.currentTime = 0; // Zurückspulen falls man schnell klickt
+        audio.currentTime = 0; 
         audio.play().catch(e => console.log("Audio play error", e));
     }
 
-    // 2. Visuelle Animation
-    const coin = document.getElementById('coin-visual');
-    if(coin) {
-        // Reset Animation (Trick: Klasse entfernen, kurz warten, neu hinzufügen)
-        coin.classList.remove('animate-coin');
-        void coin.offsetWidth; // Trigger Reflow
-        coin.classList.add('animate-coin');
-    }
-    
-    // Vibration
-    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    // 2. Münze erzeugen
+    createCoin();
 
-    // 3. In Firebase speichern (Globaler Zähler)
-    // Wir speichern "Anzahl der Münzen"
+    // 3. Vibration
+    if(navigator.vibrate) navigator.vibrate([50]);
+
+    // 4. Firebase Update (wie gehabt)
     const tipRef = ref(db, 'stats/totalTips');
     runTransaction(tipRef, (currentTips) => {
-        return (currentTips || 0) + 1; // Immer +1 Münze
-    }).then(() => {
-        // Optional: Toast Nachricht
-        showToast("Danke für das Trinkgeld! 🪙", "success");
+        return (currentTips || 0) + 1; 
     });
 }
 
-// Hilfsfunktion für Toast (falls du sie noch nicht global hast)
-function showToast(text, type) {
-    const container = document.getElementById('toast-container');
-    if(!container) return; // Falls kein Container da ist
+function createCoin() {
+    const glass = document.getElementById('tip-glass');
+    if(!glass) return;
+
+    const coin = document.createElement('div');
+    coin.classList.add('dropped-coin');
+
+    // ZUFALLS-POSITIONIERUNG (Damit es natürlich aussieht)
+    // Links/Rechts Position im Glas (zwischen 5px und 40px)
+    const randomLeft = Math.floor(Math.random() * 35) + 5;
     
-    const toast = document.createElement('div');
-    toast.className = `toast show ${type}`;
-    toast.innerHTML = text;
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    // Stapel-Höhe: Je mehr Münzen, desto höher landen sie
+    // Wir lassen sie etwas überlappen (deshalb * 4 statt * 24)
+    // Max Höhe 75px, danach fängt es wieder unten an (oder stapelt wild)
+    let targetBottom = (coinsInGlass * 4); 
+    if(targetBottom > 70) targetBottom = Math.random() * 60; // Wenn voll, wirf einfach rein
+
+    // Zielposition von OBEN berechnet (da CSS 'top' nutzt für Animation)
+    // Glas Höhe ist ca 90px. Münze ist 24px.
+    // Bottom 0 entspricht Top 66px.
+    const targetTop = 66 - targetBottom;
+
+    // Zufällige Rotation
+    const randomRot = Math.floor(Math.random() * 360) + "deg";
+
+    // CSS Variablen setzen für die Animation
+    coin.style.left = randomLeft + 'px';
+    coin.style.setProperty('--target-top', targetTop + 'px');
+    coin.style.setProperty('--rot', randomRot);
+
+    glass.appendChild(coin);
+    coinsInGlass++;
 }
