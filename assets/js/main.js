@@ -120,7 +120,7 @@ const kaffeeSorten = [
     { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
 ];
 
-// --- MODAL ÖFFNEN (KORRIGIERT) ---
+// --- MODAL ÖFFNEN (KORRIGIERT & SICHER) ---
 window.openOrderModal = function(sorteName) {
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
@@ -179,7 +179,8 @@ window.openOrderModal = function(sorteName) {
             </div>
         </div>`;
     
-    // Klasse statt style für Animation
+    // WICHTIGE ÄNDERUNG: display: flex erzwingen, damit es auf jeden Fall sichtbar ist
+    modal.style.display = 'flex';
     modal.classList.add('show');
 }
 
@@ -193,6 +194,8 @@ window.updateVisualsFromCheckbox = function() {
 
 window.closeOrderModal = function() { 
     const modal = document.getElementById('order-modal');
+    // Beides nutzen, um sicherzugehen
+    modal.style.display = 'none';
     modal.classList.remove('show');
 }
 window.closeConfirmModal = function() { 
@@ -369,6 +372,7 @@ window.sendOrder = function() {
     .then(response => {
         if (response.ok) {
             const modal = document.getElementById('order-modal');
+            modal.style.display = 'none'; // Sicher schließen
             modal.classList.remove('show');
             document.getElementById('confirm-details').innerText = messageBody;
             confirmModal.style.display = 'flex';
