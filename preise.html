@@ -81,8 +81,28 @@
     <div class="aurora-blob blob-2"></div>
     <div class="aurora-blob blob-3"></div>
 
-    <a href="stats.html" style="position: fixed; top: 20px; left: 15px; z-index: 1100; text-decoration: none; font-size: 1.5rem; background: rgba(0,0,0,0.2); width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:1px solid rgba(212,180,131,0.3);">⬅️</a>
+<div class="hamburger-btn" onclick="toggleMenu(event)">☰</div>
 
+<div id="main-dropdown" class="dropdown-menu">
+    <a href="stats.html" class="menu-item">
+        <span>🏆</span> Stats & Wrapped
+    </a>
+    <a href="preise.html" class="menu-item">
+        <span>💰</span> Preisliste
+    </a>
+    <a href="feedback.html" class="menu-item">
+        <span>💬</span> Gästebuch
+    </a>
+
+    <div class="menu-divider"></div>
+
+    <a href="javascript:checkAdminAccess()" class="menu-item">
+        <span>👨‍🍳</span> Admin
+    </a>
+    <a href="javascript:logout()" class="menu-item" style="color: #fca5a5;">
+        <span>🚪</span> Logout
+    </a>
+</div>
     <h1>Preisliste</h1>
     <div class="subtitle">Vergleichswerte</div>
 
