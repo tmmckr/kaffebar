@@ -870,3 +870,54 @@ document.addEventListener('click', (e) => {
    
    if (navigator.vibrate) navigator.vibrate([50, 30, 50]); // Zweimal kurz brummen
 */
+
+// ============================================
+//   TRINKGELD LOGIK 🪙
+// ============================================
+
+window.giveTip = function() {
+    // 1. Sound abspielen
+    const audio = document.getElementById('kaching-sound');
+    if(audio) {
+        audio.currentTime = 0; // Zurückspulen falls man schnell klickt
+        audio.play().catch(e => console.log("Audio play error", e));
+    }
+
+    // 2. Visuelle Animation
+    const coin = document.getElementById('coin-visual');
+    if(coin) {
+        // Reset Animation (Trick: Klasse entfernen, kurz warten, neu hinzufügen)
+        coin.classList.remove('animate-coin');
+        void coin.offsetWidth; // Trigger Reflow
+        coin.classList.add('animate-coin');
+    }
+    
+    // Vibration
+    if(navigator.vibrate) navigator.vibrate([50, 50, 50]);
+
+    // 3. In Firebase speichern (Globaler Zähler)
+    // Wir speichern "Anzahl der Münzen"
+    const tipRef = ref(db, 'stats/totalTips');
+    runTransaction(tipRef, (currentTips) => {
+        return (currentTips || 0) + 1; // Immer +1 Münze
+    }).then(() => {
+        // Optional: Toast Nachricht
+        showToast("Danke für das Trinkgeld! 🪙", "success");
+    });
+}
+
+// Hilfsfunktion für Toast (falls du sie noch nicht global hast)
+function showToast(text, type) {
+    const container = document.getElementById('toast-container');
+    if(!container) return; // Falls kein Container da ist
+    
+    const toast = document.createElement('div');
+    toast.className = `toast show ${type}`;
+    toast.innerHTML = text;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
