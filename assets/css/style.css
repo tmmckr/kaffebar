@@ -1165,3 +1165,40 @@ canvas {
     50% { opacity: 1; }
     100% { transform: translateY(-20px); opacity: 0; }
 }
+
+/* ========================================= */
+/* --- EISWÜRFEL ANIMATION 🧊 --- */
+/* ========================================= */
+
+.ice-cube {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.3); /* Halbtransparenter Kern */
+    border: 1px solid rgba(255, 255, 255, 0.8); /* Heller Rand */
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    bottom: 30px; /* Endposition (schwimmend) */
+    z-index: 10; /* Vor der Flüssigkeit */
+    opacity: 0;
+    animation: dropIce 0.6s cubic-bezier(0.25, 1.5, 0.5, 1) forwards;
+}
+
+/* Zufällige Positionierung im Glas simulieren */
+.ice-1 { left: 20px; animation-delay: 0.1s; transform: rotate(10deg); }
+.ice-2 { left: 45px; bottom: 45px; animation-delay: 0.2s; transform: rotate(-15deg); }
+.ice-3 { left: 30px; bottom: 20px; animation-delay: 0s; transform: rotate(5deg); }
+
+@keyframes dropIce {
+    0% { 
+        transform: translateY(-150px) rotate(0deg); 
+        opacity: 0; 
+    }
+    50% { 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translateY(0) rotate(var(--rot, 10deg)); 
+        opacity: 1; 
+    }
+}
