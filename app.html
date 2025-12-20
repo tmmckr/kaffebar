@@ -198,17 +198,41 @@
         </div>
     </div>
 
-    <div id="confirmation-modal" class="modal-overlay">
-        <div class="modal-box">
-            <span style="font-size:3rem; display:block; margin-bottom:15px;">🛎️</span>
-            <h2 class="modal-title">Bestellung bestätigt</h2>
-            <p class="modal-text" style="color:white; line-height: 1.6;">
-                <strong id="confirm-details"></strong><br>
-                <span style="font-size:0.9rem; color:#a09085; margin-top:10px; display:block">Serviert in ca. 5 Minuten.</span>
-            </p>
-            <button class="modal-btn" onclick="closeConfirmModal()">Alles klar!</button>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+
+<div id="receipt-modal" class="receipt-modal">
+    <div class="receipt-paper">
+        <div class="receipt-header">
+            <span class="receipt-logo">☕</span>
+            <div class="receipt-title">Timo's Bar</div>
+            <div class="receipt-date" id="receipt-date">20.12.2025 - 14:30</div>
         </div>
+        
+        <div class="receipt-body">
+            <div class="receipt-row">
+                <span id="receipt-item-name">Cappuccino</span>
+                <span id="receipt-price">4.20€</span>
+            </div>
+            <div id="receipt-extras-container"></div>
+            
+            <div class="receipt-row bold">
+                <span>TOTAL</span>
+                <span id="receipt-total">0.00€</span> </div>
+            <div class="receipt-row" style="font-size: 0.8rem; color: #888;">
+                <span>Gespart (vs Starbucks)</span>
+                <span>-4.20€</span>
+            </div>
+        </div>
+
+        <div class="receipt-footer">
+            Bestellung #<span id="receipt-id">001</span> erfolgreich an die Bar gesendet.<br><br>
+            Made with ❤️
+            <div class="barcode" style="font-family: 'Libre Barcode 39 Text', cursive;">TIMOS-COFFEE</div>
+        </div>
+
+        <button class="receipt-btn" onclick="closeReceipt()">Alles klar!</button>
     </div>
+</div>
 
     <div id="info-modal" class="modal-overlay">
         <div class="modal-box">
@@ -262,6 +286,7 @@
 
 </body>
 </html>
+
 
 
 
