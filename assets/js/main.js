@@ -1016,7 +1016,7 @@ function calculatePrize(deg) {
     // 270-360° Drehung -> Segment 1 (Blau) landet oben
 
     if (actualDeg >= 0 && actualDeg < 90) {
-        prize = "☕ GEWONNEN:: Doppelte Punkte für Treuekarte!";
+        prize = "☕ GEWONNEN: Doppelte Punkte für Treuekarte!";
     } else if (actualDeg >= 90 && actualDeg < 180) {
         prize = "🃏 JOKER: Gratis Kaffee deiner Wahl!";
     } else if (actualDeg >= 180 && actualDeg < 270) {
