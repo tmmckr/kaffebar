@@ -112,13 +112,20 @@
 
     <div class="menu-list" id="menu-container"></div>
 
-    <div class="tip-jar-card scroll-reveal" onclick="giveTip()">
-    <div class="tip-icon">🐷</div>
-    <div class="tip-text">
-        <div class="tip-title">Trinkgeld geben</div>
-        <div class="tip-sub">Wirf eine Münze ein! (Virtuell)</div>
+    <div class="tip-section scroll-reveal">
+    <div class="tip-controls">
+        <div class="tip-title">Trinkgeld</div>
+        <div class="tip-sub">Hat es geschmeckt?</div>
+        <button class="tip-btn" onclick="giveTip()">
+            <span class="coin-icon">🪙</span> Einwerfen
+        </button>
     </div>
-    <div class="coin-anim" id="coin-visual">🪙</div>
+
+    <div class="tip-glass-container">
+        <div id="tip-glass" class="glass-body">
+            </div>
+        <div class="glass-shine"></div>
+    </div>
 </div>
 
 <audio id="kaching-sound" src="assets/audio/katching.mp3" preload="auto"></audio>
@@ -213,6 +220,7 @@
 
 </body>
 </html>
+
 
 
 
