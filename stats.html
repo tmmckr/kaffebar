@@ -106,6 +106,12 @@
             <div style="font-size: 0.8rem; color: #888;">Gerechnet mit den Preisen aus der Preisliste (siehe weiter unten)</div>
         </div>
 
+        <div class="chart-card scroll-reveal" style="text-align:center; border-color: #f48fb1;">
+            <div class="stat-label" style="color: #f48fb1;">Gesammeltes Trinkgeld</div>
+            <div id="tip-amount" class="big-number" style="color: #fce4ec; text-shadow: 0 0 10px #ec407a;">0,00 €</div>
+            <div style="font-size: 0.8rem; color: #888;">(Basierend auf 0,50€ pro Münze)</div>
+        </div>
+
         <div class="chart-card scroll-reveal">
             <div class="stat-label" style="text-align:center; margin-bottom:15px;">Deine Favoriten</div>
             <canvas id="typeChart"></canvas>
@@ -177,6 +183,17 @@
             } else {
                 window.location.href = "login.html";
             }
+
+            // TRINKGELD LADEN
+        const tipRef = ref(db, 'stats/totalTips');
+        onValue(tipRef, (snapshot) => {
+            const coins = snapshot.val() || 0;
+            const wertProMuenze = 0.50; // Jede Münze ist 50 Cent wert
+            const totalEuro = (coins * wertProMuenze).toFixed(2).replace('.', ',');
+            
+            const el = document.getElementById('tip-amount');
+            if(el) el.innerText = totalEuro + " €";
+        }
         });
 
         // 1. PERSÖNLICHE CHARTS LADEN (History)
