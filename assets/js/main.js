@@ -123,30 +123,48 @@ const kaffeeSorten = [
     { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
 ];
 
-// GLOBAL: MODAL LOGIK
 window.openOrderModal = function(sorteName) {
+    // 1. Kaffeesorte finden
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
 
     currentCoffee = sorte;
-    document.getElementById('modal-coffee-title').innerText = sorte.name;
-    customOptionsDiv.innerHTML = "";
+    
+    // 2. Modal Elemente holen
+    const modal = document.getElementById('order-modal');
+    const title = document.getElementById('modal-coffee-title');
+    const container = document.getElementById('custom-options'); // Dein customOptionsDiv
 
+    // 3. Titel setzen
+    title.innerText = sorte.name;
+    container.innerHTML = "";
+
+    // ============================================
+    // 🧪 NEU: VISUALIZER STARTEN
+    // ============================================
+    // Ruft die Funktion auf, die die Schichten (Milch/Espresso) berechnet
+    if (typeof updateCoffeeVisuals === 'function') {
+        updateCoffeeVisuals(sorte.name);
+    }
+
+    // 4. Formular-Felder generieren (Dein alter Code)
     const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
     if (config.stufen) {
-        customOptionsDiv.innerHTML += `
+        container.innerHTML += `
             <div class="form-group">
                 <label class="form-label">Intensität: <span id="strength-val" class="range-value">3</span></label>
                 <input type="range" id="input-strength" min="1" max="6" value="3" oninput="document.getElementById('strength-val').innerText=this.value">
             </div>`;
     }
-    if (config.ml_kaffee) customOptionsDiv.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
-    if (config.ml_milch) customOptionsDiv.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
-    if (config.ml_gesamt) customOptionsDiv.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
+    
+    // Helper Funktion für Selects (falls du die inline hast, sonst hier lassen)
+    if (config.ml_kaffee) container.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
+    if (config.ml_milch) container.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
+    if (config.ml_gesamt) container.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
     
     if (config.cycles) {
-        customOptionsDiv.innerHTML += `
+        container.innerHTML += `
             <div class="form-group">
                 <label class="form-label">Mahlvorgang</label>
                 <div class="radio-group">
@@ -157,7 +175,8 @@ window.openOrderModal = function(sorteName) {
                 </div>
             </div>`;
     }
-    customOptionsDiv.innerHTML += `
+
+    container.innerHTML += `
         <div class="form-group">
             <label class="form-label">Sonderwunsch / Ort</label>
             <input type="text" id="order-comment" class="modal-input" placeholder="z.B. Im Garten, ohne Keks..." autocomplete="off">
@@ -167,10 +186,25 @@ window.openOrderModal = function(sorteName) {
             <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
                 <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
+                <label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromCheckbox()"> Extra Shot</label>
             </div>
         </div>`;
     
-    orderModal.style.display = 'flex';
+    // 5. Modal anzeigen (mit Klasse für Animation)
+    modal.classList.add('show');
+}
+
+// Kleine Hilfsfunktion, damit das Glas reagiert, wenn man "Extra Shot" anklickt
+window.updateVisualsFromCheckbox = function() {
+    const checkbox = document.getElementById('extra-shot');
+    const currentName = document.getElementById('modal-coffee-title').innerText;
+    let extras = [];
+    
+    if(checkbox && checkbox.checked) {
+        extras.push("Extra Shot");
+    }
+    
+    updateCoffeeVisuals(currentName, extras);
 }
 
 window.closeOrderModal = function() { orderModal.style.display = 'none'; }
