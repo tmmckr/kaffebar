@@ -1125,15 +1125,27 @@ canvas {
     flex-direction: column; /* Wir stapeln von oben nach unten, steuern aber die Höhe */
     justify-content: flex-end; /* Füllt sich von unten */
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden; 
+    /* Ein 3D-Effekt hilft bei der Perspektive */
+    transform-style: preserve-3d;
 }
 
 /* Die Flüssigkeiten */
 .liquid {
-    width: 100%;
-    transition: height 0.8s cubic-bezier(0.25, 1, 0.5, 1); /* Smoothe Animation */
-    height: 0%; /* Standard: Leer */
+    width: 120%; /* Breiter als das Glas, damit beim Kippen keine Ränder entstehen */
+    margin-left: -10%; /* Zentrieren */
+    
+    /* Hier ist der Trick für die Performance: */
+    /* Wir trennen height (Füllanimation) und transform (Wackeln) */
+    transition: height 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.1s linear;
+    
+    height: 0%;
+    transform-origin: center center; /* Dreht sich um die Mitte */
+    
+    /* Damit es beim Kippen nicht flackert */
+    backface-visibility: hidden;
+    will-change: transform; 
 }
-
 /* Farben der Schichten */
 .foam { background: #fff8e1; opacity: 0.9; } /* Cremig */
 .espresso { background: linear-gradient(to right, #3e2723, #4e342e); } /* Dunkel */
