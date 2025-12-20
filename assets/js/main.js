@@ -120,7 +120,7 @@ const kaffeeSorten = [
     { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
 ];
 
-// --- MODAL ÖFFNEN (KORRIGIERT & SICHER) ---
+// --- MODAL ÖFFNEN ---
 window.openOrderModal = function(sorteName) {
     const sorte = kaffeeSorten.find(k => k.name === sorteName);
     if(!sorte || !isShopOpen) return;
@@ -133,7 +133,7 @@ window.openOrderModal = function(sorteName) {
     title.innerText = sorte.name;
     customContainer.innerHTML = "";
 
-    // 🧪 VISUALIZER AUFRUFEN (Hier wichtig!)
+    // 🧪 VISUALIZER STARTEN
     if (typeof updateCoffeeVisuals === 'function') {
         updateCoffeeVisuals(sorte.name);
     }
@@ -148,6 +148,8 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
     
+    // HIER WICHTIG: Die Selects werden erstellt.
+    // Wir nutzen jetzt die Helper-Funktion createSelect, die auch "onchange" unterstützt.
     if (config.ml_kaffee) customContainer.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
     if (config.ml_milch) customContainer.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
     if (config.ml_gesamt) customContainer.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
@@ -175,26 +177,38 @@ window.openOrderModal = function(sorteName) {
             <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" id="extra-vanilla"> mit Vanille Sirup</label>
                 <label class="checkbox-item"><input type="checkbox" id="extra-sweetener"> mit Süßstoff</label>
-                <label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromCheckbox()"> Extra Shot</label>
+                <label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>
             </div>
         </div>`;
     
-    // WICHTIGE ÄNDERUNG: display: flex erzwingen, damit es auf jeden Fall sichtbar ist
     modal.style.display = 'flex';
     modal.classList.add('show');
 }
 
-window.updateVisualsFromCheckbox = function() {
-    const checkbox = document.getElementById('extra-shot');
+// 🧪 DIESE FUNKTION IST NEU! 
+// Sie wird aufgerufen, wenn man an den Reglern spielt.
+window.updateVisualsFromInputs = function() {
     const currentName = document.getElementById('modal-coffee-title').innerText;
+    
+    // Inputs suchen
+    const coffeeSelect = document.getElementById('input-coffee-vol');
+    const milkSelect = document.getElementById('input-milk-vol');
+    const shotCheckbox = document.getElementById('extra-shot');
+
+    // Werte auslesen (0 wenn nicht vorhanden)
+    const coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
+    const milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
+    
+    // Extras sammeln
     let extras = [];
-    if(checkbox && checkbox.checked) extras.push("Extra Shot");
-    updateCoffeeVisuals(currentName, extras);
+    if(shotCheckbox && shotCheckbox.checked) extras.push("Extra Shot");
+
+    // Visualizer mit speziellen ML-Werten aufrufen
+    updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl);
 }
 
 window.closeOrderModal = function() { 
     const modal = document.getElementById('order-modal');
-    // Beides nutzen, um sicherzugehen
     modal.style.display = 'none';
     modal.classList.remove('show');
 }
@@ -202,7 +216,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V2 - MIT ECHTER BERECHNUNG) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -217,17 +231,42 @@ const coffeeRecipes = {
     "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
 };
 
-function updateCoffeeVisuals(productName, extras = []) {
+// Update Funktion jetzt mit ML Parametern
+function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0) {
     const glass = document.querySelector('.glass-cup');
     if(!glass) return;
 
     let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
     let currentRecipe = { ...recipe };
 
+    // --- NEU: DYNAMISCHE BERECHNUNG ---
+    // Wenn wir manuelle ML Werte haben (weil der User was ausgewählt hat),
+    // berechnen wir die Grafik neu statt das Standard-Rezept zu nehmen.
+    if (overrideCoffeeMl > 0 || overrideMilkMl > 0) {
+        // Fall 1: Wir haben beide Werte (z.B. Latte Macchiato)
+        if (overrideCoffeeMl > 0 && overrideMilkMl > 0) {
+            const total = overrideCoffeeMl + overrideMilkMl;
+            const foamSpace = currentRecipe.foam; // Schaum bleibt konstant pro Sorte
+            const liquidSpace = 100 - foamSpace;
+
+            // Prozentrechnung für das Glas
+            currentRecipe.esp = (overrideCoffeeMl / total) * liquidSpace;
+            currentRecipe.milk = (overrideMilkMl / total) * liquidSpace;
+        } 
+        // Fall 2: Nur Kaffee (z.B. Café Crema)
+        else if (overrideCoffeeMl > 0 && overrideMilkMl === 0) {
+             // Kaffee füllt alles außer Schaum
+             currentRecipe.esp = 100 - currentRecipe.foam;
+             currentRecipe.milk = 0;
+        }
+    }
+
+    // Extra Shot Logik (addiert einfach visuell dazu)
     if (extras.includes("Extra Shot")) {
         currentRecipe.esp += 15; 
         if(currentRecipe.milk > 10) currentRecipe.milk -= 10;
         else if(currentRecipe.wat > 10) currentRecipe.wat -= 10;
+        else if(currentRecipe.esp > 90) currentRecipe.esp = 90; // Limit
     }
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
@@ -527,9 +566,11 @@ function buildCardHTML(sorte, isFav) {
     `;
 }
 
+// --- HIER DIE ÄNDERUNG: ONCHANGE HINZUGEFÜGT ---
 function createSelect(id, label, options, suffix) {
     let html = `<div class="form-group"><label class="form-label">${label}</label>`;
-    html += `<select id="${id}" class="modal-select">`;
+    // NEU: onchange Event hinzugefügt
+    html += `<select id="${id}" class="modal-select" onchange="updateVisualsFromInputs()">`;
     options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
     html += `</select></div>`;
     return html;
