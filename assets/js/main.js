@@ -177,45 +177,40 @@ window.openOrderModal = function(sorteName) {
     modal.style.display = 'flex';
     modal.classList.add('show');
 
-    // 🧪 VISUALIZER STARTEN (Jetzt am Ende, damit die Standard-Werte der Inputs gelesen werden können!)
-    // Das sorgt dafür, dass das Glas sofort den korrekten Füllstand hat.
+    // Visualizer sofort starten
     if (typeof updateVisualsFromInputs === 'function') {
         updateVisualsFromInputs();
     }
 }
 
-// 🧪 KORRIGIERTE UPDATE FUNKTION
+// 🧪 INPUT UPDATE FUNKTION
 window.updateVisualsFromInputs = function() {
     const currentName = document.getElementById('modal-coffee-title').innerText;
     
-    // Inputs suchen
     const coffeeSelect = document.getElementById('input-coffee-vol');
     const milkSelect = document.getElementById('input-milk-vol');
-    const totalSelect = document.getElementById('input-total-vol'); // Für Matcha etc
+    const totalSelect = document.getElementById('input-total-vol'); 
     const shotCheckbox = document.getElementById('extra-shot');
 
-    // Werte auslesen (0 wenn nicht vorhanden)
     let coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
     let milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
     
-    // Fallback für Getränke wie Matcha, die nur "Gesamtgröße" haben
+    // Fallback für Getränke mit "Gesamtgröße" (wie Matcha)
     if (totalSelect && totalSelect.value) {
-        // Wir tun so, als wäre es 100% Milch für die Visualisierung (weiß) oder teilen es auf
         const val = parseInt(totalSelect.value);
         if (currentName.includes("Matcha")) {
-            // Matcha ist grün, wir nutzen Milk-Layer (weiß) und tricksen später evtl mit Farbe
-            // oder wir nutzen einfach milkMl für die Fülle
-            milkMl = val; 
+            // HIER IST DIE MAGIE 🍵
+            // Matcha Split: 20% Matcha-Mix (Kaffee-Layer), 80% Milch
+            coffeeMl = val * 0.20; // Das wird grün
+            milkMl = val * 0.80;   // Das bleibt weiß
         } else {
-            coffeeMl = val; // Standard Kaffee (Americano etc)
+            coffeeMl = val; 
         }
     }
 
-    // Extras sammeln
     let extras = [];
     if(shotCheckbox && shotCheckbox.checked) extras.push("Extra Shot");
 
-    // Visualizer mit speziellen ML-Werten aufrufen
     updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl);
 }
 
@@ -228,7 +223,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 (V3 - ABSOLUTE BERECHNUNG) ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V4 - MATCHA SUPPORT 🍵) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -245,33 +240,33 @@ const coffeeRecipes = {
 
 function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0) {
     const glass = document.querySelector('.glass-cup');
-    if(!glass) return;
+    const espLayer = document.getElementById('layer-espresso'); // Wir brauchen Zugriff auf den Layer
+    if(!glass || !espLayer) return;
 
     let recipe = coffeeRecipes[productName] || coffeeRecipes["default"];
     let currentRecipe = { ...recipe };
 
-    // --- NEU: ABSOLUTE BERECHNUNG (REALISTISCHE FÜLLUNG) ---
-    const MAX_GLASS_CAPACITY = 350; // Ein Standard-Glas hat ca 350ml
+    // --- ABSOLUTE BERECHNUNG ---
+    const MAX_GLASS_CAPACITY = 350; 
 
-    // Haben wir manuelle Werte? Wenn ja, überschreiben wir die Prozentwerte
     if (overrideCoffeeMl > 0 || overrideMilkMl > 0) {
-        // Prozent der Glashöhe berechnen
-        // Beispiel: 50ml bei 350ml Glas = 14% Höhe
         currentRecipe.esp = (overrideCoffeeMl / MAX_GLASS_CAPACITY) * 100;
         currentRecipe.milk = (overrideMilkMl / MAX_GLASS_CAPACITY) * 100;
-        
-        // Wasser setzen wir auf 0, außer das Rezept ist explizit Americano
         currentRecipe.wat = 0; 
     }
 
-    // Extra Shot Logik (addiert einfach visuell dazu)
     if (extras.includes("Extra Shot")) {
-        // Ein Shot sind ca 30ml -> ~8% Höhe
         currentRecipe.esp += 8; 
     }
 
-    // Schaum: Bleibt basierend auf Rezept erhalten (z.B. 20% Schaumkrone oben drauf)
-    // Wenn die Summe > 100 ist, schneidet CSS overflow:hidden das ab (Glas läuft über)
+    // --- FARB-LOGIK FÜR MATCHA 🍵 ---
+    if (productName.includes("Matcha")) {
+        // Schönes Matcha-Grün (Gradient)
+        espLayer.style.background = "linear-gradient(to right, #a4c639, #6b8c21)";
+    } else {
+        // Standard Espresso Braun (Gradient zurücksetzen)
+        espLayer.style.background = ""; // Nutzt wieder CSS Default (.espresso Klasse)
+    }
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
     document.getElementById('layer-espresso').style.height = currentRecipe.esp + '%';
