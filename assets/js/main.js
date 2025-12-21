@@ -34,8 +34,6 @@ onAuthStateChanged(auth, (user) => {
         listenToFavorites();
         monitorStampCard();
     } else {
-        // Wenn man nicht eingeloggt ist, ab zur Landing Page (index.html) oder Login
-        // Nur weiterleiten, wenn wir nicht schon dort sind, um Endlosschleifen zu vermeiden
         if (!window.location.href.includes("login.html") && !window.location.href.includes("index.html")) {
              window.location.href = "index.html"; 
         }
@@ -92,6 +90,7 @@ function setShopClosed() {
     if(closedMessageBox) closedMessageBox.style.display = 'block';
 }
 
+// --- MASCHINEN DATEN ---
 const maschinenDaten = {
     "Kaffee": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
     "Café Crema": { stufen: true, ml_kaffee: [90, 120, 150, 180, 210, 220], cycles: true },
@@ -102,6 +101,8 @@ const maschinenDaten = {
     "Espresso": { stufen: true, ml_kaffee: [30, 40, 50], cycles: true },
     "Milchkaffee": { stufen: true, ml_kaffee: [50, 70, 90, 120, 150], ml_milch: [50, 70, 90, 120, 150], cycles: false },
     "Matcha": { stufen: false, ml_gesamt: [200, 250, 300, 350, 400, 450, 500], cycles: false },
+    // HOLY EISTEE CONFIG: Keine Stufen, ML in 50er Schritten
+    "Holy": { stufen: false, ml_gesamt: [300, 350, 400, 450, 500, 550, 600, 650, 700], cycles: false },
     "default": { stufen: false, cycles: false }
 };
 
@@ -116,6 +117,7 @@ const kaffeeSorten = [
     { name: "Americano", configKey: "Americano", strength: 3, desc: "Espresso mit Wasser verlängert." },
     { name: "Iced Matcha Latte", configKey: "Matcha", strength: 0, desc: "Grüner Tee auf Eis & Milch." },
     { name: "Iced Protein Matcha", configKey: "Matcha", strength: 0, desc: "Matcha Latte mit Protein-Kick." },
+    { name: "Holy Eistee", configKey: "Holy", strength: 0, desc: "Fruchtig & zuckerfrei. Der Energy-Kick." }, // NEU
     { name: "Flat White", configKey: "default", strength: 4, desc: "Doppelter Ristretto mit Mikroschaum." },
     { name: "Iced Coffee", configKey: "default", strength: 3, desc: "Frisch gebrüht auf Eis." },
     { name: "Iced Latte", configKey: "default", strength: 2, desc: "Espresso auf kalter Milch & Eis." },
@@ -139,6 +141,7 @@ window.openOrderModal = function(sorteName) {
 
     const config = maschinenDaten[sorte.configKey] || maschinenDaten['default'];
 
+    // 1. STÄRKE SLIDER (Nur wenn konfiguriert)
     if (config.stufen) {
         customContainer.innerHTML += `
             <div class="form-group">
@@ -147,10 +150,26 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
     
+    // 2. SPEZIAL: HOLY EISTEE SORTEN WAHL
+    if (sorte.name === "Holy Eistee") {
+        customContainer.innerHTML += `
+            <div class="form-group">
+                <label class="form-label">Sorte</label>
+                <select id="input-holy-flavor" class="modal-select" onchange="updateVisualsFromInputs()">
+                    <option value="lemon">Lemon x Honey x Black Tea 🍋</option>
+                    <option value="lime">Lime x Matcha x Mint 🍏</option>
+                    <option value="mango">Mango x Passion Fruit 🥭</option>
+                </select>
+            </div>
+        `;
+    }
+
+    // 3. MENGEN REGLER
     if (config.ml_kaffee) customContainer.innerHTML += createSelect('input-coffee-vol', 'Kaffeemenge', config.ml_kaffee, ' ml');
     if (config.ml_milch) customContainer.innerHTML += createSelect('input-milk-vol', 'Milchmenge', config.ml_milch, ' ml');
     if (config.ml_gesamt) customContainer.innerHTML += createSelect('input-total-vol', 'Größe', config.ml_gesamt, ' ml');
     
+    // 4. CYCLES (Mahlvorgang)
     if (config.cycles) {
         customContainer.innerHTML += `
             <div class="form-group">
@@ -164,16 +183,31 @@ window.openOrderModal = function(sorteName) {
             </div>`;
     }
 
-    // --- MATCHA vs KAFFEE OPTIONEN ---
-    let extraOptionHtml = "";
+    // --- EXTRAS LOGIK ---
+    let extrasHtml = "";
     
-    if (sorte.name.includes("Matcha") || sorte.name.includes("Iced")) {
-        extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-ice" onchange="updateVisualsFromInputs()"> mit Eiswürfeln 🧊</label>`;
-    } else {
-        extraOptionHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>`;
+    // HOLY EISTEE: NUR EIS
+    if (sorte.name === "Holy Eistee") {
+        extrasHtml = `<label class="checkbox-item"><input type="checkbox" id="extra-ice" onchange="updateVisualsFromInputs()"> mit Eiswürfeln 🧊</label>`;
+    } 
+    // MATCHA / ICED: EIS STATT SHOT
+    else if (sorte.name.includes("Matcha") || sorte.name.includes("Iced")) {
+        extrasHtml = `
+            <label class="checkbox-item"><input type="checkbox" id="extra-vanilla" onchange="updateVisualsFromInputs()"> mit Vanille Sirup</label>
+            <label class="checkbox-item"><input type="checkbox" id="extra-sweetener" onchange="updateVisualsFromInputs()"> mit Süßstoff</label>
+            <label class="checkbox-item"><input type="checkbox" id="extra-ice" onchange="updateVisualsFromInputs()"> mit Eiswürfeln 🧊</label>
+        `;
+    } 
+    // STANDARD KAFFEE: ALLES
+    else {
+        extrasHtml = `
+            <label class="checkbox-item"><input type="checkbox" id="extra-vanilla" onchange="updateVisualsFromInputs()"> mit Vanille Sirup</label>
+            <label class="checkbox-item"><input type="checkbox" id="extra-sweetener" onchange="updateVisualsFromInputs()"> mit Süßstoff</label>
+            <label class="checkbox-item"><input type="checkbox" id="extra-shot" onchange="updateVisualsFromInputs()"> Extra Shot</label>
+        `;
     }
 
-    // --- CHECKBOXEN FÜR SIRUP & SÜSSSTOFF (Mit onchange!) ---
+    // KOMMENTARFELD & EXTRAS RENDERN
     customContainer.innerHTML += `
         <div class="form-group">
             <label class="form-label">Sonderwunsch / Ort</label>
@@ -182,9 +216,7 @@ window.openOrderModal = function(sorteName) {
         <div class="form-group" style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 180, 131, 0.3);">
             <label class="form-label">Extras</label>
             <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" id="extra-vanilla" onchange="updateVisualsFromInputs()"> mit Vanille Sirup</label>
-                <label class="checkbox-item"><input type="checkbox" id="extra-sweetener" onchange="updateVisualsFromInputs()"> mit Süßstoff</label>
-                ${extraOptionHtml}
+                ${extrasHtml}
             </div>
         </div>`;
     
@@ -204,6 +236,8 @@ window.updateVisualsFromInputs = function() {
     const milkSelect = document.getElementById('input-milk-vol');
     const totalSelect = document.getElementById('input-total-vol'); 
     
+    const holySelect = document.getElementById('input-holy-flavor'); // NEU
+
     const shotCheckbox = document.getElementById('extra-shot');
     const iceCheckbox = document.getElementById('extra-ice');
     const vanillaCheckbox = document.getElementById('extra-vanilla');
@@ -212,11 +246,16 @@ window.updateVisualsFromInputs = function() {
     let coffeeMl = coffeeSelect ? parseInt(coffeeSelect.value) : 0;
     let milkMl = milkSelect ? parseInt(milkSelect.value) : 0;
     
+    // Logik für Gesamt-Volumen
     if (totalSelect && totalSelect.value) {
         const val = parseInt(totalSelect.value);
         if (currentName.includes("Matcha")) {
             coffeeMl = val * 0.20; 
             milkMl = val * 0.80;   
+        } else if (currentName === "Holy Eistee") {
+            // Bei Holy ist alles "Kaffee" (die Flüssigkeit), keine Milch
+            coffeeMl = val;
+            milkMl = 0;
         } else {
             coffeeMl = val; 
         }
@@ -227,14 +266,22 @@ window.updateVisualsFromInputs = function() {
     if(vanillaCheckbox && vanillaCheckbox.checked) extras.push("Vanille");
     if(sweetCheckbox && sweetCheckbox.checked) extras.push("Süßstoff");
     
+    // Holy Flavor auslesen
+    let holyFlavor = null;
+    if (holySelect) {
+        holyFlavor = holySelect.value;
+        // Optional: Den Flavor auch zu den Extras packen für die Bestellung
+        const flavorName = holySelect.options[holySelect.selectedIndex].text;
+        extras.push(flavorName); // Damit es auf dem Bon steht
+    }
+
     let hasIce = false;
     if(iceCheckbox && iceCheckbox.checked) {
         extras.push("Mit Eis");
         hasIce = true;
     }
 
-    // Wir übergeben alles an die Visual Function
-    updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl, hasIce);
+    updateCoffeeVisuals(currentName, extras, coffeeMl, milkMl, hasIce, holyFlavor);
 }
 
 window.closeOrderModal = function() { 
@@ -246,7 +293,7 @@ window.closeConfirmModal = function() {
     confirmModal.style.display = 'none'; 
 }
 
-// --- VISUAL COFFEE LAB LOGIK 🧪 (V6 - FULL EXTRAS) ---
+// --- VISUAL COFFEE LAB LOGIK 🧪 (V7 - HOLY EISTEE FARBEN 🍹) ---
 const coffeeRecipes = {
     "Espresso":         { foam: 10,  esp: 30,  wat: 0,  milk: 0 },
     "Doppelter Espresso": { foam: 10, esp: 60,  wat: 0,  milk: 0 },
@@ -261,7 +308,7 @@ const coffeeRecipes = {
     "default":          { foam: 0,   esp: 50,  wat: 0,  milk: 0 }
 };
 
-function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0, hasIce = false) {
+function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, overrideMilkMl = 0, hasIce = false, holyFlavor = null) {
     const glass = document.querySelector('.glass-cup');
     const espLayer = document.getElementById('layer-espresso'); 
     if(!glass || !espLayer) return;
@@ -273,7 +320,12 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
     const MAX_GLASS_CAPACITY = 350; 
 
     if (overrideCoffeeMl > 0 || overrideMilkMl > 0) {
-        currentRecipe.esp = (overrideCoffeeMl / MAX_GLASS_CAPACITY) * 100;
+        // Bei Holy Eistee kann das Volumen sehr groß sein (700ml),
+        // wir cappen es visuell bei 100%, sonst sprengt es das Glas.
+        let espHeight = (overrideCoffeeMl / MAX_GLASS_CAPACITY) * 100;
+        if(espHeight > 95) espHeight = 95; // Rand lassen
+
+        currentRecipe.esp = espHeight;
         currentRecipe.milk = (overrideMilkMl / MAX_GLASS_CAPACITY) * 100;
         currentRecipe.wat = 0; 
     }
@@ -282,14 +334,28 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
         currentRecipe.esp += 8; 
     }
 
-    // --- FARB-LOGIK FÜR MATCHA ---
+    // --- FARB-LOGIK (Matcha & Holy) ---
     if (productName.includes("Matcha")) {
         espLayer.style.background = "linear-gradient(to right, #a4c639, #6b8c21)";
-    } else {
-        espLayer.style.background = ""; 
+    } 
+    else if (productName === "Holy Eistee") {
+        // Farben je nach Sorte
+        if (holyFlavor === 'lemon') {
+            espLayer.style.background = "linear-gradient(to right, #8B4513, #CD853F)"; // Schwarztee Braun
+        } else if (holyFlavor === 'lime') {
+            espLayer.style.background = "linear-gradient(to right, #98FF98, #32CD32)"; // Giftgrün/Hellgrün
+        } else if (holyFlavor === 'mango') {
+            espLayer.style.background = "linear-gradient(to right, #FFD700, #FF8C00)"; // Orange/Gold
+        } else {
+            // Default Fallback
+            espLayer.style.background = "linear-gradient(to right, #FFD700, #FF8C00)";
+        }
+    }
+    else {
+        espLayer.style.background = ""; // Standard Braun zurücksetzen
     }
 
-    // --- EXTRAS RENDERN (Eis, Sirup, Süßstoff) ---
+    // Rendering
     renderAddons(hasIce, extras);
 
     document.getElementById('layer-foam').style.height = currentRecipe.foam + '%';
@@ -297,7 +363,7 @@ function updateCoffeeVisuals(productName, extras = [], overrideCoffeeMl = 0, ove
     document.getElementById('layer-water').style.height = currentRecipe.wat + '%';
     document.getElementById('layer-milk').style.height = currentRecipe.milk + '%';
 
-    if (productName.includes("Iced")) {
+    if (productName.includes("Iced") || productName === "Holy Eistee") {
         glass.classList.remove('hot');
     } else {
         glass.classList.add('hot');
@@ -309,11 +375,9 @@ function renderAddons(hasIce, extras) {
     const glass = document.querySelector('.glass-cup');
     if(!glass) return;
 
-    // 1. Alte Elemente löschen (damit Animation bei Toggle neu startet)
     const toRemove = glass.querySelectorAll('.ice-cube, .syrup-drop, .sweetener-pill');
     toRemove.forEach(el => el.remove());
 
-    // 2. Eiswürfel
     if(hasIce) {
         for(let i=1; i<=3; i++) {
             const ice = document.createElement('div');
@@ -323,14 +387,12 @@ function renderAddons(hasIce, extras) {
         }
     }
 
-    // 3. Vanille Sirup (Goldener Tropfen)
     if(extras.includes("Vanille")) {
         const drop = document.createElement('div');
         drop.className = 'syrup-drop';
         glass.appendChild(drop);
     }
 
-    // 4. Süßstoff (Tablette)
     if(extras.includes("Süßstoff")) {
         const pill = document.createElement('div');
         pill.className = 'sweetener-pill';
@@ -385,7 +447,7 @@ function letItSnow() {
 }
 letItSnow();
 
-// --- SEND ORDER (KORRIGIERT FÜR BON) ---
+// --- SEND ORDER ---
 window.sendOrder = function() {
     createSteamEffect();
     try {
@@ -407,6 +469,7 @@ window.sendOrder = function() {
         "Flat White": 4.50, 
         "Iced Matcha Latte": 5.50, 
         "Iced Protein Matcha": 5.90, 
+        "Holy Eistee": 4.90, // NEU
         "Iced Coffee": 3.90, 
         "Iced Latte": 4.50 
     };
@@ -441,6 +504,12 @@ window.sendOrder = function() {
     if(shotEl && shotEl.checked) details.push("Extra Shot");
     const iceEl = document.getElementById('extra-ice');
     if(iceEl && iceEl.checked) details.push("Mit Eiswürfeln");
+
+    // Holy Flavor auslesen für den Bon/Details
+    const holySelect = document.getElementById('input-holy-flavor');
+    if (holySelect) {
+        details.push(holySelect.options[holySelect.selectedIndex].text);
+    }
 
     let detailString = details.length > 0 ? ` (${details.join(', ')})` : "";
     let messageBody = `${userName} möchte: ${currentCoffee.name}${detailString}`;
@@ -499,11 +568,9 @@ window.sendOrder = function() {
             document.getElementById('receipt-item-name').innerText = currentCoffee.name;
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 8999 + 1000);
-            
-            // Preis oben (Artikel)
             document.getElementById('receipt-price').innerText = formattedPrice;
 
-            // Extras Liste
+            // Extras auflisten
             const extrasContainer = document.getElementById('receipt-extras-container');
             if(extrasContainer) {
                 extrasContainer.innerHTML = "";
@@ -517,13 +584,8 @@ window.sendOrder = function() {
                 });
             }
 
-            // --- HIER IST DIE KORREKTUR ---
-            // Wir suchen das Feld unten im Bon und aktualisieren es, statt eine neue Zeile zu bauen.
             const savedEl = document.getElementById('receipt-saved');
-            if (savedEl) {
-                savedEl.innerText = "-" + formattedPrice;
-            }
-            // -----------------------------
+            if (savedEl) savedEl.innerText = "-" + formattedPrice;
 
             const receiptModal = document.getElementById('receipt-modal');
             if(receiptModal) receiptModal.style.display = 'flex';
@@ -542,7 +604,6 @@ window.sendOrder = function() {
         }
     });
 }
-
 
 // --- LIVE STATUS MONITORING ---
 let lastStatus = "";
@@ -577,25 +638,51 @@ function updateStatusCard(status, coffeeName) {
     const icon = document.getElementById('ls-icon');
     const title = document.getElementById('ls-title');
     const desc = document.getElementById('ls-desc');
+    const progressBar = document.getElementById('timeline-bar');
 
-    card.className = ""; 
+    if(!card) return;
+
+    ['new', 'preparing', 'brewing', 'ready'].forEach(s => {
+        const el = document.getElementById(`step-${s}`);
+        if(el) el.className = 'timeline-step'; 
+    });
+
+    const setStep = (id, state) => { 
+        const el = document.getElementById(`step-${id}`);
+        if(el) el.classList.add(state);
+    };
 
     if (status === 'new') {
-        card.classList.add('ls-new');
-        icon.innerText = "⏳";
-        title.innerText = "Warten...";
-        desc.innerText = `Deine Bestellung (${coffeeName}) ist eingegangen.`;
+        card.style.display = 'block';
+        if(title) title.innerText = "Bestellung eingegangen";
+        if(desc) desc.innerText = `${coffeeName} wartet in der Schlange.`;
+        if(icon) icon.innerText = "📝";
+        if(progressBar) progressBar.style.width = "15%";
+        setStep('new', 'active');
+        setStep('new', 'pulse');
     } 
     else if (status === 'preparing') {
-        card.classList.add('ls-preparing', 'pulse-anim');
-        icon.innerText = "☕💨"; 
-        title.innerText = "Wird gebrüht...";
-        desc.innerText = "Der Barista ist an der Arbeit!";
-    } 
+        card.style.display = 'block';
+        if(title) title.innerText = "Wird zubereitet";
+        if(desc) desc.innerText = "Bohnen werden gemahlen & Wasser heizt auf.";
+        if(icon) icon.innerText = "⚙️";
+        if(progressBar) progressBar.style.width = "50%";
+        setStep('new', 'done');
+        setStep('preparing', 'active');
+        setStep('preparing', 'pulse');
+    }
     else if (status === 'ready') {
-        card.classList.add('ls-ready');
-        icon.innerText = "✅";
-        title.innerText = "Wird serviert!";
+        card.style.display = 'block';
+        if(title) title.innerText = "Abholbereit!";
+        if(desc) desc.innerText = `Dein ${coffeeName} steht am Tresen.`;
+        if(icon) icon.innerText = "✅";
+        if(progressBar) progressBar.style.width = "100%";
+        setStep('new', 'done');
+        setStep('preparing', 'done');
+        setStep('brewing', 'done');
+        setStep('ready', 'active');
+        setStep('ready', 'pulse');
+
         if (lastStatus !== 'ready') {
             try {
                 const audio = new Audio('assets/audio/ding.mp3');
@@ -603,6 +690,9 @@ function updateStatusCard(status, coffeeName) {
                 if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
             } catch(e) {}
         }
+    } 
+    else {
+        card.style.display = 'none';
     }
     lastStatus = status;
 }
@@ -683,7 +773,7 @@ function buildCardHTML(sorte, isFav) {
 
 function createSelect(id, label, options, suffix) {
     let html = `<div class="form-group"><label class="form-label">${label}</label>`;
-    html += `<select id="${id}" class="modal-select" onchange="updateVisualsFromInputs()">`; // <-- WICHTIG!
+    html += `<select id="${id}" class="modal-select" onchange="updateVisualsFromInputs()">`; 
     options.forEach(opt => html += `<option value="${opt}">${opt}${suffix}</option>`);
     html += `</select></div>`;
     return html;
@@ -894,39 +984,30 @@ function calculatePrize(deg) {
     resultDiv.innerHTML = prize;
 }
 
-window.closeReceipt = function() {
-    document.getElementById('receipt-modal').style.display = 'none';
-}
-
-// ============================================
-//   BESTELLHISTORIE & ALTE BONS 📜
-// ============================================
-
+// --- HISTORY & OLD RECEIPT ---
 window.openOrderHistory = function() {
     if (!currentUser) { alert("Bitte einloggen!"); return; }
 
     const histModal = document.getElementById('history-modal');
     const listContainer = document.getElementById('history-list');
     
-    // Menü schließen (falls offen)
-    document.getElementById('main-dropdown').classList.remove('show');
+    // Menü schließen
+    const menu = document.getElementById('main-dropdown');
+    if(menu) menu.classList.remove('show');
     
-    // Modal öffnen & Ladeanzeige
     histModal.style.display = 'flex';
     listContainer.innerHTML = '<div style="text-align:center; padding:20px;">Lade Daten... ⏳</div>';
 
-    // Daten aus Firebase holen
     const ordersRef = ref(db, 'orders');
     onValue(ordersRef, (snapshot) => {
         const data = snapshot.val();
-        listContainer.innerHTML = ""; // Leeren
+        listContainer.innerHTML = ""; 
 
         if (!data) {
             listContainer.innerHTML = '<div style="text-align:center; color:#888;">Keine Bestellungen gefunden.</div>';
             return;
         }
 
-        // Array erstellen, Filtern (nur meine User-Bestellungen) und Sortieren (Neu -> Alt)
         const myOrders = Object.values(data)
             .filter(o => o.user === currentUser.displayName)
             .sort((a, b) => b.timestamp - a.timestamp);
@@ -936,13 +1017,10 @@ window.openOrderHistory = function() {
             return;
         }
 
-        // Liste bauen
         myOrders.forEach(order => {
             const item = document.createElement('div');
             item.className = 'history-item';
-            // Beim Klick: Alten Bon öffnen!
             item.onclick = () => showOldReceipt(order);
-            
             item.innerHTML = `
                 <div>
                     <div class="hist-main">${order.coffee}</div>
@@ -952,35 +1030,29 @@ window.openOrderHistory = function() {
             `;
             listContainer.appendChild(item);
         });
-    }, { onlyOnce: true }); // Nur einmal laden, kein Live-Listener nötig hier
+    }, { onlyOnce: true }); 
 }
 
 window.closeHistoryModal = function() {
     document.getElementById('history-modal').style.display = 'none';
 }
 
-// --- FUNKTION: ALTEN BON ANZEIGEN ---
 function showOldReceipt(order) {
-    // 1. Preise (müssen wir neu berechnen, da sie oft nicht im Order-Objekt stehen)
     const starbucksPreise = { 
         "Kaffee": 3.50, "Café Crema": 3.90, "Latte Macchiato": 4.50, 
         "Milchkaffee": 4.20, "Cappuccino": 4.20, "Espresso": 2.90, 
         "Espresso Lungo": 3.20, "Americano": 3.50, "Flat White": 4.50, 
         "Iced Matcha Latte": 5.50, "Iced Protein Matcha": 5.90, 
-        "Iced Coffee": 3.90, "Iced Latte": 4.50 
+        "Holy Eistee": 4.90, "Iced Coffee": 3.90, "Iced Latte": 4.50 
     };
     const rawPrice = starbucksPreise[order.coffee] !== undefined ? starbucksPreise[order.coffee] : 4.00;
     const formattedPrice = rawPrice.toFixed(2) + "€";
 
-    // 2. Receipt HTML befüllen (Wir nutzen das existierende Modal!)
     document.getElementById('receipt-item-name').innerText = order.coffee;
     document.getElementById('receipt-date').innerText = order.dateString;
     document.getElementById('receipt-price').innerText = formattedPrice;
-    
-    // Fake ID generieren (oder Timestamp nehmen)
     document.getElementById('receipt-id').innerText = new Date(order.timestamp).getTime().toString().slice(-4);
 
-    // Extras auflisten
     const extrasContainer = document.getElementById('receipt-extras-container');
     extrasContainer.innerHTML = "";
     
@@ -995,14 +1067,13 @@ function showOldReceipt(order) {
         });
     }
 
-    // Gespart-Zeile aktualisieren
     const savedEl = document.getElementById('receipt-saved');
     if (savedEl) savedEl.innerText = "-" + formattedPrice;
 
-    // 3. Modal öffnen
-    // Erst History schließen, damit sie sich nicht überlagern (optional)
-    // document.getElementById('history-modal').style.display = 'none'; 
-    
     const receiptModal = document.getElementById('receipt-modal');
     receiptModal.style.display = 'flex';
+}
+
+window.closeReceipt = function() {
+    document.getElementById('receipt-modal').style.display = 'none';
 }
