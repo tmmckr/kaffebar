@@ -1367,3 +1367,22 @@ canvas {
 .hist-main { font-weight: bold; color: #fff; font-size: 1rem; }
 .hist-date { font-size: 0.75rem; color: #888; margin-top: 4px; }
 .hist-arrow { color: #d4b483; font-size: 1.2rem; }
+
+/* --- LOGO STYLING --- */
+.logo-container {
+    margin-bottom: 30px;
+    animation: fadeInUp 1s ease-out 0.2s backwards;
+}
+
+.hero-logo {
+    max-width: 400px; /* Maximale Breite auf Desktop */
+    width: 100%;      /* Auf Handy volle Breite */
+    height: auto;     /* Seitenverhältnis beibehalten */
+    border-radius: 20px; /* Runde Ecken für modernen Look */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); /* Edler Schatten */
+    border: 1px solid rgba(212, 180, 131, 0.2); /* Feiner goldener Rand */
+    
+    /* Optional: Damit es nahtlos übergeht, falls die Brauntöne leicht abweichen */
+    /* mix-blend-mode: multiply; */ 
+    /* (Das 'multiply' nur nutzen, wenn du das Bild ohne Hintergrund hast oder der Braunton 100% identisch ist) */
+}
