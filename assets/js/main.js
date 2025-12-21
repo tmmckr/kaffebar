@@ -1077,3 +1077,14 @@ function showOldReceipt(order) {
 window.closeReceipt = function() {
     document.getElementById('receipt-modal').style.display = 'none';
 }
+
+// --- HOLY EISTEE MODAL ---
+window.openHolyInfo = function() {
+    const modal = document.getElementById('info-modal-holy');
+    if(modal) modal.style.display = 'flex';
+}
+
+window.closeHolyInfo = function() {
+    const modal = document.getElementById('info-modal-holy');
+    if(modal) modal.style.display = 'none';
+}
