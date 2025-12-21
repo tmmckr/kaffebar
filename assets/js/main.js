@@ -111,7 +111,7 @@ const kaffeeSorten = [
     { name: "Café Crema", configKey: "Café Crema", strength: 3, desc: "Langer Genuss mit Crema-Krone." },
     { name: "Espresso Lungo", configKey: "Espresso Lungo", strength: 4, desc: "Verlängertes Aromawunder." },
     { name: "Espresso", configKey: "Espresso", strength: 5, desc: "Der kleine Starke." },
-    { name: "Latte Macchiato", configKey: "Latte Macchiato", strength: 2, desc: "Viel heiße Milch & Espresso." },
+    { name: "Latte Macchiato", configKey: "Latte Macchiato", strength: 2, desc: "Viel heiße Milch & Espresso mit Milchschaum." },
     { name: "Milchkaffee", configKey: "Milchkaffee", strength: 2, desc: "Halb Kaffee, halb Milch." },
     { name: "Cappuccino", configKey: "Cappuccino", strength: 3, desc: "Klassiker mit Milchschaumhaube." },
     { name: "Americano", configKey: "Americano", strength: 3, desc: "Espresso mit Wasser verlängert." },
@@ -121,7 +121,7 @@ const kaffeeSorten = [
     { name: "Flat White", configKey: "default", strength: 4, desc: "Doppelter Ristretto mit Mikroschaum." },
     { name: "Iced Coffee", configKey: "default", strength: 3, desc: "Frisch gebrüht auf Eis." },
     { name: "Iced Latte", configKey: "default", strength: 2, desc: "Espresso auf kalter Milch & Eis." },
-    { name: "Milchschaum", configKey: "default", strength: 0, desc: "Purer Schaum." },
+    { name: "Milchschaum", configKey: "default", strength: 0, desc: "Purer warmer Milchschaum." },
     { name: "Heißes Wasser", configKey: "default", strength: 0, desc: "Für Tee." },
     { name: "To-Go-Becher", configKey: "default", strength: 0, desc: "Für unterwegs." }
 ];
