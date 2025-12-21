@@ -69,6 +69,11 @@
         <span onclick="window.toggleChat()" class="bot-link">Frag den Barista Bot! 🤖</span>
     </div>
 
+     <div class="news-banner" onclick="openHolyInfo()" style="cursor: pointer; margin-top: 10px; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: 1px solid #ff7eb3;">
+        <span class="news-badge" style="background: #ff4757; color: white;">NEU</span>
+        <span style="color: #2c1e16; font-weight: bold;">HOLY Eistee – Koffeinfrei & Fruchtig! 🍏</span>
+    </div>
+    
     <div class="news-banner" onclick="openMatchaInfo()" style="cursor: pointer;">
         <span class="news-badge">NEU</span>
         <span>Iced Matcha Latte – auch als Protein-Version! 🍵</span>
@@ -238,6 +243,35 @@
         <button class="receipt-btn" onclick="closeReceipt()">Alles klar!</button>
     </div>
 </div>
+
+    <div id="info-modal-holy" class="modal-overlay">
+    <div class="modal-box" style="max-height: 85vh; overflow-y: auto;"> <h2 class="modal-title">HOLY Iced Tea 🥤</h2>
+        <div style="text-align: center; color: #d4b483; margin-bottom: 10px; font-weight: bold;">Koffeinfreier Genuss</div>
+
+        <div style="margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #d4b483; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            <img src="assets/img/Holy.webp" alt="Holy Eistee Produkt" style="width: 100%; height: auto; display: block;">
+        </div>
+
+        <p class="modal-text" style="color: #ddd; line-height: 1.6; text-align: left; font-size: 0.95rem;">
+            Der perfekte Durstlöscher ohne Zucker und ohne Koffein!<br><br>
+            Wähle aus verschiedenen Sorten wie <b>Lemon x Honey</b>, <b>Lime x Matcha</b> oder <b>Mango x Passion Fruit</b>.<br><br>
+            Zubereitet mit stillem oder spritzigem Wasser und natürlich vielen Eiswürfeln.
+        </p>
+
+        <h3 style="color: #d4b483; margin-top: 25px; margin-bottom: 10px; font-size: 1.1rem; border-bottom: 1px dashed #555; padding-bottom: 5px;">Nährwerte & Inhaltsstoffe</h3>
+        
+        <div style="margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid #555;">
+            <img src="assets/img/Naehrwerte.webp" alt="Nährwerttabelle" style="width: 100%; height: auto; display: block;">
+        </div>
+
+        <button class="modal-btn" onclick="closeHolyInfo()">Alles klar!</button>
+        
+        <div style="margin-top: 15px; color: #d4b483; text-decoration: underline; cursor: pointer; font-size: 0.9rem;" 
+             onclick="closeHolyInfo(); openOrderModal('Holy Eistee')">
+            Jetzt direkt bestellen 🛒
+        </div>
+    </div>
+</div>
     
     <div id="info-modal" class="modal-overlay">
         <div class="modal-box">
@@ -261,6 +295,8 @@
             </div>
         </div>
     </div>
+
+    
 
     <div id="status"></div>
 
@@ -301,6 +337,7 @@
 
 </body>
 </html>
+
 
 
 
