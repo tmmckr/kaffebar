@@ -569,6 +569,7 @@ window.sendOrder = function() {
             document.getElementById('receipt-date').innerText = new Date().toLocaleString();
             document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 8999 + 1000);
             document.getElementById('receipt-price').innerText = formattedPrice;
+            document.getElementById('receipt-stamp').classList.remove('visible');
 
             // Extras auflisten
             const extrasContainer = document.getElementById('receipt-extras-container');
@@ -1020,7 +1021,7 @@ window.openOrderHistory = function() {
         myOrders.forEach(order => {
             const item = document.createElement('div');
             item.className = 'history-item';
-            item.onclick = () => showOldReceipt(order);
+            item.onclick = () => (order);
             item.innerHTML = `
                 <div>
                     <div class="hist-main">${order.coffee}</div>
@@ -1072,6 +1073,23 @@ function showOldReceipt(order) {
 
     const receiptModal = document.getElementById('receipt-modal');
     receiptModal.style.display = 'flex';
+
+    / --- NEU: STEMPEL LOGIK ---
+    const stamp = document.getElementById('receipt-stamp');
+    
+    // Wir prüfen den Status. 
+    // Wenn du im Admin-Panel auf "Fertig" drückst, setzt du den Status hoffentlich auf 'archived' oder 'done'
+    if (order.status === 'archived' || order.status === 'done' || order.status === 'completed') {
+        stamp.classList.add('visible');
+        stamp.innerText = "ERLEDIGT"; // Oder "GEBRÜHT"
+    } else {
+        stamp.classList.remove('visible');
+    }
+
+    // Modal öffnen
+    const receiptModal = document.getElementById('receipt-modal');
+    receiptModal.style.display = 'flex';
+}
 }
 
 window.closeReceipt = function() {
