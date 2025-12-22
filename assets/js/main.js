@@ -1021,7 +1021,8 @@ window.openOrderHistory = function() {
         myOrders.forEach(order => {
             const item = document.createElement('div');
             item.className = 'history-item';
-            item.onclick = () => (order);
+            // KORREKTUR: Hier fehlte der Funktionsname "showOldReceipt"
+            item.onclick = () => showOldReceipt(order);
             item.innerHTML = `
                 <div>
                     <div class="hist-main">${order.coffee}</div>
@@ -1052,7 +1053,10 @@ function showOldReceipt(order) {
     document.getElementById('receipt-item-name').innerText = order.coffee;
     document.getElementById('receipt-date').innerText = order.dateString;
     document.getElementById('receipt-price').innerText = formattedPrice;
-    document.getElementById('receipt-id').innerText = new Date(order.timestamp).getTime().toString().slice(-4);
+    
+    // Fallback falls kein Timestamp da ist
+    const orderId = order.timestamp ? new Date(order.timestamp).getTime().toString().slice(-4) : "0000";
+    document.getElementById('receipt-id').innerText = orderId;
 
     const extrasContainer = document.getElementById('receipt-extras-container');
     extrasContainer.innerHTML = "";
@@ -1071,25 +1075,19 @@ function showOldReceipt(order) {
     const savedEl = document.getElementById('receipt-saved');
     if (savedEl) savedEl.innerText = "-" + formattedPrice;
 
-    const receiptModal = document.getElementById('receipt-modal');
-    receiptModal.style.display = 'flex';
-
-    / --- NEU: STEMPEL LOGIK ---
+    // --- STEMPEL LOGIK (Korrigiert) ---
     const stamp = document.getElementById('receipt-stamp');
     
-    // Wir prüfen den Status. 
-    // Wenn du im Admin-Panel auf "Fertig" drückst, setzt du den Status hoffentlich auf 'archived' oder 'done'
     if (order.status === 'archived' || order.status === 'done' || order.status === 'completed') {
         stamp.classList.add('visible');
-        stamp.innerText = "ERLEDIGT"; // Oder "GEBRÜHT"
+        stamp.innerText = "ERLEDIGT"; 
     } else {
         stamp.classList.remove('visible');
     }
 
-    // Modal öffnen
+    // Modal öffnen (Nur 1x am Ende)
     const receiptModal = document.getElementById('receipt-modal');
     receiptModal.style.display = 'flex';
-}
 }
 
 window.closeReceipt = function() {
