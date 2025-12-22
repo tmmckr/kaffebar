@@ -134,7 +134,9 @@
                 </div>
             <div class="glass-shine"></div>
         </div>
-    </div> <div id="daily-spin-card" class="chart-card scroll-reveal" style="text-align:center; background: linear-gradient(135deg, #6a1b9a, #4a148c); border-color: #ba68c8; display:none;" onclick="openWheel()">
+    </div> 
+    
+    <div id="daily-spin-card" class="chart-card scroll-reveal" style="text-align:center; background: linear-gradient(135deg, #6a1b9a, #4a148c); border-color: #ba68c8; display:none;" onclick="openWheel()">
         <div class="stat-label" style="color: #e1bee7;">Daily Spin</div>
         <div style="font-size: 3rem; margin: 10px 0;">🎡</div>
         <div style="color: #fff; font-weight:bold;">Dreh am Rad!</div>
@@ -300,31 +302,16 @@
         </div>
     </div>
 
-    
-
     <div id="status"></div>
-
-   
-    <!-- <div class="chat-toggle" onclick="window.toggleChat()">🤖</div>
-    <div class="chat-window" id="chat-window">
-        <div class="chat-header">
-            <span>Barista Bot (Gemini)</span>
-            <span class="close-chat" onclick="window.toggleChat()">✖</span>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <div class="message bot-msg">Hallo! Ich bin dein KI-Barista. Frag mich was zur Karte! ☕</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" class="chat-input" placeholder="Frage..." onkeypress="window.handleEnter(event)">
-            <button class="chat-send" onclick="window.sendMessage()">➤</button>
-        </div>
-    </div> -->
-    
 
     <div id="live-status-card">
         <span id="ls-icon" class="status-icon">⏳</span>
         <span id="ls-title" class="status-title">Status laden...</span>
         <span id="ls-desc" class="status-desc">Bitte warten</span>
+        
+        <button id="cancel-order-btn" style="display:none; margin-top:15px; background-color: #ef4444; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            Bestellung stornieren ❌
+        </button>
     </div> 
 
     <div id="history-modal" class="modal-overlay">
@@ -341,28 +328,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
